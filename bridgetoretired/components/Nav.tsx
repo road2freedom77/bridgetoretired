@@ -6,6 +6,13 @@ import { Menu, X } from 'lucide-react'
 export function Nav() {
   const [open, setOpen] = useState(false)
 
+  const links = [
+    { href: '/#how',        label: 'How It Works' },
+    { href: '/#calculator', label: 'Calculator'   },
+    { href: '/blog',        label: 'Blog'         },
+    { href: '/about',       label: 'About'        },
+  ]
+
   return (
     <nav className="sticky top-0 z-50 bg-black/90 backdrop-blur-xl border-b border-white/[0.06]">
       <div className="max-w-7xl mx-auto px-5 h-[60px] flex items-center justify-between">
@@ -16,12 +23,7 @@ export function Nav() {
 
         {/* Desktop */}
         <ul className="hidden md:flex items-center gap-7">
-          {[
-            { href: '/#how',        label: 'How It Works' },
-            { href: '/#calculator', label: 'Calculator'   },
-            { href: '/blog',        label: 'Blog'         },
-            { href: '/#tools',      label: 'Tools'        },
-          ].map(({ href, label }) => (
+          {links.map(({ href, label }) => (
             <li key={href}>
               <Link
                 href={href}
@@ -54,12 +56,7 @@ export function Nav() {
       {/* Mobile menu */}
       {open && (
         <div className="md:hidden bg-ink border-t border-white/[0.06] px-5 py-4 flex flex-col gap-4">
-          {[
-            { href: '/#how',        label: 'How It Works' },
-            { href: '/#calculator', label: 'Calculator'   },
-            { href: '/blog',        label: 'Blog'         },
-            { href: '/#tools',      label: 'Tools'        },
-          ].map(({ href, label }) => (
+          {links.map(({ href, label }) => (
             <Link
               key={href}
               href={href}
