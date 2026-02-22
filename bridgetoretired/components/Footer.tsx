@@ -1,0 +1,64 @@
+export function Footer() {
+  return (
+    <footer className="bg-navy border-t border-white/[0.06] px-5 pt-16 pb-8">
+      <div className="max-w-7xl mx-auto">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr] gap-12 mb-14">
+          <div>
+            <div className="font-syne font-bold text-[18px] text-white tracking-tight mb-4">
+              Bridge<span className="text-gold">ToRetired</span>
+            </div>
+            <p className="text-[12px] text-white/30 leading-[1.8] max-w-[280px]">
+              Free tools, guides, and calculators for people planning early retirement. We help you build the bridge between today and financial freedom.
+            </p>
+          </div>
+
+          {[
+            {
+              title: 'Topics',
+              links: ['Bridge Strategy', 'Roth Conversions', 'Tax Planning', 'Healthcare', 'Social Security', 'Withdrawal Order'],
+            },
+            {
+              title: 'Tools',
+              links: ['Bridge Planner', 'FIRE Calculator', 'Roth Ladder Builder', 'SS Timing Tool'],
+            },
+            {
+              title: 'Site',
+              links: ['About', 'Blog', 'Contact', 'Newsletter', 'Reddit / r/financialindependence'],
+            },
+          ].map(col => (
+            <div key={col.title}>
+              <h4 className="font-syne font-semibold text-[11px] tracking-widest uppercase text-white/40 mb-4">
+                {col.title}
+              </h4>
+              <ul className="space-y-2.5">
+                {col.links.map(l => (
+                  <li key={l}>
+                    <a href="#" className="font-mono text-[11px] text-white/25 hover:text-white/55 transition-colors tracking-wide">
+                      {l}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+
+        <div className="border-t border-white/[0.05] pt-6 flex flex-col sm:flex-row justify-between items-start gap-4">
+          <p className="font-mono text-[10px] text-white/20 leading-[1.8] max-w-[600px]">
+            © 2025 BridgeToRetired. All rights reserved.{' '}
+            <strong className="font-medium">Affiliate Disclosure:</strong> This site contains affiliate links. We may earn a commission at no cost to you.
+            Content is for educational purposes only and does not constitute financial, tax, or legal advice.
+            Always consult a qualified financial advisor before making retirement decisions.
+          </p>
+          <div className="flex gap-5 shrink-0">
+            {['Privacy', 'Terms', 'Disclosures'].map(l => (
+              <a key={l} href="#" className="font-mono text-[10px] text-white/20 hover:text-white/40 transition-colors tracking-wide">
+                {l}
+              </a>
+            ))}
+          </div>
+        </div>
+      </div>
+    </footer>
+  )
+}
