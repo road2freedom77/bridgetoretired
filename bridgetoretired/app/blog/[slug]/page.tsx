@@ -1,42 +1,53 @@
-import { getAllPosts, getPostBySlug } from '@/lib/blog'
-import { notFound }                   from 'next/navigation'
-import { format }                     from 'date-fns'
-import type { Metadata }              from 'next'
-import Link                           from 'next/link'
+import { allPosts }          from 'contentlayer/generated'
+import { notFound }           from 'next/navigation'
+import { format }             from 'date-fns'
+import { useMDXComponent }    from 'next-contentlayer/hooks'
+import type { Metadata }      from 'next'
+import Link                   from 'next/link'
+import SequenceOfReturnsSimulator from '@/components/SequenceOfReturnsSimulator'
 
 interface Props { params: { slug: string } }
 
+const mdxComponents = {
+  SequenceOfReturnsSimulator,
+}
+
+function getMDX(code: string) {
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  return useMDXComponent(code)
+}
+
 export async function generateStaticParams() {
-  return getAllPosts().map(p => ({ slug: p.slug }))
+  return allPosts.map(p => ({ slug: p.slug }))
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const post = await getPostBySlug(params.slug)
+  const post = allPosts.find(p => p.slug === params.slug)
   if (!post) return {}
   return {
     title:       post.title,
     description: post.description,
     openGraph: {
-      title:         post.title,
-      description:   post.description,
-      type:          'article',
+      title:       post.title,
+      description: post.description,
+      type:        'article',
       publishedTime: post.date,
     },
   }
 }
 
-export default async function PostPage({ params }: Props) {
-  const post = await getPostBySlug(params.slug)
+export default function PostPage({ params }: Props) {
+  const post = allPosts.find(p => p.slug === params.slug)
   if (!post) notFound()
+
+  const MDXContent = getMDX(post.body.code)
 
   return (
     <div className="min-h-screen bg-black">
+      {/* Hero */}
       <div className="bg-navy border-b border-white/[0.06]">
         <div className="max-w-3xl mx-auto px-5 pt-14 pb-12">
-          <Link
-            href="/blog"
-            className="font-mono text-[10px] tracking-widest uppercase text-white/30 hover:text-gold transition-colors flex items-center gap-2 mb-8"
-          >
+          <Link href="/blog" className="font-mono text-[10px] tracking-widest uppercase text-white/30 hover:text-gold transition-colors flex items-center gap-2 mb-8">
             ← Back to Blog
           </Link>
           <div className="font-mono text-[9px] tracking-widest uppercase text-gold mb-4">
@@ -45,7 +56,9 @@ export default async function PostPage({ params }: Props) {
           <h1 className="font-syne font-bold text-[clamp(26px,4vw,46px)] tracking-tight text-white leading-tight mb-5">
             {post.title}
           </h1>
-          <p className="text-white/55 text-[15px] leading-relaxed mb-6">{post.description}</p>
+          <p className="text-white/55 text-[15px] leading-relaxed mb-6">
+            {post.description}
+          </p>
           <div className="flex items-center gap-4 font-mono text-[10px] text-white/30">
             <span>{format(new Date(post.date), 'MMMM d, yyyy')}</span>
             <span>·</span>
@@ -54,12 +67,13 @@ export default async function PostPage({ params }: Props) {
         </div>
       </div>
 
+      {/* Body */}
       <div className="max-w-3xl mx-auto px-5 py-14">
-        <article
-          className="prose-dark"
-          dangerouslySetInnerHTML={{ __html: post.content ?? '' }}
-        />
+        <article className="prose-dark">
+          <MDXContent components={mdxComponents} />
+        </article>
 
+        {/* CTA */}
         <div className="mt-16 bg-ink border border-white/[0.07] rounded-xl p-7 text-center">
           <div className="font-mono text-[9px] tracking-widest uppercase text-gold mb-3">Free Tool</div>
           <h3 className="font-syne font-bold text-[20px] tracking-tight text-white mb-3">
