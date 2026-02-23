@@ -39,6 +39,7 @@ export default function PostPage({ params }: Props) {
 
   return (
     <div className="min-h-screen bg-black">
+      {/* Hero */}
       <div className="bg-navy border-b border-white/[0.06]">
         <div className="max-w-3xl mx-auto px-5 pt-14 pb-12">
           <Link href="/blog" className="font-mono text-[10px] tracking-widest uppercase text-white/30 hover:text-gold transition-colors flex items-center gap-2 mb-8">
@@ -61,11 +62,13 @@ export default function PostPage({ params }: Props) {
         </div>
       </div>
 
+      {/* Body */}
       <div className="max-w-3xl mx-auto px-5 py-14">
         <article className="prose-dark">
           <MDXContent />
         </article>
 
+        {/* CTA */}
         <div className="mt-16 bg-ink border border-white/[0.07] rounded-xl p-7 text-center">
           <div className="font-mono text-[9px] tracking-widest uppercase text-gold mb-3">Free Tool</div>
           <h3 className="font-syne font-bold text-[20px] tracking-tight text-white mb-3">
