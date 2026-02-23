@@ -5,30 +5,28 @@ export function Footer() {
     {
       title: 'Topics',
       links: [
-        { label: 'Bridge Strategy',   href: '/blog' },
-        { label: 'Roth Conversions',  href: '/blog' },
-        { label: 'Tax Planning',      href: '/blog' },
-        { label: 'Healthcare',        href: '/blog' },
-        { label: 'Social Security',   href: '/blog' },
-        { label: 'Withdrawal Order',  href: '/blog' },
+        { label: 'Bridge Strategy',  href: '/blog/what-is-retirement-bridge-strategy' },
+        { label: 'Roth Conversions', href: '/blog/roth-conversion-ladder-guide' },
+        { label: 'Tax Planning',     href: '/blog/withdrawal-order-taxable-roth-401k' },
+        { label: 'Healthcare',       href: '/blog/health-insurance-before-medicare' },
+        { label: 'Social Security',  href: '/blog/social-security-timing-62-vs-70' },
+        { label: 'Sequence Risk',    href: '/blog/sequence-of-returns-risk' },
       ],
     },
     {
       title: 'Tools',
       links: [
-        { label: 'Bridge Planner',      href: '/#download'   },
-        { label: 'FIRE Calculator',     href: '/#calculator' },
-        { label: 'Roth Ladder Builder', href: '/blog'        },
-        { label: 'SS Timing Tool',      href: '/blog'        },
+        { label: 'Bridge Planner',  href: '/#download'   },
+        { label: 'FIRE Calculator', href: '/#calculator' },
       ],
     },
     {
       title: 'Site',
       links: [
-        { label: 'About',        href: '/about'     },
-        { label: 'Blog',         href: '/blog'      },
-        { label: 'Newsletter',   href: '/#download' },
-        { label: 'X / Twitter',  href: 'https://x.com/BridgeToRetired' },
+        { label: 'About',       href: '/about'     },
+        { label: 'Blog',        href: '/blog'      },
+        { label: 'Newsletter',  href: '/#download' },
+        { label: 'X / Twitter', href: 'https://x.com/BridgeToRetired' },
       ],
     },
   ]
@@ -93,8 +91,8 @@ export function Footer() {
         {/* Bottom bar */}
         <div className="border-t border-white/[0.05] pt-6 flex flex-col sm:flex-row justify-between items-start gap-4">
           <p className="font-mono text-[10px] text-white/20 leading-[1.8] max-w-[600px]">
-            © 2025 BridgeToRetired. All rights reserved.{' '}
-            <strong className="font-medium">Affiliate Disclosure:</strong> This site contains
+            © 2026 BridgeToRetired. All rights reserved.{' '}
+            <strong className="font-medium">Affiliate Disclosure:</strong> This site may contain
             affiliate links. We may earn a commission at no cost to you. Content is for
             educational purposes only and does not constitute financial, tax, or legal advice.
             Always consult a qualified financial advisor before making retirement decisions.
