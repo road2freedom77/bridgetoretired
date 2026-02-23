@@ -3,6 +3,7 @@ import { Syne, Lora, IBM_Plex_Mono } from 'next/font/google'
 import './globals.css'
 import { Nav } from '@/components/Nav'
 import { Footer } from '@/components/Footer'
+import { GoogleAnalytics } from '@/components/GoogleAnalytics'
 
 const syne = Syne({
   subsets: ['latin'],
@@ -60,6 +61,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${syne.variable} ${lora.variable} ${mono.variable}`}>
       <body className="bg-black text-white antialiased">
+        <GoogleAnalytics />
         <Nav />
         <main>{children}</main>
         <Footer />
