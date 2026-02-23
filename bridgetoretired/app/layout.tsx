@@ -1,9 +1,9 @@
 import type { Metadata } from 'next'
 import { Syne, Lora, IBM_Plex_Mono } from 'next/font/google'
+import Script from 'next/script'
 import './globals.css'
 import { Nav } from '@/components/Nav'
 import { Footer } from '@/components/Footer'
-import { GoogleAnalytics } from '@/components/GoogleAnalytics'
 
 const syne = Syne({
   subsets: ['latin'],
@@ -23,6 +23,8 @@ const mono = IBM_Plex_Mono({
   weight: ['300', '400'],
   display: 'swap',
 })
+
+const GA_ID = 'G-47E00D7CN2'
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://bridgetoretired.com'),
@@ -60,8 +62,21 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${syne.variable} ${lora.variable} ${mono.variable}`}>
+      <head>
+        <Script
+          src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
+          strategy="beforeInteractive"
+        />
+        <Script id="google-analytics" strategy="beforeInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '${GA_ID}');
+          `}
+        </Script>
+      </head>
       <body className="bg-black text-white antialiased">
-        <GoogleAnalytics />
         <Nav />
         <main>{children}</main>
         <Footer />
