@@ -1,7 +1,7 @@
-import { allPosts }          from 'contentlayer/generated'
+import { allPosts }          from 'contentlayer2/generated'
 import { notFound }           from 'next/navigation'
 import { format }             from 'date-fns'
-import { useMDXComponent }    from 'next-contentlayer/hooks'
+import { useMDXComponent }    from 'next-contentlayer2/hooks'
 import type { Metadata }      from 'next'
 import Link                   from 'next/link'
 
