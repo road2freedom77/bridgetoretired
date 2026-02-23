@@ -42,18 +42,15 @@ function calcBridge(
     let acct = ''
 
     if (age < ACCESS_AGE) {
-      // Bridge: draw from taxable first
-      if (tb >= w) { tb -= w; acct = 'Taxable' }
-      else if (tb > 0) { const rem = w - tb; tb = 0; ro -= rem; acct = 'Taxable + Roth' }
-      else { ro -= w; acct = 'Roth' }
+      if (tb >= w)      { tb -= w; acct = 'Taxable' }
+      else if (tb > 0)  { const rem = w - tb; tb = 0; ro -= rem; acct = 'Taxable + Roth' }
+      else              { ro -= w; acct = 'Roth' }
     } else {
-      // Post-59½: draw from 401k first
-      if (k >= w) { k -= w; acct = '401(k)' }
-      else if (k > 0) { const rem = w - k; k = 0; ro -= rem; acct = '401k + Roth' }
-      else { ro -= w; acct = 'Roth' }
+      if (k >= w)       { k -= w; acct = '401(k)' }
+      else if (k > 0)   { const rem = w - k; k = 0; ro -= rem; acct = '401k + Roth' }
+      else              { ro -= w; acct = 'Roth' }
     }
 
-    // Growth on remaining balances
     tb = Math.max(0, tb) * (1 + returnPct)
     k  = Math.max(0, k)  * (1 + returnPct)
     ro = Math.max(0, ro) * (1 + returnPct)
@@ -73,18 +70,19 @@ const fmt = (n: number) =>
   n < 0 ? `-$${Math.abs(Math.round(n)).toLocaleString()}` : `$${Math.round(n).toLocaleString()}`
 
 export function Calculator() {
+  // Defaults chosen to show a healthy, solvent portfolio as the first impression
   const [inputs, setInputs] = useState({
-    currentAge:    48,
-    retireAge:     52,
-    lifeExp:       90,
-    ssAge:         67,
-    taxable:       120000,
-    k401:          650000,
-    roth:          90000,
-    spending:      40000,
-    returnPct:     5,
-    inflationPct:  2.5,
-    inflationAdj:  true,
+    currentAge:   45,
+    retireAge:    55,
+    lifeExp:      90,
+    ssAge:        67,
+    taxable:      300000,
+    k401:         800000,
+    roth:         150000,
+    spending:     60000,
+    returnPct:    6,
+    inflationPct: 2.5,
+    inflationAdj: true,
   })
 
   const set = (k: keyof typeof inputs, v: number | boolean) =>
@@ -97,10 +95,10 @@ export function Calculator() {
       inputs.returnPct / 100, inputs.inflationPct / 100, inputs.inflationAdj
     ), [inputs])
 
-  const bridgeRows = rows.filter(r => r.age < 59.5)
-  const totalPortfolio = (inputs.taxable + inputs.k401 + inputs.roth)
-  const finalRow = rows[rows.length - 1]
-  const depleted = rows.find(r => r.totalEnd <= 0)
+  const bridgeRows   = rows.filter(r => r.age < 59.5)
+  const totalPortfolio = inputs.taxable + inputs.k401 + inputs.roth
+  const finalRow     = rows[rows.length - 1]
+  const depleted     = rows.find(r => r.totalEnd <= 0)
 
   return (
     <section id="calculator" className="py-24 px-5 bg-navy">
@@ -126,23 +124,18 @@ export function Calculator() {
               Your Numbers
             </div>
 
-            {/* Timeline */}
-            <div className="font-mono text-[8.5px] tracking-widest uppercase text-white/30 mb-3">
-              Timeline
-            </div>
+            <div className="font-mono text-[8.5px] tracking-widest uppercase text-white/30 mb-3">Timeline</div>
             <div className="space-y-4 mb-6">
               {([
-                { label: 'Current Age',      key: 'currentAge', min: 30,  max: 65,  step: 1   },
-                { label: 'Retirement Age',   key: 'retireAge',  min: 40,  max: 65,  step: 1   },
-                { label: 'Life Expectancy',  key: 'lifeExp',    min: 70,  max: 100, step: 1   },
-                { label: 'SS Claim Age',     key: 'ssAge',      min: 62,  max: 70,  step: 1   },
+                { label: 'Current Age',     key: 'currentAge', min: 30,  max: 65,  step: 1 },
+                { label: 'Retirement Age',  key: 'retireAge',  min: 40,  max: 65,  step: 1 },
+                { label: 'Life Expectancy', key: 'lifeExp',    min: 70,  max: 100, step: 1 },
+                { label: 'SS Claim Age',    key: 'ssAge',      min: 62,  max: 70,  step: 1 },
               ] as const).map(({ label, key, min, max, step }) => (
                 <label key={key} className="block">
                   <div className="flex justify-between mb-1.5">
                     <span className="font-mono text-[11px] text-white/50">{label}</span>
-                    <span className="font-mono text-[11px] text-gold font-medium">
-                      {inputs[key]}
-                    </span>
+                    <span className="font-mono text-[11px] text-gold font-medium">{inputs[key]}</span>
                   </div>
                   <input
                     type="range" min={min} max={max} step={step}
@@ -154,15 +147,12 @@ export function Calculator() {
               ))}
             </div>
 
-            {/* Balances */}
-            <div className="font-mono text-[8.5px] tracking-widest uppercase text-white/30 mb-3">
-              Account Balances
-            </div>
+            <div className="font-mono text-[8.5px] tracking-widest uppercase text-white/30 mb-3">Account Balances</div>
             <div className="space-y-3 mb-6">
               {([
-                { label: 'Taxable Brokerage ($)', key: 'taxable', step: 5000  },
-                { label: 'Traditional 401(k) ($)', key: 'k401',   step: 10000 },
-                { label: 'Roth IRA ($)',           key: 'roth',   step: 5000  },
+                { label: 'Taxable Brokerage ($)',  key: 'taxable', step: 5000  },
+                { label: 'Traditional 401(k) ($)', key: 'k401',    step: 10000 },
+                { label: 'Roth IRA ($)',           key: 'roth',    step: 5000  },
               ] as const).map(({ label, key, step }) => (
                 <label key={key} className="block">
                   <div className="font-mono text-[11px] text-white/50 mb-1">{label}</div>
@@ -176,10 +166,7 @@ export function Calculator() {
               ))}
             </div>
 
-            {/* Spending & rates */}
-            <div className="font-mono text-[8.5px] tracking-widest uppercase text-white/30 mb-3">
-              Spending & Assumptions
-            </div>
+            <div className="font-mono text-[8.5px] tracking-widest uppercase text-white/30 mb-3">Spending & Assumptions</div>
             <div className="space-y-3">
               <label className="block">
                 <div className="font-mono text-[11px] text-white/50 mb-1">Annual Spending ($/yr)</div>
@@ -221,14 +208,13 @@ export function Calculator() {
 
           {/* Results */}
           <div className="space-y-5">
-
-            {/* Summary cards */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {[
-                { label: 'Total Portfolio',    val: fmt(totalPortfolio),           sub: 'at retirement'       },
-                { label: 'Bridge Duration',    val: `${bridgeRows.length} yrs`,    sub: 'until 59½ access'    },
-                { label: 'Final Balance',      val: fmt(finalRow?.totalEnd ?? 0),  sub: `at age ${inputs.lifeExp}` },
-                { label: 'Portfolio Status',   val: depleted ? '⚠ Depleted' : '✓ Solvent', sub: depleted ? `age ${depleted.age}` : 'through life exp.' },
+                { label: 'Total Portfolio',  val: fmt(totalPortfolio),          sub: 'at retirement'            },
+                { label: 'Bridge Duration',  val: `${bridgeRows.length} yrs`,   sub: 'until 59½ access'         },
+                { label: 'Final Balance',    val: fmt(finalRow?.totalEnd ?? 0), sub: `at age ${inputs.lifeExp}` },
+                { label: 'Portfolio Status', val: depleted ? '⚠ Depleted' : '✓ Solvent',
+                  sub: depleted ? `age ${depleted.age}` : 'through life exp.' },
               ].map(({ label, val, sub }) => (
                 <div key={label} className="bg-ink border border-white/[0.07] rounded-lg p-4">
                   <div className="font-mono text-[9px] tracking-widest uppercase text-white/35 mb-2">{label}</div>
@@ -240,7 +226,6 @@ export function Calculator() {
               ))}
             </div>
 
-            {/* Year-by-year table */}
             <div className="bg-ink border border-white/[0.07] rounded-xl overflow-hidden">
               <div className="px-5 py-3.5 border-b border-white/[0.06] flex items-center justify-between">
                 <span className="font-mono text-[10px] tracking-widest uppercase text-white/40">
@@ -254,7 +239,7 @@ export function Calculator() {
                 <table className="w-full text-left">
                   <thead className="sticky top-0 bg-slate">
                     <tr>
-                      {['Year', 'Age', 'Withdrawal', 'Account', 'Taxable', '401(k)', 'Roth', 'Total'].map(h => (
+                      {['Year','Age','Withdrawal','Account','Taxable','401(k)','Roth','Total'].map(h => (
                         <th key={h} className="font-mono text-[9px] tracking-wider uppercase text-white/30 px-4 py-2.5 whitespace-nowrap">
                           {h}
                         </th>
@@ -264,14 +249,8 @@ export function Calculator() {
                   <tbody>
                     {rows.map((r, i) => {
                       const isBridge = r.age < 59.5
-                      const isSSAge  = r.age >= inputs.ssAge
                       return (
-                        <tr
-                          key={r.year}
-                          className={`border-t border-white/[0.04] transition-colors hover:bg-white/[0.02] ${
-                            i % 2 === 0 ? '' : 'bg-white/[0.01]'
-                          }`}
-                        >
+                        <tr key={r.year} className={`border-t border-white/[0.04] transition-colors hover:bg-white/[0.02] ${i % 2 === 0 ? '' : 'bg-white/[0.01]'}`}>
                           <td className="font-mono text-[11px] text-white/40 px-4 py-2">{r.year}</td>
                           <td className="font-mono text-[11px] text-white/70 px-4 py-2 font-medium">{r.age}</td>
                           <td className="font-mono text-[11px] text-white/60 px-4 py-2">{fmt(r.withdrawal)}</td>
@@ -287,9 +266,9 @@ export function Calculator() {
                           <td className="font-mono text-[11px] text-white/50 px-4 py-2">{fmt(r.taxableEnd)}</td>
                           <td className="font-mono text-[11px] text-white/50 px-4 py-2">{fmt(r.k401End)}</td>
                           <td className="font-mono text-[11px] text-white/50 px-4 py-2">{fmt(r.rothEnd)}</td>
-                          <td className={`font-mono text-[11px] px-4 py-2 font-medium ${
-                            r.totalEnd < 0 ? 'text-red-400' : 'text-white/80'
-                          }`}>{fmt(r.totalEnd)}</td>
+                          <td className={`font-mono text-[11px] px-4 py-2 font-medium ${r.totalEnd < 0 ? 'text-red-400' : 'text-white/80'}`}>
+                            {fmt(r.totalEnd)}
+                          </td>
                         </tr>
                       )
                     })}
