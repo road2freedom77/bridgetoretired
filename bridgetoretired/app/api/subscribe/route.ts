@@ -30,22 +30,23 @@ export async function POST(req: NextRequest) {
               Free Download
             </p>
             <p style="font-size: 16px; font-weight: 600; color: #ffffff; margin-bottom: 4px;">
-              Early Retirement Bridge Planner v1.xlsx
+              Early Retirement Bridge Planner v2.xlsx
             </p>
             <p style="font-size: 12px; color: rgba(255,255,255,0.4); margin-bottom: 16px;">
-              6 sheets · Taxable → 401k → Roth modeling · Inflation-adjusted projections
+              7 sheets · Taxable → 401k → Roth modeling · Inflation-adjusted · Risk flags
             </p>
-            <a href="${process.env.NEXT_PUBLIC_SITE_URL}/downloads/bridge-planner-v1.xlsx"
+            <a href="${process.env.NEXT_PUBLIC_SITE_URL}/downloads/Bridge_Planner_v2.xlsx"
                style="display: inline-block; background: #e8b84b; color: #0a0c0f; font-weight: 700; font-size: 13px; padding: 12px 24px; border-radius: 4px; text-decoration: none;">
               Download Planner →
             </a>
           </div>
 
           <p style="font-size: 13px; color: rgba(255,255,255,0.45); line-height: 1.75; margin-bottom: 20px;">
-            Next, I'd recommend:<br/>
-            1. Open the INPUTS tab and enter your numbers<br/>
-            2. Check the BRIDGE YEARS tab to see your year-by-year plan<br/>
-            3. Read our guide: <a href="${process.env.NEXT_PUBLIC_SITE_URL}/blog" style="color: #e8b84b;">The Bridge Strategy Explained</a>
+            Next steps:<br/>
+            1. Open the <strong style="color: rgba(255,255,255,0.7);">INPUTS</strong> tab and enter your numbers<br/>
+            2. Check <strong style="color: rgba(255,255,255,0.7);">BRIDGE CLEAN</strong> for your year-by-year plan<br/>
+            3. Review <strong style="color: rgba(255,255,255,0.7);">RISK FLAGS</strong> for automatic warnings<br/>
+            4. Read: <a href="${process.env.NEXT_PUBLIC_SITE_URL}/blog/what-is-retirement-bridge-strategy" style="color: #e8b84b;">What Is a Retirement Bridge Strategy?</a>
           </p>
 
           <hr style="border: none; border-top: 1px solid rgba(255,255,255,0.06); margin: 24px 0;" />
