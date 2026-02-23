@@ -4,6 +4,7 @@ import { format }             from 'date-fns'
 import { useMDXComponent }    from 'next-contentlayer2/hooks'
 import type { Metadata }      from 'next'
 import Link                   from 'next/link'
+import SequenceOfReturnsSimulator from '@/components/SequenceOfReturnsSimulator'
 
 interface Props { params: { slug: string } }
 
@@ -65,7 +66,7 @@ export default function PostPage({ params }: Props) {
       {/* Body */}
       <div className="max-w-3xl mx-auto px-5 py-14">
         <article className="prose-dark">
-          <MDXContent />
+          <MDXContent components={{ SequenceOfReturnsSimulator }} />
         </article>
 
         {/* CTA */}
