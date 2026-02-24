@@ -10,6 +10,7 @@ import RothLadderBuilder from '@/components/RothLadderBuilder'
 import ACASubsidyEstimator from '@/components/ACASubsidyEstimator'
 import SocialSecurityCalculator from '@/components/SocialSecurityCalculator'
 import FIRENumberCalculator from '@/components/FIRENumberCalculator'
+import WithdrawalOrderOptimizer from '@/components/WithdrawalOrderOptimizer'
 
 interface Props { params: { slug: string } }
 
@@ -71,8 +72,8 @@ export default function PostPage({ params }: Props) {
       {/* Body */}
       <div className="max-w-3xl mx-auto px-5 py-14">
         <article className="prose-dark">
-          <MDXContent components={{ SequenceOfReturnsSimulator, BridgeStrategyVisualizer, RothLadderBuilder, ACASubsidyEstimator, SocialSecurityCalculator, FIRENumberCalculator }} />
-                                  
+          <MDXContent components={{ SequenceOfReturnsSimulator, BridgeStrategyVisualizer, RothLadderBuilder, ACASubsidyEstimator, SocialSecurityCalculator, FIRENumberCalculator, WithdrawalOrderOptimizer }} />
+                                            
         </article>
 
         {/* CTA */}
