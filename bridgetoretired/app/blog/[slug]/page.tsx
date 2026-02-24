@@ -1,7 +1,7 @@
-import { allPosts } from '@/.contentlayer/generated'
+import { allPosts }          from 'contentlayer/generated'
 import { notFound }           from 'next/navigation'
 import { format }             from 'date-fns'
-import { useMDXComponent }    from 'next-contentlayer2/hooks'
+import { useMDXComponent }    from 'next-contentlayer/hooks'
 import type { Metadata }      from 'next'
 import Link                   from 'next/link'
 import SequenceOfReturnsSimulator from '@/components/SequenceOfReturnsSimulator'
@@ -29,14 +29,19 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const post = allPosts.find(p => p.slug === params.slug)
   if (!post) return {}
+  const url = `https://bridgetoretired.com/blog/${params.slug}`
   return {
     title:       post.title,
     description: post.description,
+    alternates: {
+      canonical: url,
+    },
     openGraph: {
       title:       post.title,
       description: post.description,
       type:        'article',
       publishedTime: post.date,
+      url,
     },
   }
 }
@@ -76,7 +81,6 @@ export default function PostPage({ params }: Props) {
       <div className="max-w-3xl mx-auto px-5 py-14">
         <article className="prose-dark">
           <MDXContent components={{ SequenceOfReturnsSimulator, BridgeStrategyVisualizer, RothLadderBuilder, ACASubsidyEstimator, SocialSecurityCalculator, FIRENumberCalculator, WithdrawalOrderOptimizer, TaxBracketVisualizer, TaxableBrokerageAnalyzer, SEPPCalculator }} />
-                                                                         
         </article>
 
         {/* CTA */}
