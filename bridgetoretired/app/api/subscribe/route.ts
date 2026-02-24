@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
             <p style="font-size: 12px; color: rgba(255,255,255,0.4); margin-bottom: 16px;">
               7 sheets · Taxable → 401k → Roth modeling · Inflation-adjusted · Risk flags
             </p>
-            <a href="https://bridgetoretired.com/downloads/bridge-planner-v2.xlsx"
+            <a href="https://bridgetoretired.com/downloads/bridge-planner-v2_1.xlsx"
                style="display: inline-block; background: #e8b84b; color: #0a0c0f; font-weight: 700; font-size: 13px; padding: 12px 24px; border-radius: 4px; text-decoration: none;">
               Download Planner →
             </a>
