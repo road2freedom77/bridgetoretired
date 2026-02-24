@@ -6,6 +6,7 @@ import type { Metadata }      from 'next'
 import Link                   from 'next/link'
 import SequenceOfReturnsSimulator from '@/components/SequenceOfReturnsSimulator'
 import BridgeStrategyVisualizer from '@/components/BridgeStrategyVisualizer'
+import RothLadderBuilder from '@/components/RothLadderBuilder'
 
 interface Props { params: { slug: string } }
 
@@ -67,7 +68,8 @@ export default function PostPage({ params }: Props) {
       {/* Body */}
       <div className="max-w-3xl mx-auto px-5 py-14">
         <article className="prose-dark">
-          <MDXContent components={{ SequenceOfReturnsSimulator, BridgeStrategyVisualizer }} />
+          <MDXContent components={{ SequenceOfReturnsSimulator, BridgeStrategyVisualizer, RothLadderBuilder }} />
+    
         </article>
 
         {/* CTA */}
