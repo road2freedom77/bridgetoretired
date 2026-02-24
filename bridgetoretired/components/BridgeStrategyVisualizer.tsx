@@ -97,7 +97,7 @@ export default function BridgeStrategyVisualizer() {
   }, [retireAge, taxable, retirement401k, rothBalance, annualSpend, returnRate])
 
   const bridgeYears = Math.round(bridgeEnd - retireAge * 10) / 10
-  const k401AtBridge = data.find(d => d.age === Math.ceil(bridgeEnd))?.[' 401k / IRA'] ?? 0
+  const k401AtBridge = data.find(d => d.age === Math.ceil(bridgeEnd))?.['401k / IRA'] ?? 0
   const totalAtEnd = (data[data.length - 1]?.['Taxable'] ?? 0) +
     (data[data.length - 1]?.['401k / IRA'] ?? 0) +
     (data[data.length - 1]?.['Roth'] ?? 0)
