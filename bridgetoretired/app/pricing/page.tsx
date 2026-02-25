@@ -17,7 +17,7 @@ const FREE_FEATURES = [
 ]
 
 const PRO_FEATURES = [
-  { icon: '🛡️', title: 'Bridge Risk Score™', description: 'Your retirement's structural health in a single number. Instant clarity on whether your bridge is Stable, At Risk, or Fragile — based on withdrawal rate, buffer, allocation, and years to Social Security.', badge: 'Signature Feature' },
+  { icon: '🛡️', title: 'Bridge Risk Score™', description: "Your retirement's structural health in a single number. Instant clarity on whether your bridge is Stable, At Risk, or Fragile — based on withdrawal rate, buffer, allocation, and years to Social Security.", badge: 'Signature Feature' },
   { icon: '📊', title: 'Advanced Bridge Calculator', description: 'Every variable unlocked. Custom retire age 40–65, adjustable inflation, dynamic spending toggle, all three SS claiming ages modeled simultaneously, full withdrawal order customization.', badge: null },
   { icon: '📉', title: 'Sequence-of-Returns Stress Tester', description: 'Simulate a 2000, 2008, or 2022-style crash in year one of retirement. See exact portfolio survival odds and "years until depletion" across 5 historical crash scenarios.', badge: null },
   { icon: '💾', title: 'Scenario Save + Compare', description: 'Save up to 5 named retirement scenarios. "Retire at 50 aggressive" vs "Retire at 53 conservative." Compare side-by-side. Never lose your numbers.', badge: null },
