@@ -76,6 +76,21 @@ export default function ProWelcomePage() {
             </div>
           </div>
 
+          {/* Sequence Tester */}
+          <div className="bg-ink border border-gold/20 rounded-xl p-5 flex items-start gap-4">
+            <div className="text-2xl flex-shrink-0">📉</div>
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="font-syne font-semibold text-white text-[14px]">Sequence-of-Returns Stress Tester</span>
+                <span className="bg-gold/10 text-gold font-mono text-[7px] tracking-widest uppercase px-2 py-0.5 rounded-full border border-gold/20">Pro</span>
+              </div>
+              <p className="text-white/40 text-[12px] leading-relaxed mb-3">See how your bridge survives the 2000 dot-com crash, 2008 financial crisis, and worst historical sequences. The order of returns matters more than the average.</p>
+              <Link href="/sequence-tester" className="inline-block bg-gold text-black font-syne font-semibold text-[11px] tracking-wide px-4 py-2 rounded hover:opacity-85 transition-opacity">
+                Run Stress Test →
+              </Link>
+            </div>
+          </div>
+
           {/* PDF Export */}
           <div className="bg-ink border border-gold/20 rounded-xl p-5 flex items-start gap-4">
             <div className="text-2xl flex-shrink-0">📄</div>
