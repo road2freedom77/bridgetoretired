@@ -20,7 +20,10 @@
     "lucide-react": "^0.378.0",
     "recharts": "^2.12.7",
     "remark": "^13.0.0",
-    "remark-html": "^13.0.2"
+    "remark-html": "^13.0.2",
+    "@clerk/nextjs": "^6.0.0",
+    "@clerk/themes": "^2.0.0",
+    "stripe": "^17.0.0"
   },
   "devDependencies": {
     "typescript": "^5",
