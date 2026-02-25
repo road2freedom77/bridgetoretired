@@ -103,7 +103,7 @@ export default function PricingPage() {
               </div>
               {billing === 'annual' && <div className="text-sage text-[11px] font-mono mb-1">${annualPrice} billed annually — save ${(monthlyPrice * 12) - annualPrice}/yr</div>}
               <div className="text-white/25 text-[11px] font-mono mb-6">cancel anytime</div>
-              <a href="https://buy.stripe.com/bJe00j0DF85Hdz68fsfYY00" className="block text-center bg-gold text-black font-syne font-semibold text-[13px] tracking-wide py-3.5 rounded-lg hover:opacity-90 transition-opacity mb-7">
+              <a href="https://buy.stripe.com/test_bJe00j0DF85Hdz68fsfYY00" className="block text-center bg-gold text-black font-syne font-semibold text-[13px] tracking-wide py-3.5 rounded-lg hover:opacity-90 transition-opacity mb-7">
                 Start Pro — ${billing === 'monthly' ? `${monthlyPrice}/mo` : `${annualPrice}/yr`} →
               </a>
               <div className="space-y-3">
@@ -207,7 +207,7 @@ export default function PricingPage() {
             <div className="font-mono text-[9px] tracking-widest uppercase text-gold mb-4">Get Started</div>
             <h2 className="font-syne font-bold text-[clamp(24px,4vw,38px)] text-white tracking-tight mb-4">Know your score before<br />you retire.</h2>
             <p className="text-white/40 text-[14px] mb-8 max-w-md mx-auto leading-relaxed">Less than a coffee a month. Cancel anytime. Your retirement plan deserves more than a spreadsheet and a prayer.</p>
-            <a href="https://buy.stripe.com/bJe00j0DF85Hdz68fsfYY00" className="inline-block bg-gold text-black font-syne font-semibold text-[14px] tracking-wide px-10 py-4 rounded-xl hover:opacity-90 transition-opacity mb-4">
+            <a href="https://buy.stripe.com/test_bJe00j0DF85Hdz68fsfYY00" className="inline-block bg-gold text-black font-syne font-semibold text-[14px] tracking-wide px-10 py-4 rounded-xl hover:opacity-90 transition-opacity mb-4">
               Start Pro — ${billing === 'monthly' ? `${monthlyPrice}/mo` : `${annualPrice}/yr`} →
             </a>
             <div className="font-mono text-[9px] text-white/20 tracking-wider">30-day money back guarantee · Cancel anytime</div>
