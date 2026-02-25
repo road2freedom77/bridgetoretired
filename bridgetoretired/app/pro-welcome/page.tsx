@@ -15,7 +15,6 @@ export default function ProWelcomePage() {
 
       <div className="relative z-10 max-w-2xl mx-auto px-5 py-20 text-center">
 
-        {/* Success mark */}
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-sage/10 border border-sage/25 mb-8">
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#4ADE80" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="20 6 9 17 4 12" />
@@ -30,7 +29,6 @@ export default function ProWelcomePage() {
           Your membership is active. Here's everything you now have access to — bookmark this page.
         </p>
 
-        {/* What's included */}
         <div className="space-y-4 mb-12 text-left">
 
           {/* Bridge Risk Score */}
@@ -39,14 +37,26 @@ export default function ProWelcomePage() {
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
                 <span className="font-syne font-semibold text-white text-[14px]">Bridge Risk Score™</span>
-                <span className="bg-gold/10 text-gold font-mono text-[7px] tracking-widest uppercase px-2 py-0.5 rounded-full border border-gold/20">Live Now</span>
+                <span className="bg-gold/10 text-gold font-mono text-[7px] tracking-widest uppercase px-2 py-0.5 rounded-full border border-gold/20">Signature Feature</span>
               </div>
               <p className="text-white/40 text-[12px] leading-relaxed mb-3">Get your personalized retirement bridge score in 60 seconds.</p>
-              <Link
-                href="/bridge-risk-score"
-                className="inline-block bg-gold text-black font-syne font-semibold text-[11px] tracking-wide px-4 py-2 rounded hover:opacity-85 transition-opacity"
-              >
+              <Link href="/bridge-risk-score" className="inline-block bg-gold text-black font-syne font-semibold text-[11px] tracking-wide px-4 py-2 rounded hover:opacity-85 transition-opacity">
                 Calculate My Score →
+              </Link>
+            </div>
+          </div>
+
+          {/* Advanced Calculator */}
+          <div className="bg-ink border border-gold/20 rounded-xl p-5 flex items-start gap-4">
+            <div className="text-2xl flex-shrink-0">📊</div>
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="font-syne font-semibold text-white text-[14px]">Advanced Bridge Calculator</span>
+                <span className="bg-gold/10 text-gold font-mono text-[7px] tracking-widest uppercase px-2 py-0.5 rounded-full border border-gold/20">Pro</span>
+              </div>
+              <p className="text-white/40 text-[12px] leading-relaxed mb-3">All variables unlocked. Three SS scenarios side-by-side. Full withdrawal order control. Dynamic spending mode.</p>
+              <Link href="/advanced-calculator" className="inline-block bg-gold text-black font-syne font-semibold text-[11px] tracking-wide px-4 py-2 rounded hover:opacity-85 transition-opacity">
+                Open Calculator →
               </Link>
             </div>
           </div>
@@ -59,11 +69,8 @@ export default function ProWelcomePage() {
                 <span className="font-syne font-semibold text-white text-[14px]">Premium Excel Planner</span>
                 <span className="bg-sage/10 text-sage font-mono text-[7px] tracking-widest uppercase px-2 py-0.5 rounded-full border border-sage/20">Download</span>
               </div>
-              <p className="text-white/40 text-[12px] leading-relaxed mb-3">Full planner with tax estimate tab, withdrawal tracking, and annual rebalance tracker.</p>
-              <a
-                href="/downloads/bridge-planner-pro-v1.xlsx"
-                className="inline-block border border-white/[0.12] text-white/60 font-mono text-[10px] tracking-widest uppercase px-4 py-2 rounded hover:border-white/25 hover:text-white/80 transition-all"
-              >
+              <p className="text-white/40 text-[12px] leading-relaxed mb-3">Full planner with tax estimate tab, withdrawal tracking, Roth ladder, risk flags, and annual rebalance tracker.</p>
+              <a href="/downloads/bridge-planner-pro-v1.xlsx" className="inline-block border border-white/[0.12] text-white/60 font-mono text-[10px] tracking-widest uppercase px-4 py-2 rounded hover:border-white/25 hover:text-white/80 transition-all">
                 Download Pro Planner ↓
               </a>
             </div>
@@ -71,14 +78,11 @@ export default function ProWelcomePage() {
 
           {/* All calculators */}
           <div className="bg-ink border border-white/[0.07] rounded-xl p-5 flex items-start gap-4">
-            <div className="text-2xl flex-shrink-0">📊</div>
+            <div className="text-2xl flex-shrink-0">🧮</div>
             <div className="flex-1">
               <div className="font-syne font-semibold text-white text-[14px] mb-1">All 10 Interactive Calculators</div>
-              <p className="text-white/40 text-[12px] leading-relaxed mb-3">Every calculator on the blog is available — Roth ladder, ACA subsidies, SEPP, sequence of returns, and more.</p>
-              <Link
-                href="/blog"
-                className="inline-block border border-white/[0.12] text-white/60 font-mono text-[10px] tracking-widest uppercase px-4 py-2 rounded hover:border-white/25 hover:text-white/80 transition-all"
-              >
+              <p className="text-white/40 text-[12px] leading-relaxed mb-3">Roth ladder, ACA subsidies, SEPP/72(t), sequence of returns, Social Security break-even, and more.</p>
+              <Link href="/blog" className="inline-block border border-white/[0.12] text-white/60 font-mono text-[10px] tracking-widest uppercase px-4 py-2 rounded hover:border-white/25 hover:text-white/80 transition-all">
                 Browse All Guides →
               </Link>
             </div>
@@ -89,29 +93,22 @@ export default function ProWelcomePage() {
             <div className="text-2xl flex-shrink-0">✉️</div>
             <div className="flex-1">
               <div className="font-syne font-semibold text-white text-[14px] mb-1">Pro Support</div>
-              <p className="text-white/40 text-[12px] leading-relaxed mb-3">Questions about your numbers? Reply to your confirmation email or reach out directly.</p>
-              <a
-                href="mailto:support@bridgetoretired.com"
-                className="inline-block border border-white/[0.12] text-white/60 font-mono text-[10px] tracking-widest uppercase px-4 py-2 rounded hover:border-white/25 hover:text-white/80 transition-all"
-              >
+              <p className="text-white/40 text-[12px] leading-relaxed mb-3">Questions about your numbers? Reach out directly — we respond same day.</p>
+              <a href="mailto:support@bridgetoretired.com" className="inline-block border border-white/[0.12] text-white/60 font-mono text-[10px] tracking-widest uppercase px-4 py-2 rounded hover:border-white/25 hover:text-white/80 transition-all">
                 Email Support →
               </a>
             </div>
           </div>
         </div>
 
-        {/* Manage subscription */}
         <div className="bg-ink border border-white/[0.06] rounded-xl p-5 mb-8">
           <div className="font-mono text-[9px] tracking-widest uppercase text-white/25 mb-2">Manage Subscription</div>
           <p className="text-white/35 text-[12px] leading-relaxed">
-            You'll receive a receipt from Stripe. To cancel or update billing, reply to your receipt email or contact us at support@bridgetoretired.com — we'll handle it same day.
+            To cancel or update billing, reply to your Stripe receipt email or contact us at support@bridgetoretired.com — we'll handle it same day.
           </p>
         </div>
 
-        <Link
-          href="/"
-          className="font-mono text-[10px] tracking-widest uppercase text-white/25 hover:text-white/50 transition-colors"
-        >
+        <Link href="/" className="font-mono text-[10px] tracking-widest uppercase text-white/25 hover:text-white/50 transition-colors">
           ← Back to BridgeToRetired
         </Link>
       </div>
