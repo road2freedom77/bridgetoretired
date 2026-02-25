@@ -53,7 +53,16 @@ export function Nav() {
                 </button>
               </SignOutButton>
             </li>
-          ) : null}
+          ) : (
+            <li>
+              <Link
+                href="/sign-in"
+                className="font-mono text-[11px] tracking-widest uppercase text-white/30 hover:text-white/60 transition-colors"
+              >
+                Sign In
+              </Link>
+            </li>
+          )}
           <li>
             <Link
               href="/#download"
@@ -100,7 +109,7 @@ export function Nav() {
               {isPro ? 'Pro ✓' : 'Pro — $9/mo'}
             </Link>
           )}
-          {isSignedIn && (
+          {isSignedIn ? (
             <SignOutButton redirectUrl="/">
               <button
                 onClick={() => setOpen(false)}
@@ -109,6 +118,14 @@ export function Nav() {
                 Sign Out
               </button>
             </SignOutButton>
+          ) : (
+            <Link
+              href="/sign-in"
+              onClick={() => setOpen(false)}
+              className="font-mono text-[12px] tracking-wider uppercase text-white/30 hover:text-white/60 transition-colors"
+            >
+              Sign In
+            </Link>
           )}
           <Link
             href="/#download"
