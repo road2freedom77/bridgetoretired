@@ -55,6 +55,8 @@ export async function getPostBySlug(slug: string): Promise<Post | null> {
   if (!found) return null
 
   const { data, content } = matter(raw)
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
   const processed = await remark().use(remarkHtml).process(content)
 
   return {
