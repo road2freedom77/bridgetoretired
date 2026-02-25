@@ -3,18 +3,20 @@ import Link from 'next/link'
 import { useState } from 'react'
 import { Menu, X } from 'lucide-react'
 import { FLAGS } from '@/lib/feature-flags'
+import { useAuth, useUser, SignOutButton } from '@clerk/nextjs'
 
 export function Nav() {
   const [open, setOpen] = useState(false)
+  const { isSignedIn } = useAuth()
+  const { user } = useUser()
+  const isPro = (user?.publicMetadata as any)?.isPro === true
 
   return (
     <nav className="sticky top-0 z-50 bg-black/90 backdrop-blur-xl border-b border-white/[0.06]">
       <div className="max-w-7xl mx-auto px-5 h-[60px] flex items-center justify-between">
-
         <Link href="/" className="font-syne font-bold text-[18px] text-white tracking-tight">
           Bridge<span className="text-gold">ToRetired</span>
         </Link>
-
         {/* Desktop */}
         <ul className="hidden md:flex items-center gap-7">
           {[
@@ -35,14 +37,23 @@ export function Nav() {
           {FLAGS.PRO_ENABLED && (
             <li>
               <Link
-                href="/pricing"
+                href={isPro ? '/pro-welcome' : '/pricing'}
                 className="font-mono text-[11px] tracking-widest uppercase text-gold/70 hover:text-gold transition-colors flex items-center gap-1.5"
               >
                 <span className="inline-block w-1.5 h-1.5 rounded-full bg-gold/60" />
-                Pro
+                {isPro ? 'Pro ✓' : 'Pro'}
               </Link>
             </li>
           )}
+          {isSignedIn ? (
+            <li>
+              <SignOutButton redirectUrl="/">
+                <button className="font-mono text-[11px] tracking-widest uppercase text-white/30 hover:text-white/60 transition-colors">
+                  Sign Out
+                </button>
+              </SignOutButton>
+            </li>
+          ) : null}
           <li>
             <Link
               href="/#download"
@@ -52,7 +63,6 @@ export function Nav() {
             </Link>
           </li>
         </ul>
-
         {/* Mobile toggle */}
         <button
           className="md:hidden text-white/60"
@@ -62,7 +72,6 @@ export function Nav() {
           {open ? <X size={20} /> : <Menu size={20} />}
         </button>
       </div>
-
       {/* Mobile menu */}
       {open && (
         <div className="md:hidden bg-ink border-t border-white/[0.06] px-5 py-4 flex flex-col gap-4">
@@ -83,13 +92,23 @@ export function Nav() {
           ))}
           {FLAGS.PRO_ENABLED && (
             <Link
-              href="/pricing"
+              href={isPro ? '/pro-welcome' : '/pricing'}
               onClick={() => setOpen(false)}
               className="font-mono text-[12px] tracking-wider uppercase text-gold/70 hover:text-gold transition-colors flex items-center gap-2"
             >
               <span className="inline-block w-1.5 h-1.5 rounded-full bg-gold/60" />
-              Pro — $9/mo
+              {isPro ? 'Pro ✓' : 'Pro — $9/mo'}
             </Link>
+          )}
+          {isSignedIn && (
+            <SignOutButton redirectUrl="/">
+              <button
+                onClick={() => setOpen(false)}
+                className="font-mono text-[12px] tracking-wider uppercase text-white/30 hover:text-white/60 transition-colors text-left"
+              >
+                Sign Out
+              </button>
+            </SignOutButton>
           )}
           <Link
             href="/#download"
