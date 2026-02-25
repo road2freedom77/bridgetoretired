@@ -2,15 +2,17 @@ import { NextRequest, NextResponse } from 'next/server'
 import { clerkClient } from '@clerk/nextjs/server'
 import Stripe from 'stripe'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-02-24.acacia',
-})
-
-const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!
+function getStripe() {
+  return new Stripe(process.env.STRIPE_SECRET_KEY!, {
+    apiVersion: '2025-02-24.acacia',
+  })
+}
 
 export async function POST(req: NextRequest) {
-  const body = await req.text()
-  const sig  = req.headers.get('stripe-signature')!
+  const stripe        = getStripe()
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!
+  const body          = await req.text()
+  const sig           = req.headers.get('stripe-signature')!
 
   let event: Stripe.Event
 
@@ -31,18 +33,15 @@ export async function POST(req: NextRequest) {
       const customerId   = subscription.customer as string
       const isActive     = subscription.status === 'active' || subscription.status === 'trialing'
 
-      // Find Clerk user by Stripe customer ID stored in metadata
       const users = await clerk.users.getUserList({
         externalId: [customerId],
       })
 
-      // Fallback: search by email via Stripe customer
       let clerkUserId: string | null = null
 
       if (users.data.length > 0) {
         clerkUserId = users.data[0].id
       } else {
-        // Try to find by email
         const customer = await stripe.customers.retrieve(customerId) as Stripe.Customer
         if (customer.email) {
           const byEmail = await clerk.users.getUserList({ emailAddress: [customer.email] })
