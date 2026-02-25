@@ -1,5 +1,6 @@
 'use client'
 import { useState } from 'react'
+import Link from 'next/link'
 
 export function Newsletter() {
   const [email,   setEmail]   = useState('')
@@ -58,10 +59,10 @@ export function Newsletter() {
           </div>
           <div>
             <div className="font-syne font-semibold text-[14px] text-white mb-1">
-              Early Retirement Bridge Planner v1.xlsx
+              Early Retirement Bridge Planner v2.xlsx
             </div>
             <div className="font-mono text-[10px] text-white/30 leading-relaxed">
-              6 sheets · Multi-account modeling · Inflation-adjusted · Bridge + Post-59½ + Full projection
+              7 sheets · Multi-account modeling · Inflation-adjusted · Bridge + Post-59½ + Full projection
             </div>
           </div>
         </div>
@@ -105,6 +106,28 @@ export function Newsletter() {
         <p className="font-mono text-[10px] text-white/25 mt-4">
           No spam. Unsubscribe anytime. We will never sell your data.
         </p>
+
+        {/* Pro upsell divider */}
+        <div className="mt-10 pt-8 border-t border-white/[0.06]">
+          <div className="font-mono text-[9px] tracking-widest uppercase text-white/20 mb-4">
+            Want more than the free planner?
+          </div>
+          <Link
+            href="/pricing"
+            className="inline-flex items-center gap-3 bg-ink border border-gold/20 rounded-xl px-6 py-4 hover:border-gold/40 transition-all group"
+          >
+            <span className="text-xl">🛡️</span>
+            <div className="text-left">
+              <div className="font-syne font-semibold text-[13px] text-white group-hover:text-gold transition-colors">
+                BridgeToRetired Pro — $9/mo
+              </div>
+              <div className="font-mono text-[10px] text-white/35 mt-0.5">
+                Bridge Risk Score™ · Stress tester · PDF export · Scenario compare
+              </div>
+            </div>
+            <span className="text-gold/50 group-hover:text-gold transition-colors ml-auto">→</span>
+          </Link>
+        </div>
       </div>
     </section>
   )
