@@ -2,16 +2,10 @@
 import Link from 'next/link'
 import { useState } from 'react'
 import { Menu, X } from 'lucide-react'
+import { FLAGS } from '@/lib/feature-flags'
 
 export function Nav() {
   const [open, setOpen] = useState(false)
-
-  const links = [
-    { href: '/#how',        label: 'How It Works' },
-    { href: '/#calculator', label: 'Calculator'   },
-    { href: '/blog',        label: 'Blog'         },
-    { href: '/about',       label: 'About'        },
-  ]
 
   return (
     <nav className="sticky top-0 z-50 bg-black/90 backdrop-blur-xl border-b border-white/[0.06]">
@@ -23,7 +17,12 @@ export function Nav() {
 
         {/* Desktop */}
         <ul className="hidden md:flex items-center gap-7">
-          {links.map(({ href, label }) => (
+          {[
+            { href: '/#how',        label: 'How It Works' },
+            { href: '/#calculator', label: 'Calculator'   },
+            { href: '/blog',        label: 'Blog'         },
+            { href: '/#tools',      label: 'Tools'        },
+          ].map(({ href, label }) => (
             <li key={href}>
               <Link
                 href={href}
@@ -33,6 +32,17 @@ export function Nav() {
               </Link>
             </li>
           ))}
+          {FLAGS.PRO_ENABLED && (
+            <li>
+              <Link
+                href="/pricing"
+                className="font-mono text-[11px] tracking-widest uppercase text-gold/70 hover:text-gold transition-colors flex items-center gap-1.5"
+              >
+                <span className="inline-block w-1.5 h-1.5 rounded-full bg-gold/60" />
+                Pro
+              </Link>
+            </li>
+          )}
           <li>
             <Link
               href="/#download"
@@ -56,7 +66,12 @@ export function Nav() {
       {/* Mobile menu */}
       {open && (
         <div className="md:hidden bg-ink border-t border-white/[0.06] px-5 py-4 flex flex-col gap-4">
-          {links.map(({ href, label }) => (
+          {[
+            { href: '/#how',        label: 'How It Works' },
+            { href: '/#calculator', label: 'Calculator'   },
+            { href: '/blog',        label: 'Blog'         },
+            { href: '/#tools',      label: 'Tools'        },
+          ].map(({ href, label }) => (
             <Link
               key={href}
               href={href}
@@ -66,6 +81,16 @@ export function Nav() {
               {label}
             </Link>
           ))}
+          {FLAGS.PRO_ENABLED && (
+            <Link
+              href="/pricing"
+              onClick={() => setOpen(false)}
+              className="font-mono text-[12px] tracking-wider uppercase text-gold/70 hover:text-gold transition-colors flex items-center gap-2"
+            >
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-gold/60" />
+              Pro — $9/mo
+            </Link>
+          )}
           <Link
             href="/#download"
             onClick={() => setOpen(false)}
