@@ -1,4 +1,4 @@
-import { allPosts }          from 'contentlayer/generated'
+import { allPosts }          from 'contentlayer2/generated'
 import { notFound }           from 'next/navigation'
 import { format }             from 'date-fns'
 import { useMDXComponent } from 'next-contentlayer2/hooks'
