@@ -392,7 +392,7 @@ export default function ScenarioComparePage() {
                                         : '#ffffff80'
                                   }}
                                 >
-                                  {row.format(val)}
+                                  {row.format(val as any)}
                                   {isBest && scenarios.length > 1 && !isBool && (
                                     <span className="ml-1 text-[8px]">★</span>
                                   )}
