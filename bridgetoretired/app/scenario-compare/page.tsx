@@ -228,6 +228,13 @@ export default function ScenarioComparePage() {
             </h1>
             <p className="text-white/45 text-[14px]">Up to 5 named scenarios. Your numbers are saved automatically.</p>
           </div>
+          <div className="w-full mt-4 bg-[#E8B84B]/10 border border-[#E8B84B]/20 rounded-xl px-5 py-3 flex items-center gap-3">
+            <span className="text-[#E8B84B] text-lg flex-shrink-0">📌</span>
+            <p className="text-white/50 text-[12px] leading-relaxed">
+              Scenarios are saved in <strong className="text-white/70">this browser</strong> — they persist between visits as long as you don't clear your cache. <strong className="text-white/70">Bookmark this page</strong> to return to your saved scenarios anytime.
+            </p>
+          </div>
+          </div>
           <div className="flex items-center gap-3">
             {saved && (
               <span className="font-mono text-[9px] tracking-widest uppercase text-[#4ADE80] animate-pulse">✓ Saved</span>
@@ -392,7 +399,7 @@ export default function ScenarioComparePage() {
                                         : '#ffffff80'
                                   }}
                                 >
-                                  {row.format(val as any)}
+                                  {row.format(val)}
                                   {isBest && scenarios.length > 1 && !isBool && (
                                     <span className="ml-1 text-[8px]">★</span>
                                   )}
