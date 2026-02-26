@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
+import { ProNav } from '@/components/ProNav'
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, ReferenceLine, Legend, BarChart, Bar
@@ -519,14 +520,10 @@ export default function SequenceTesterPage() {
               </div>
             </div>
 
-            <div className="text-center pt-2 pb-6">
-              <Link href="/pro-welcome" className="font-mono text-[10px] tracking-widest uppercase text-white/25 hover:text-white/50 transition-colors">
-                ← Back to Pro Dashboard
-              </Link>
-            </div>
-          </div>
+           </div>
         </div>
       </div>
+      <ProNav />
     </div>
   )
 }
