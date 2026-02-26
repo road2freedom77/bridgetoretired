@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
+import { useUser } from '@clerk/nextjs'
 
 const COLORS = {
   gold: '#E8B84B',
@@ -33,6 +34,9 @@ interface ScoreFactor {
 }
 
 export default function BridgeRiskScore() {
+  const { user } = useUser()
+  const isPro = (user?.publicMetadata as any)?.isPro === true
+
   const [retireAge, setRetireAge] = useState(52)
   const [portfolio, setPortfolio] = useState(1_100_000)
   const [annualSpend, setAnnualSpend] = useState(55_000)
@@ -48,7 +52,6 @@ export default function BridgeRiskScore() {
     const taxableCoverage = taxable / bridgeNeeded
     const ssGap = ssAge - retireAge
 
-    // Factor 1: Withdrawal rate (0–25 pts)
     let wdPts = 0
     if (withdrawalRate <= 3.0) wdPts = 25
     else if (withdrawalRate <= 3.5) wdPts = 22
@@ -57,7 +60,6 @@ export default function BridgeRiskScore() {
     else if (withdrawalRate <= 5.0) wdPts = 5
     else wdPts = 0
 
-    // Factor 2: Taxable bridge coverage (0–25 pts)
     let bridgePts = 0
     if (taxableCoverage >= 1.2) bridgePts = 25
     else if (taxableCoverage >= 1.0) bridgePts = 20
@@ -65,24 +67,20 @@ export default function BridgeRiskScore() {
     else if (taxableCoverage >= 0.5) bridgePts = 7
     else bridgePts = 2
 
-    // Factor 3: Cash buffer in years (0–20 pts)
     let cashPts = 0
     if (cashBuffer >= 3) cashPts = 20
     else if (cashBuffer >= 2) cashPts = 15
     else if (cashBuffer >= 1) cashPts = 9
     else cashPts = 3
 
-    // Factor 4: Stock allocation appropriateness (0–15 pts)
-    // 50-70% is ideal for early retirement
     let allocPts = 0
     if (stockAlloc >= 50 && stockAlloc <= 70) allocPts = 15
     else if (stockAlloc >= 40 && stockAlloc <= 80) allocPts = 10
     else if (stockAlloc >= 30 && stockAlloc <= 90) allocPts = 5
     else allocPts = 2
 
-    // Factor 5: SS timing vs bridge length (0–15 pts)
     let ssPts = 0
-    if (ssGap <= bridgeYears + 2) ssPts = 15  // SS kicks in relatively quickly
+    if (ssGap <= bridgeYears + 2) ssPts = 15
     else if (ssGap <= bridgeYears + 5) ssPts = 10
     else ssPts = 5
 
@@ -130,8 +128,8 @@ export default function BridgeRiskScore() {
   }, [retireAge, portfolio, annualSpend, cashBuffer, stockAlloc, ssAge, taxable])
 
   const band = getBand(score.total)
+  const improvements = score.factors.filter(f => f.tip)
 
-  // Arc path for score gauge
   const pct = score.total / 100
   const radius = 54
   const cx = 70, cy = 70
@@ -144,8 +142,6 @@ export default function BridgeRiskScore() {
   const arcY = (a: number) => cy + radius * Math.sin(toRad(a))
   const arcPath = `M ${arcX(startAngle)} ${arcY(startAngle)} A ${radius} ${radius} 0 ${totalArc * pct > 180 ? 1 : 0} 1 ${arcX(sweepAngle)} ${arcY(sweepAngle)}`
   const bgPath = `M ${arcX(startAngle)} ${arcY(startAngle)} A ${radius} ${radius} 0 1 1 ${arcX(endAngle)} ${arcY(endAngle)}`
-
-  const improvements = score.factors.filter(f => f.tip)
 
   return (
     <div style={{
@@ -167,19 +163,20 @@ export default function BridgeRiskScore() {
               Is your early retirement bridge structurally sound? Find out in 60 seconds.
             </p>
           </div>
-          <div style={{
-            background: 'rgba(232,184,75,0.08)', border: '1px solid rgba(232,184,75,0.2)',
-            borderRadius: 8, padding: '6px 12px', textAlign: 'center' as const,
-          }}>
-            <div style={{ fontSize: 8, letterSpacing: 2, textTransform: 'uppercase', color: COLORS.gold, marginBottom: 2 }}>Pro Preview</div>
-            <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)' }}>Full version in Pro</div>
-          </div>
+          {isPro && (
+            <div style={{
+              background: 'rgba(74,222,128,0.08)', border: '1px solid rgba(74,222,128,0.2)',
+              borderRadius: 8, padding: '6px 12px', textAlign: 'center' as const,
+            }}>
+              <div style={{ fontSize: 8, letterSpacing: 2, textTransform: 'uppercase', color: COLORS.sage, marginBottom: 2 }}>Pro</div>
+              <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)' }}>Full Access</div>
+            </div>
+          )}
         </div>
       </div>
 
       <div style={{ padding: '24px' }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-
           {/* LEFT: Inputs */}
           <div>
             <div style={{ fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', marginBottom: 14 }}>Your Situation</div>
@@ -208,19 +205,14 @@ export default function BridgeRiskScore() {
 
           {/* RIGHT: Score */}
           <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 16 }}>
-
-            {/* Gauge */}
             <div style={{
               background: '#141C28', borderRadius: 12, padding: '20px',
               border: `1px solid ${band.border}`, textAlign: 'center' as const,
             }}>
               <svg width="140" height="95" viewBox="0 0 140 95" style={{ display: 'block', margin: '0 auto' }}>
-                {/* Background arc */}
                 <path d={bgPath} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="10" strokeLinecap="round" />
-                {/* Score arc */}
                 <path d={arcPath} fill="none" stroke={band.color} strokeWidth="10" strokeLinecap="round"
                   style={{ filter: `drop-shadow(0 0 8px ${band.color}50)` }} />
-                {/* Score text */}
                 <text x={cx} y={cy + 8} textAnchor="middle" fill={band.color}
                   fontSize="28" fontWeight="800" fontFamily="Georgia, serif">{score.total}</text>
                 <text x={cx} y={cy + 22} textAnchor="middle" fill="rgba(255,255,255,0.2)"
@@ -234,7 +226,6 @@ export default function BridgeRiskScore() {
               </div>
             </div>
 
-            {/* Factor breakdown */}
             <div style={{ background: '#141C28', borderRadius: 12, padding: '16px', border: '1px solid rgba(255,255,255,0.06)' }}>
               <div style={{ fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', marginBottom: 12 }}>Score Breakdown</div>
               {score.factors.map(f => (
@@ -275,32 +266,34 @@ export default function BridgeRiskScore() {
           </div>
         )}
 
-        {/* Pro upsell */}
-        <div style={{
-          marginTop: 16,
-          background: 'rgba(232,184,75,0.04)', border: '1px solid rgba(232,184,75,0.15)',
-          borderLeft: '3px solid #E8B84B', borderRadius: 8, padding: '14px 16px',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16,
-        }}>
-          <div>
-            <div style={{ fontSize: 10, color: COLORS.gold, fontWeight: 600, marginBottom: 4 }}>
-              🔒 Pro unlocks the full Bridge Risk Score™
+        {/* Pro upsell — only show for non-Pro users */}
+        {!isPro && (
+          <div style={{
+            marginTop: 16,
+            background: 'rgba(232,184,75,0.04)', border: '1px solid rgba(232,184,75,0.15)',
+            borderLeft: '3px solid #E8B84B', borderRadius: 8, padding: '14px 16px',
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16,
+          }}>
+            <div>
+              <div style={{ fontSize: 10, color: COLORS.gold, fontWeight: 600, marginBottom: 4 }}>
+                🔒 Pro unlocks the full Bridge Risk Score™
+              </div>
+              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', lineHeight: 1.6 }}>
+                Save scenarios, stress-test against 2008-style crashes, export your full plan as PDF, and get personalized action steps — $9/mo.
+              </div>
             </div>
-            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', lineHeight: 1.6 }}>
-              Save scenarios, stress-test against 2008-style crashes, export your full plan as PDF, and get personalized action steps — $9/mo.
-            </div>
+            <Link
+              href="/pricing"
+              style={{
+                background: COLORS.gold, color: '#0D1420', fontFamily: 'Georgia, serif',
+                fontWeight: 700, fontSize: 12, padding: '10px 18px', borderRadius: 8,
+                textDecoration: 'none', whiteSpace: 'nowrap' as const, flexShrink: 0,
+              }}
+            >
+              Go Pro →
+            </Link>
           </div>
-          <Link
-            href="/pricing"
-            style={{
-              background: COLORS.gold, color: '#0D1420', fontFamily: 'Georgia, serif',
-              fontWeight: 700, fontSize: 12, padding: '10px 18px', borderRadius: 8,
-              textDecoration: 'none', whiteSpace: 'nowrap' as const, flexShrink: 0,
-            }}
-          >
-            Go Pro →
-          </Link>
-        </div>
+        )}
       </div>
 
       <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '10px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
