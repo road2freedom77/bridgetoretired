@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { ProNav } from '@/components/ProNav'
 
 interface ReportInputs {
   name:           string
@@ -545,6 +546,9 @@ export default function PDFReportPage() {
           </div>
         </div>
       </div>
+    <ProNav />
     </div>
+  )
+}
   )
 }
