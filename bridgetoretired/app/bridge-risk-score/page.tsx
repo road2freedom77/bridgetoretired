@@ -13,9 +13,15 @@ export default function BridgeRiskScorePage() {
     <div className="min-h-screen bg-black">
       <div className="bg-navy border-b border-white/[0.06]">
         <div className="max-w-3xl mx-auto px-5 pt-14 pb-10">
-          <Link href="/" className="font-mono text-[10px] tracking-widest uppercase text-white/30 hover:text-gold transition-colors flex items-center gap-2 mb-8">
-            ← BridgeToRetired
-          </Link>
+          <div className="flex items-center gap-4 mb-8">
+  <Link href="/" className="font-mono text-[10px] tracking-widest uppercase text-white/30 hover:text-gold transition-colors">
+    ← BridgeToRetired
+  </Link>
+  <span className="text-white/15">·</span>
+  <Link href="/pro-welcome" className="font-mono text-[10px] tracking-widest uppercase text-gold/50 hover:text-gold transition-colors">
+    Pro Dashboard →
+  </Link>
+</div>
           <div className="font-mono text-[9px] tracking-widest uppercase text-gold mb-3">Free Tool</div>
           <h1 className="font-syne font-bold text-[clamp(26px,4vw,44px)] tracking-tight text-white leading-tight mb-4">
             Bridge Risk Score™
