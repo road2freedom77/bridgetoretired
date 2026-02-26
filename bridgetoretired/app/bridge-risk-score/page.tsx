@@ -1,3 +1,4 @@
+import { ProNav } from '@/components/ProNav'
 import BridgeRiskScore from '@/components/BridgeRiskScore'
 import Link from 'next/link'
 import type { Metadata } from 'next'
@@ -57,6 +58,7 @@ export default function BridgeRiskScorePage() {
           </p>
         </div>
       </div>
+      <ProNav />
     </div>
   )
 }
