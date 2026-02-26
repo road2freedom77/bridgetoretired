@@ -546,9 +546,7 @@ export default function PDFReportPage() {
           </div>
         </div>
       </div>
-    <ProNav />
+      <ProNav />
     </div>
-  )
-}
   )
 }
