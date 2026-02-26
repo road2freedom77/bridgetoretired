@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { ProNav } from '@/components/ProNav'
 
@@ -119,7 +119,6 @@ export default function ScenarioComparePage() {
   const [showNew, setShowNew]     = useState(false)
   const [saved, setSaved]         = useState(false)
 
-  // Load from localStorage on mount
   useEffect(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY)
@@ -127,7 +126,6 @@ export default function ScenarioComparePage() {
     } catch {}
   }, [])
 
-  // Save to localStorage whenever scenarios change
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(scenarios))
@@ -282,7 +280,6 @@ export default function ScenarioComparePage() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <ScenarioForm inputs={draft} onChange={setDraftField} />
-                {/* Live preview */}
                 <div>
                   <div className="font-mono text-[9px] tracking-widest uppercase text-white/25 mb-3">Live Preview</div>
                   {(() => {
@@ -346,7 +343,6 @@ export default function ScenarioComparePage() {
         {/* Scenario Cards */}
         {scenarios.length > 0 && (
           <>
-            {/* Side-by-side comparison table */}
             <div className="bg-[#141C28] border border-white/[0.07] rounded-2xl overflow-hidden">
               <div className="bg-[#1E2A3A] px-6 py-4">
                 <span className="font-mono text-[9px] tracking-widest uppercase text-white/40">Side-by-Side Comparison</span>
@@ -368,15 +364,15 @@ export default function ScenarioComparePage() {
                   </thead>
                   <tbody>
                     {[
-                      { label: 'Retire Age',       getValue: (s: Scenario) => s.inputs.retireAge,                         format: (v: any) => `${v}`,               isGoodHigh: false },
-                      { label: 'Bridge Years',      getValue: (s: Scenario) => results.find(r=>r.id===s.id)?.bridgeYears ?? 0, format: (v: any) => v.toFixed(1) + ' yrs', isGoodHigh: false },
-                      { label: 'Portfolio',         getValue: (s: Scenario) => s.inputs.portfolio,                         format: fmt,                              isGoodHigh: true  },
-                      { label: 'Annual Spending',   getValue: (s: Scenario) => s.inputs.annualSpending,                    format: fmt,                              isGoodHigh: false },
-                      { label: 'Withdrawal Rate',   getValue: (s: Scenario) => results.find(r=>r.id===s.id)?.withdrawalRate ?? 0, format: (v: any) => v.toFixed(1) + '%', isGoodHigh: false },
-                      { label: 'SS Age',            getValue: (s: Scenario) => s.inputs.ssAge,                             format: (v: any) => `${v}`,               isGoodHigh: true  },
-                      { label: 'Portfolio at 80',   getValue: (s: Scenario) => results.find(r=>r.id===s.id)?.totalAt80 ?? 0, format: fmt,                           isGoodHigh: true  },
-                      { label: 'Portfolio at 90',   getValue: (s: Scenario) => results.find(r=>r.id===s.id)?.totalAt90 ?? 0, format: fmt,                           isGoodHigh: true  },
-                      { label: 'Funded to 90?',     getValue: (s: Scenario) => results.find(r=>r.id===s.id)?.funded ?? false, format: (v: any) => v ? '✓ Yes' : '✗ No', isGoodHigh: true },
+                      { label: 'Retire Age',       getValue: (s: Scenario) => s.inputs.retireAge,                                          format: (v: any) => `${v}`,               isGoodHigh: false },
+                      { label: 'Bridge Years',      getValue: (s: Scenario) => results.find(r=>r.id===s.id)?.bridgeYears ?? 0,             format: (v: any) => v.toFixed(1) + ' yrs', isGoodHigh: false },
+                      { label: 'Portfolio',         getValue: (s: Scenario) => s.inputs.portfolio,                                          format: fmt,                              isGoodHigh: true  },
+                      { label: 'Annual Spending',   getValue: (s: Scenario) => s.inputs.annualSpending,                                     format: fmt,                              isGoodHigh: false },
+                      { label: 'Withdrawal Rate',   getValue: (s: Scenario) => results.find(r=>r.id===s.id)?.withdrawalRate ?? 0,          format: (v: any) => v.toFixed(1) + '%',   isGoodHigh: false },
+                      { label: 'SS Age',            getValue: (s: Scenario) => s.inputs.ssAge,                                              format: (v: any) => `${v}`,               isGoodHigh: true  },
+                      { label: 'Portfolio at 80',   getValue: (s: Scenario) => results.find(r=>r.id===s.id)?.totalAt80 ?? 0,               format: fmt,                              isGoodHigh: true  },
+                      { label: 'Portfolio at 90',   getValue: (s: Scenario) => results.find(r=>r.id===s.id)?.totalAt90 ?? 0,               format: fmt,                              isGoodHigh: true  },
+                      { label: 'Funded to 90?',     getValue: (s: Scenario) => results.find(r=>r.id===s.id)?.funded ?? false,              format: (v: any) => v ? '✓ Yes' : '✗ No', isGoodHigh: true },
                     ].map((row, ri) => {
                       const values = scenarios.map(s => row.getValue(s))
                       const best   = row.isGoodHigh ? Math.max(...values.map(Number)) : Math.min(...values.map(Number))
@@ -415,7 +411,6 @@ export default function ScenarioComparePage() {
               </div>
             </div>
 
-            {/* Individual scenario cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
               {scenarios.map(s => {
                 const r = results.find(res => res.id === s.id)!
@@ -443,8 +438,6 @@ export default function ScenarioComparePage() {
                         </button>
                       </div>
                     </div>
-
-                    {/* Stats */}
                     <div className="px-5 pb-4 grid grid-cols-2 gap-2">
                       {[
                         { label: 'Retire',    value: `Age ${s.inputs.retireAge}`,              color: 'white' },
@@ -458,18 +451,14 @@ export default function ScenarioComparePage() {
                         </div>
                       ))}
                     </div>
-
                     <div className={`mx-5 mb-4 rounded-lg px-3 py-2 text-center ${r.funded ? 'bg-green-500/10 border border-green-500/20' : 'bg-red-500/10 border border-red-500/20'}`}>
                       <span className="font-mono text-[9px] tracking-widest uppercase" style={{ color: r.funded ? SAGE : RED }}>
                         {r.funded ? '✓ Funded to age 90' : `⚠ Depletes at age ${r.depleted}`}
                       </span>
                     </div>
-
                     <div className="px-5 pb-1 text-right">
                       <span className="font-mono text-[8px] text-white/15">Saved {s.createdAt}</span>
                     </div>
-
-                    {/* Inline edit form */}
                     {isEditing && (
                       <div className="border-t border-white/[0.07] px-5 py-4">
                         <ScenarioForm
@@ -484,7 +473,6 @@ export default function ScenarioComparePage() {
                 )
               })}
 
-              {/* Add slot */}
               {scenarios.length < MAX_SCENARIOS && !showNew && (
                 <button
                   onClick={() => { setShowNew(true); setNewName(PRESET_NAMES[scenarios.length] ?? 'My Scenario') }}
@@ -501,9 +489,6 @@ export default function ScenarioComparePage() {
             </div>
           </>
         )}
-
-  </div>
-        </div>
       </div>
       <ProNav />
     </div>
