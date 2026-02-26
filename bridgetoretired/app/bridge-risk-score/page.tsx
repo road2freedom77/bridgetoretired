@@ -1,11 +1,11 @@
-import { ProNav } from '@/components/ProNav'
 import BridgeRiskScore from '@/components/BridgeRiskScore'
+import { ProNav } from '@/components/ProNav'
 import Link from 'next/link'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'Bridge Risk Score™ — Is Your Early Retirement Bridge Safe? | BridgeToRetired',
-  description: 'Get your free Bridge Risk Score in 60 seconds. See if your early retirement bridge is Stable, Moderate Risk, or Fragile — based on withdrawal rate, taxable coverage, cash buffer, allocation, and Social Security timing.',
+  description: 'Get your Bridge Risk Score in 60 seconds. See if your early retirement bridge is Stable, Moderate Risk, or Fragile — based on withdrawal rate, taxable coverage, cash buffer, allocation, and Social Security timing.',
   alternates: { canonical: 'https://bridgetoretired.com/bridge-risk-score' },
 }
 
@@ -15,27 +15,25 @@ export default function BridgeRiskScorePage() {
       <div className="bg-navy border-b border-white/[0.06]">
         <div className="max-w-3xl mx-auto px-5 pt-14 pb-10">
           <div className="flex items-center gap-4 mb-8">
-  <Link href="/" className="font-mono text-[10px] tracking-widest uppercase text-white/30 hover:text-gold transition-colors">
-    ← BridgeToRetired
-  </Link>
-  <span className="text-white/15">·</span>
-  <Link href="/pro-welcome" className="font-mono text-[10px] tracking-widest uppercase text-gold/50 hover:text-gold transition-colors">
-    Pro Dashboard →
-  </Link>
-</div>
-          <div className="font-mono text-[9px] tracking-widest uppercase text-gold mb-3">Free Tool</div>
+            <Link href="/" className="font-mono text-[10px] tracking-widest uppercase text-white/30 hover:text-gold transition-colors">
+              ← BridgeToRetired
+            </Link>
+            <span className="text-white/15">·</span>
+            <Link href="/pro-welcome" className="font-mono text-[10px] tracking-widest uppercase text-gold/50 hover:text-gold transition-colors">
+              Pro Dashboard →
+            </Link>
+          </div>
+          <div className="font-mono text-[9px] tracking-widest uppercase text-gold mb-3">Pro Feature</div>
           <h1 className="font-syne font-bold text-[clamp(26px,4vw,44px)] tracking-tight text-white leading-tight mb-4">
             Bridge Risk Score™
           </h1>
           <p className="text-white/50 text-[15px] leading-relaxed max-w-xl">
-            Most early retirees obsess over their total portfolio number and ignore the structural question: <em className="text-white/70 not-italic">is my bridge actually safe?</em> Find out in 60 seconds.
+            Your retirement's structural health in a single number. Adjust the sliders to model your exact situation — withdrawal rate, bridge funding, cash buffer, allocation, and Social Security timing.
           </p>
         </div>
       </div>
-
       <div className="max-w-3xl mx-auto px-5 py-10">
         <BridgeRiskScore />
-
         <div className="mt-12 space-y-6 text-white/50 text-[14px] leading-relaxed font-serif">
           <h2 className="font-syne font-bold text-xl text-white">How the Bridge Risk Score Works</h2>
           <p>
