@@ -25,6 +25,80 @@ const mono = IBM_Plex_Mono({
 
 const GA_ID = 'G-47E00D7CN2'
 
+const clerkAppearance = {
+  variables: {
+    colorPrimary: '#E8B84B',
+    colorBackground: '#0D1420',
+    colorInputBackground: '#141C28',
+    colorInputText: '#ffffff',
+    colorText: '#ffffff',
+    colorTextSecondary: 'rgba(255,255,255,0.45)',
+    colorDanger: '#F87171',
+    colorSuccess: '#4ADE80',
+    colorNeutral: '#ffffff',
+    borderRadius: '8px',
+    fontFamily: 'IBM Plex Mono, monospace',
+  },
+  elements: {
+    card: {
+      background: '#0D1420',
+      border: '1px solid rgba(232,184,75,0.15)',
+      boxShadow: 'none',
+    },
+    headerTitle: {
+      color: '#ffffff',
+      fontFamily: 'Georgia, serif',
+    },
+    headerSubtitle: {
+      color: 'rgba(255,255,255,0.4)',
+    },
+    socialButtonsBlockButton: {
+      background: '#141C28',
+      border: '1px solid rgba(255,255,255,0.1)',
+      color: '#ffffff',
+    },
+    dividerLine: {
+      background: 'rgba(255,255,255,0.08)',
+    },
+    dividerText: {
+      color: 'rgba(255,255,255,0.25)',
+    },
+    formFieldLabel: {
+      color: 'rgba(255,255,255,0.5)',
+      fontSize: '11px',
+      letterSpacing: '0.1em',
+      textTransform: 'uppercase',
+    },
+    formFieldInput: {
+      background: '#141C28',
+      border: '1px solid rgba(255,255,255,0.1)',
+      color: '#ffffff',
+    },
+    formButtonPrimary: {
+      background: '#E8B84B',
+      color: '#0D1420',
+      fontWeight: '700',
+    },
+    footerActionLink: {
+      color: '#E8B84B',
+    },
+    identityPreviewText: {
+      color: '#ffffff',
+    },
+    identityPreviewEditButton: {
+      color: '#E8B84B',
+    },
+    otpCodeFieldInput: {
+      background: '#141C28',
+      border: '1px solid rgba(255,255,255,0.1)',
+      color: '#ffffff',
+    },
+    alertText: {
+      color: 'rgba(255,255,255,0.6)',
+    },
+  },
+}
+
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://bridgetoretired.com'),
   title: {
@@ -60,7 +134,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <ClerkProvider publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}>
+    <ClerkProvider
+      publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+      appearance={clerkAppearance}
+    >
       <html lang="en" className={`${syne.variable} ${lora.variable} ${mono.variable}`}>
         <head>
           <Script
