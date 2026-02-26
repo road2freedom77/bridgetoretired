@@ -38,8 +38,8 @@ export default function PricingPage() {
   const monthlyPrice = 9
   const annualPrice = 97
   const annualMonthly = (annualPrice / 12).toFixed(2)
-  const MONTHLY_LINK = 'https://buy.stripe.com/test_bJe00j0DF85Hdz68fsfYY00'
-  const ANNUAL_LINK  = 'https://buy.stripe.com/test_00w28rcmngCd52AgLYfYY01'
+  const MONTHLY_LINK = 'https://buy.stripe.com/00w28rcmngCd52AgLYfYY01'
+  const ANNUAL_LINK  = 'https://buy.stripe.com/aFa6oH9abeu5dz69jwfYY02'
   const paymentLink  = billing === 'monthly' ? MONTHLY_LINK : ANNUAL_LINK
 
   return (
