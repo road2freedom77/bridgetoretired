@@ -63,14 +63,16 @@ export function Nav() {
               </Link>
             </li>
           )}
-          <li>
-            <Link
-              href="/#download"
-              className="font-syne font-semibold text-[12px] bg-gold text-black px-4 py-2 rounded hover:opacity-85 transition-opacity"
-            >
-              Free Planner ↓
-            </Link>
-          </li>
+          {!isPro && (
+            <li>
+              <Link
+                href="/#download"
+                className="font-syne font-semibold text-[12px] bg-gold text-black px-4 py-2 rounded hover:opacity-85 transition-opacity"
+              >
+                Free Planner ↓
+              </Link>
+            </li>
+          )}
         </ul>
         {/* Mobile toggle */}
         <button
@@ -127,13 +129,15 @@ export function Nav() {
               Sign In
             </Link>
           )}
-          <Link
-            href="/#download"
-            onClick={() => setOpen(false)}
-            className="font-syne font-semibold text-[13px] bg-gold text-black px-4 py-2.5 rounded text-center"
-          >
-            Free Planner ↓
-          </Link>
+          {!isPro && (
+            <Link
+              href="/#download"
+              onClick={() => setOpen(false)}
+              className="font-syne font-semibold text-[13px] bg-gold text-black px-4 py-2.5 rounded text-center"
+            >
+              Free Planner ↓
+            </Link>
+          )}
         </div>
       )}
     </nav>
