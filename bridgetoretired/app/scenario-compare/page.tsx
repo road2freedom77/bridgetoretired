@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
+import { ProNav } from '@/components/ProNav'
 
 const GOLD = '#E8B84B'
 const SAGE = '#4ADE80'
@@ -501,12 +502,10 @@ export default function ScenarioComparePage() {
           </>
         )}
 
-        <div className="text-center pt-4 pb-8">
-          <Link href="/pro-welcome" className="font-mono text-[10px] tracking-widest uppercase text-white/25 hover:text-white/50 transition-colors">
-            ← Back to Pro Dashboard
-          </Link>
+  </div>
         </div>
       </div>
+      <ProNav />
     </div>
   )
 }
