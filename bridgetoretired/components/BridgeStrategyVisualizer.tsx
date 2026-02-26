@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useMemo } from 'react'
+import Link from 'next/link'
+import { useUser } from '@clerk/nextjs'
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts'
 
 const COLORS = {
@@ -40,6 +42,9 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 }
 
 export default function BridgeStrategyVisualizer() {
+  const { user } = useUser()
+  const isPro = (user?.publicMetadata as any)?.isPro === true
+
   const [retireAge, setRetireAge] = useState(52)
   const [taxable, setTaxable] = useState(400_000)
   const [retirement401k, setRetirement401k] = useState(800_000)
@@ -66,19 +71,16 @@ export default function BridgeStrategyVisualizer() {
       const netSpend = Math.max(0, annualSpend - ssIncome)
 
       if (isBridgeYear) {
-        // Draw from taxable first
         taxableBalance = Math.max(0, taxableBalance - netSpend)
         taxableBalance *= (1 + rate)
-        k401Balance *= (1 + rate) // grows untouched
+        k401Balance *= (1 + rate)
         rothBal *= (1 + rate)
       } else if (isPostBridge) {
-        // Draw from 401k after 59.5
         k401Balance = Math.max(0, k401Balance - netSpend)
         k401Balance *= (1 + rate)
-        taxableBalance *= (1 + rate) // now grows
+        taxableBalance *= (1 + rate)
         rothBal *= (1 + rate)
       } else {
-        // SS + 401k
         k401Balance = Math.max(0, k401Balance - netSpend)
         k401Balance *= (1 + rate)
         taxableBalance *= (1 + rate)
@@ -97,12 +99,9 @@ export default function BridgeStrategyVisualizer() {
   }, [retireAge, taxable, retirement401k, rothBalance, annualSpend, returnRate])
 
   const bridgeYears = Math.round(bridgeEnd - retireAge * 10) / 10
-  const k401AtBridge = data.find(d => d.age === Math.ceil(bridgeEnd))?.['401k / IRA'] ?? 0
   const totalAtEnd = (data[data.length - 1]?.['Taxable'] ?? 0) +
     (data[data.length - 1]?.['401k / IRA'] ?? 0) +
     (data[data.length - 1]?.['Roth'] ?? 0)
-
-  const taxableRunsOut = data.find(d => d['Taxable'] === 0 && d.age < bridgeEnd)
 
   return (
     <div style={{
@@ -114,11 +113,7 @@ export default function BridgeStrategyVisualizer() {
       margin: '2rem 0',
     }}>
       {/* Header */}
-      <div style={{
-        background: '#141C28',
-        borderBottom: '1px solid rgba(255,255,255,0.06)',
-        padding: '20px 24px',
-      }}>
+      <div style={{ background: '#141C28', borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '20px 24px' }}>
         <div style={{ fontSize: 9, letterSpacing: 3, textTransform: 'uppercase', color: COLORS.gold, marginBottom: 6 }}>
           Interactive Visualizer
         </div>
@@ -131,7 +126,6 @@ export default function BridgeStrategyVisualizer() {
       </div>
 
       <div style={{ padding: '24px' }}>
-
         {/* Controls */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, marginBottom: 20 }}>
           {[
@@ -147,26 +141,21 @@ export default function BridgeStrategyVisualizer() {
                 <span style={{ fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)' }}>{label}</span>
                 <span style={{ fontSize: 12, color: COLORS.gold, fontWeight: 600 }}>{fmt(value)}</span>
               </div>
-              <input
-                type="range" min={min} max={max} step={step} value={value}
+              <input type="range" min={min} max={max} step={step} value={value}
                 onChange={e => set(Number(e.target.value))}
-                style={{ width: '100%', accentColor: COLORS.gold, cursor: 'pointer' }}
-              />
+                style={{ width: '100%', accentColor: COLORS.gold, cursor: 'pointer' }} />
             </div>
           ))}
         </div>
 
         {/* Phase legend */}
-        <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' as const }}>
           {[
             { label: `Bridge Years (${retireAge}–59½)`, color: 'rgba(232,184,75,0.15)', border: 'rgba(232,184,75,0.4)', text: 'Draw taxable. 401k grows.' },
             { label: `Post-59½ (59½–67)`, color: 'rgba(96,165,250,0.1)', border: 'rgba(96,165,250,0.3)', text: 'Draw 401k. Taxable recovers.' },
             { label: `Social Security (67+)`, color: 'rgba(74,222,128,0.08)', border: 'rgba(74,222,128,0.2)', text: 'SS floor + 401k supplement.' },
           ].map(({ label, color, border, text }) => (
-            <div key={label} style={{
-              background: color, border: `1px solid ${border}`,
-              borderRadius: 6, padding: '6px 10px', flex: 1, minWidth: 160,
-            }}>
+            <div key={label} style={{ background: color, border: `1px solid ${border}`, borderRadius: 6, padding: '6px 10px', flex: 1, minWidth: 160 }}>
               <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.5)', fontWeight: 600, marginBottom: 2 }}>{label}</div>
               <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.3)' }}>{text}</div>
             </div>
@@ -192,15 +181,8 @@ export default function BridgeStrategyVisualizer() {
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-              <XAxis
-                dataKey="age"
-                tick={{ fill: 'rgba(255,255,255,0.25)', fontSize: 9, fontFamily: 'monospace' }}
-                label={{ value: 'Age', position: 'insideBottom', offset: -2, fill: 'rgba(255,255,255,0.2)', fontSize: 9 }}
-              />
-              <YAxis
-                tick={{ fill: 'rgba(255,255,255,0.25)', fontSize: 9, fontFamily: 'monospace' }}
-                tickFormatter={formatDollars}
-              />
+              <XAxis dataKey="age" tick={{ fill: 'rgba(255,255,255,0.25)', fontSize: 9, fontFamily: 'monospace' }} />
+              <YAxis tick={{ fill: 'rgba(255,255,255,0.25)', fontSize: 9, fontFamily: 'monospace' }} tickFormatter={formatDollars} />
               <Tooltip content={<CustomTooltip />} />
               <Legend wrapperStyle={{ fontSize: 10, fontFamily: 'monospace', color: 'rgba(255,255,255,0.4)', paddingTop: 12 }} />
               <ReferenceLine x={59} stroke={COLORS.gold} strokeDasharray="4 4" strokeOpacity={0.5}
@@ -223,9 +205,7 @@ export default function BridgeStrategyVisualizer() {
           </div>
           <div style={{ background: '#141C28', borderRadius: 10, padding: '12px 14px', border: '1px solid rgba(45,212,191,0.15)', borderTop: `3px solid ${COLORS.teal}` }}>
             <div style={{ fontSize: 8, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', marginBottom: 4 }}>Taxable Needed</div>
-            <div style={{ fontSize: 18, fontWeight: 700, color: COLORS.teal, fontFamily: 'Georgia, serif' }}>
-              {formatDollars(annualSpend * bridgeYears)}
-            </div>
+            <div style={{ fontSize: 18, fontWeight: 700, color: COLORS.teal, fontFamily: 'Georgia, serif' }}>{formatDollars(annualSpend * bridgeYears)}</div>
             <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.25)', marginTop: 2 }}>
               {taxable >= annualSpend * bridgeYears ? '✓ Funded' : '⚠ Shortfall'}
             </div>
@@ -239,12 +219,9 @@ export default function BridgeStrategyVisualizer() {
           </div>
         </div>
 
-        {/* Warning if taxable insufficient */}
+        {/* Warning */}
         {taxable < annualSpend * bridgeYears && (
-          <div style={{
-            background: 'rgba(248,113,113,0.06)', border: '1px solid rgba(248,113,113,0.2)',
-            borderLeft: `3px solid ${COLORS.red}`, borderRadius: 8, padding: '12px 14px', marginBottom: 16,
-          }}>
+          <div style={{ background: 'rgba(248,113,113,0.06)', border: '1px solid rgba(248,113,113,0.2)', borderLeft: `3px solid ${COLORS.red}`, borderRadius: 8, padding: '12px 14px', marginBottom: 16 }}>
             <div style={{ fontSize: 10, color: COLORS.red, fontWeight: 600, marginBottom: 4 }}>⚠ BRIDGE FUNDING GAP</div>
             <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', margin: 0, lineHeight: 1.6 }}>
               Your taxable account ({formatDollars(taxable)}) may not fully fund the {bridgeYears.toFixed(1)}-year bridge at {formatDollars(annualSpend)}/yr spending.
@@ -254,13 +231,8 @@ export default function BridgeStrategyVisualizer() {
         )}
 
         {/* Key insight */}
-        <div style={{
-          background: 'rgba(232,184,75,0.06)', border: '1px solid rgba(232,184,75,0.15)',
-          borderLeft: '3px solid #E8B84B', borderRadius: 8, padding: '14px 16px',
-        }}>
-          <div style={{ fontSize: 10, color: COLORS.gold, fontWeight: 600, marginBottom: 6, letterSpacing: 1 }}>
-            💡 THE BRIDGE ADVANTAGE
-          </div>
+        <div style={{ background: 'rgba(232,184,75,0.06)', border: '1px solid rgba(232,184,75,0.15)', borderLeft: '3px solid #E8B84B', borderRadius: 8, padding: '14px 16px', marginBottom: 16 }}>
+          <div style={{ fontSize: 10, color: COLORS.gold, fontWeight: 600, marginBottom: 6, letterSpacing: 1 }}>💡 THE BRIDGE ADVANTAGE</div>
           <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', margin: 0, lineHeight: 1.7 }}>
             Your 401(k) grows untouched for {bridgeYears.toFixed(1)} years during the bridge.
             At {returnRate}% return, {formatDollars(retirement401k)} becomes approximately{' '}
@@ -271,20 +243,49 @@ export default function BridgeStrategyVisualizer() {
           </p>
         </div>
 
+        {/* Pro upsell — hidden for Pro users */}
+        {!isPro && (
+          <div style={{
+            background: 'linear-gradient(135deg, rgba(232,184,75,0.06) 0%, rgba(232,184,75,0.02) 100%)',
+            border: '1px solid rgba(232,184,75,0.2)',
+            borderLeft: '3px solid #E8B84B',
+            borderRadius: 12,
+            padding: '20px 24px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 20,
+          }}>
+            <div>
+              <div style={{ fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: COLORS.gold, marginBottom: 6 }}>
+                ⚡ Take it further with Pro
+              </div>
+              <div style={{ fontSize: 14, fontFamily: 'Georgia, serif', fontWeight: 700, color: '#fff', marginBottom: 6 }}>
+                Get your Bridge Risk Score in 60 seconds.
+              </div>
+              <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', lineHeight: 1.6, maxWidth: 420 }}>
+                See if your specific bridge is Stable, Moderate Risk, or Fragile — based on withdrawal rate, taxable coverage, cash buffer, and Social Security timing.
+              </div>
+            </div>
+            <Link href="/pricing" style={{
+              background: COLORS.gold, color: '#0D1420', fontFamily: 'Georgia, serif',
+              fontWeight: 700, fontSize: 12, padding: '10px 20px', borderRadius: 8,
+              textDecoration: 'none', whiteSpace: 'nowrap' as const, flexShrink: 0,
+            }}>
+              Get Pro →
+            </Link>
+          </div>
+        )}
       </div>
 
       {/* Footer */}
-      <div style={{
-        borderTop: '1px solid rgba(255,255,255,0.05)',
-        padding: '12px 24px',
-        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-      }}>
-        <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.15)', letterSpacing: 1 }}>
-          For educational purposes only · Not financial advice
-        </span>
-        <a href="/#download" style={{ fontSize: 9, color: COLORS.gold, textDecoration: 'none', letterSpacing: 2, textTransform: 'uppercase' }}>
-          Get Free Planner →
-        </a>
+      <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '12px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.15)', letterSpacing: 1 }}>For educational purposes only · Not financial advice</span>
+        {!isPro && (
+          <a href="/#download" style={{ fontSize: 9, color: COLORS.gold, textDecoration: 'none', letterSpacing: 2, textTransform: 'uppercase' }}>
+            Get Free Planner →
+          </a>
+        )}
       </div>
     </div>
   )
