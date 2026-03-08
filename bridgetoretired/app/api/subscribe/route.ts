@@ -11,7 +11,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid email address' }, { status: 400 })
     }
 
-    // 1. Send welcome + download email to subscriber
+    // 1. Add to Resend audience
+    await resend.contacts.create({
+      email,
+      audienceId: process.env.RESEND_AUDIENCE_ID!,
+      unsubscribed: false,
+    })
+
+    // 2. Send welcome + download email to subscriber
     await resend.emails.send({
       from: process.env.RESEND_FROM_EMAIL ?? 'hello@bridgetoretired.com',
       to: email,
@@ -58,7 +65,7 @@ export async function POST(req: NextRequest) {
       `,
     })
 
-    // 2. Notify yourself of new subscriber
+    // 3. Notify yourself of new subscriber
     if (process.env.NOTIFY_EMAIL) {
       await resend.emails.send({
         from: process.env.RESEND_FROM_EMAIL ?? 'hello@bridgetoretired.com',
