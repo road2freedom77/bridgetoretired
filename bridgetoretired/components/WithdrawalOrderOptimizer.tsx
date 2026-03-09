@@ -36,52 +36,23 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   )
 }
 
-function runOptimalStrategy(retireAge: number, taxable: number, k401k: number, roth: number, annualSpend: number, returnRate: number) {
-  const rate = returnRate / 100
-  const rows = []
-  let t = taxable, k = k401k, r = roth
-  let totalTax = 0
-
-  for (let age = retireAge; age <= 90; age++) {
-    const isBridge = age < 59.5
-    const hasSS = age >= 67
-    const ssIncome = hasSS ? 24_000 : 0
-    const need = Math.max(0, annualSpend - ssIncome)
-
-    let taxThisYear = 0
-
-    if (isBridge) {
-      // Draw taxable first, then Roth contributions
-      const fromTaxable = Math.min(t, need)
-      t -= fromTaxable
-      const fromRoth = Math.min(r, need - fromTaxable)
-      r -= fromRoth
-      // Assume 15% effective tax on capital gains portion (simplified)
-      taxThisYear = Math.round(fromTaxable * 0.08)
-    } else {
-      // Draw 401k first, then taxable, Roth last
-      const from401k = Math.min(k, need)
-      k -= from401k
-      const fromTaxable = Math.min(t, need - from401k)
-      t -= fromTaxable
-      const fromRoth = Math.min(r, need - from401k - fromTaxable)
-      r -= fromRoth
-      taxThisYear = Math.round(from401k * 0.15)
-    }
-
-    totalTax += taxThisYear
-    t = Math.max(0, t * (1 + rate))
-    k = Math.max(0, k * (1 + rate))
-    r = Math.max(0, r * (1 + rate))
-
-    rows.push({ age, Taxable: Math.round(t), '401k': Math.round(k), Roth: Math.round(r), tax: taxThisYear })
-  }
-
-  return { rows, totalTax, final: (rows[rows.length - 1]?.Taxable ?? 0) + (rows[rows.length - 1]?.['401k'] ?? 0) + (rows[rows.length - 1]?.Roth ?? 0) }
-}
-
-function runWrongStrategy(retireAge: number, taxable: number, k401k: number, roth: number, annualSpend: number, returnRate: number) {
-  // Wrong: draw 401k first even during bridge (paying penalties), keep Roth
+/**
+ * OPTIMAL STRATEGY:
+ * Bridge years (< 59.5): Draw taxable first (low/0% cap gains tax), then Roth contributions
+ * Post-59.5: Draw 401k first to reduce RMDs, then taxable, Roth last
+ * 
+ * Tax model:
+ * - Taxable withdrawals: 8% effective rate (mix of basis return + LTCG at low income)
+ * - 401k withdrawals post-59.5: 15% effective rate
+ */
+function runOptimalStrategy(
+  retireAge: number,
+  taxable: number,
+  k401k: number,
+  roth: number,
+  annualSpend: number,
+  returnRate: number
+) {
   const rate = returnRate / 100
   const rows = []
   let t = taxable, k = k401k, r = roth
@@ -95,33 +66,179 @@ function runWrongStrategy(retireAge: number, taxable: number, k401k: number, rot
     const need = Math.max(0, annualSpend - ssIncome)
 
     let taxThisYear = 0
+    let penaltyThisYear = 0
+    let grossNeed = need
 
     if (isBridge) {
-      // Wrong: drain 401k with penalty, ignore taxable
-      const from401k = Math.min(k, need)
-      k -= from401k
-      const fromTaxable = Math.min(t, need - from401k)
+      // Draw taxable first (pay low cap gains tax, ~8% effective)
+      // Need to gross up: to net $need after tax on taxable gains
+      const taxableGainsFraction = 0.5 // assume 50% of taxable is gains
+      const taxableEffectiveRate = 0.08 * taxableGainsFraction
+
+      const fromTaxable = Math.min(t, grossNeed)
       t -= fromTaxable
-      const penalty = from401k * 0.10
-      totalPenalty += penalty
-      taxThisYear = Math.round(from401k * 0.22 + penalty)
+      taxThisYear += fromTaxable * taxableEffectiveRate
+      grossNeed -= fromTaxable
+
+      // Then Roth contributions (no tax, no penalty)
+      const fromRoth = Math.min(r, grossNeed)
+      r -= fromRoth
+      grossNeed -= fromRoth
+
+      // Last resort: 72(t) from 401k (no penalty if SEPP, but income tax)
+      if (grossNeed > 0) {
+        const from401k = Math.min(k, grossNeed)
+        k -= from401k
+        taxThisYear += from401k * 0.12 // SEPP — no penalty, low tax bracket
+        grossNeed -= from401k
+      }
     } else {
-      const fromTaxable = Math.min(t, need)
-      t -= fromTaxable
-      const from401k = Math.min(k, need - fromTaxable)
+      // Post-59.5: Draw 401k first to reduce future RMDs
+      const from401k = Math.min(k, grossNeed)
       k -= from401k
-      taxThisYear = Math.round(from401k * 0.15)
+      taxThisYear += from401k * 0.15
+      grossNeed -= from401k
+
+      const fromTaxable = Math.min(t, grossNeed)
+      t -= fromTaxable
+      taxThisYear += fromTaxable * 0.04 // low LTCG post-59.5
+      grossNeed -= fromTaxable
+
+      // Roth last — let it compound tax-free as long as possible
+      const fromRoth = Math.min(r, grossNeed)
+      r -= fromRoth
+      grossNeed -= fromRoth
     }
 
     totalTax += taxThisYear
+    totalPenalty += penaltyThisYear
+
+    // Grow remaining balances
     t = Math.max(0, t * (1 + rate))
     k = Math.max(0, k * (1 + rate))
     r = Math.max(0, r * (1 + rate))
 
-    rows.push({ age, Taxable: Math.round(t), '401k': Math.round(k), Roth: Math.round(r), tax: taxThisYear })
+    rows.push({
+      age,
+      Taxable: Math.round(t),
+      '401k': Math.round(k),
+      Roth: Math.round(r),
+      tax: Math.round(taxThisYear),
+    })
   }
 
-  return { rows, totalTax, totalPenalty, final: (rows[rows.length - 1]?.Taxable ?? 0) + (rows[rows.length - 1]?.['401k'] ?? 0) + (rows[rows.length - 1]?.Roth ?? 0) }
+  const last = rows[rows.length - 1]
+  return {
+    rows,
+    totalTax: Math.round(totalTax),
+    totalPenalty: 0,
+    final: (last?.Taxable ?? 0) + (last?.['401k'] ?? 0) + (last?.Roth ?? 0),
+  }
+}
+
+/**
+ * WRONG STRATEGY:
+ * Bridge years (< 59.5): Draw 401k FIRST — pays 10% penalty + 22% income tax = ~32% total cost
+ * This means to net $need, you must withdraw MORE from the 401k (gross up for tax+penalty)
+ * Taxable sits untouched, compounding — but at a much lower rate because 401k was drained early
+ * Post-59.5: Now draws taxable (which grew but 401k is depleted), then whatever 401k remains, Roth last
+ * 
+ * Key insight: The penalty is a permanent wealth destruction event. $100k withdrawn early
+ * costs $32k in tax+penalty AND loses decades of compounding on that $32k.
+ */
+function runWrongStrategy(
+  retireAge: number,
+  taxable: number,
+  k401k: number,
+  roth: number,
+  annualSpend: number,
+  returnRate: number
+) {
+  const rate = returnRate / 100
+  const rows = []
+  let t = taxable, k = k401k, r = roth
+  let totalTax = 0
+  let totalPenalty = 0
+
+  for (let age = retireAge; age <= 90; age++) {
+    const isBridge = age < 59.5
+    const hasSS = age >= 67
+    const ssIncome = hasSS ? 24_000 : 0
+    const need = Math.max(0, annualSpend - ssIncome)
+
+    let taxThisYear = 0
+    let penaltyThisYear = 0
+    let grossNeed = need
+
+    if (isBridge) {
+      // WRONG: Draw 401k first during bridge years
+      // 10% penalty + 22% income tax = 32% total "tax drag"
+      // Must gross up withdrawal to cover tax + penalty + net need
+      // Net = Gross * (1 - 0.22 - 0.10) => Gross = Net / 0.68
+      const grossFrom401k = Math.min(k, grossNeed / 0.68)
+      const netFrom401k = grossFrom401k * 0.68
+      const penaltyAmount = grossFrom401k * 0.10
+      const taxAmount = grossFrom401k * 0.22
+
+      k -= grossFrom401k
+      taxThisYear += taxAmount
+      penaltyThisYear += penaltyAmount
+      grossNeed -= netFrom401k
+
+      // If 401k runs out, fall back to taxable
+      if (grossNeed > 0) {
+        const fromTaxable = Math.min(t, grossNeed)
+        t -= fromTaxable
+        taxThisYear += fromTaxable * 0.08
+        grossNeed -= fromTaxable
+      }
+
+      // Roth last
+      if (grossNeed > 0) {
+        const fromRoth = Math.min(r, grossNeed)
+        r -= fromRoth
+        grossNeed -= fromRoth
+      }
+    } else {
+      // Post-59.5: 401k is depleted, now draw taxable first (it grew but 401k is mostly gone)
+      const fromTaxable = Math.min(t, grossNeed)
+      t -= fromTaxable
+      taxThisYear += fromTaxable * 0.08
+      grossNeed -= fromTaxable
+
+      const from401k = Math.min(k, grossNeed)
+      k -= from401k
+      taxThisYear += from401k * 0.15
+      grossNeed -= from401k
+
+      const fromRoth = Math.min(r, grossNeed)
+      r -= fromRoth
+      grossNeed -= fromRoth
+    }
+
+    totalTax += taxThisYear
+    totalPenalty += penaltyThisYear
+
+    t = Math.max(0, t * (1 + rate))
+    k = Math.max(0, k * (1 + rate))
+    r = Math.max(0, r * (1 + rate))
+
+    rows.push({
+      age,
+      Taxable: Math.round(t),
+      '401k': Math.round(k),
+      Roth: Math.round(r),
+      tax: Math.round(taxThisYear),
+    })
+  }
+
+  const last = rows[rows.length - 1]
+  return {
+    rows,
+    totalTax: Math.round(totalTax),
+    totalPenalty: Math.round(totalPenalty),
+    final: (last?.Taxable ?? 0) + (last?.['401k'] ?? 0) + (last?.Roth ?? 0),
+  }
 }
 
 export default function WithdrawalOrderOptimizer() {
@@ -145,11 +262,6 @@ export default function WithdrawalOrderOptimizer() {
   const taxDifference = wrong.totalTax - optimal.totalTax
   const activeData = activeTab === 'optimal' ? optimal.rows : wrong.rows
 
-  // Phase labels
-  const bridgeEnd = 59.5
-  const ssAge = 67
-
-  // Decision flowchart steps
   const bridgePhaseSteps = [
     { order: 1, account: 'Taxable Brokerage', color: COLORS.teal, reason: '0% capital gains tax if income managed carefully. Return of basis not taxed at all.' },
     { order: 2, account: 'Roth Contributions', color: COLORS.purple, reason: 'Your own contributions always accessible penalty-free. No tax on withdrawal.' },
@@ -218,8 +330,12 @@ export default function WithdrawalOrderOptimizer() {
           </div>
           <div style={{ background: '#141C28', borderRadius: 10, padding: '12px 14px', border: `1px solid ${COLORS.gold}20`, borderTop: `3px solid ${COLORS.gold}` }}>
             <div style={{ fontSize: 8, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', marginBottom: 4 }}>Lifetime Difference</div>
-            <div style={{ fontSize: 18, fontWeight: 700, color: COLORS.gold, fontFamily: 'Georgia, serif' }}>+{formatDollars(Math.abs(wealthDifference))}</div>
-            <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.25)', marginTop: 2 }}>+{formatDollars(Math.abs(taxDifference))} less tax</div>
+            <div style={{ fontSize: 18, fontWeight: 700, color: COLORS.gold, fontFamily: 'Georgia, serif' }}>
+              {wealthDifference >= 0 ? '+' : ''}{formatDollars(wealthDifference)}
+            </div>
+            <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.25)', marginTop: 2 }}>
+              +{formatDollars(Math.abs(taxDifference))} less tax · +{formatDollars(wrong.totalPenalty)} less penalty
+            </div>
           </div>
         </div>
 
@@ -239,7 +355,7 @@ export default function WithdrawalOrderOptimizer() {
 
         <div style={{ background: '#141C28', borderRadius: 12, padding: '20px 16px 12px', border: '1px solid rgba(255,255,255,0.06)', marginBottom: 20 }}>
           <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginBottom: 16, fontFamily: 'Georgia, serif' }}>
-            {activeTab === 'optimal' ? 'Optimal Withdrawal Order — Account Balances Over Time' : 'Wrong Order — Drawing 401k During Bridge Years'}
+            {activeTab === 'optimal' ? 'Optimal Withdrawal Order — Account Balances Over Time' : 'Wrong Order — Drawing 401k During Bridge Years (10% penalty + 22% tax)'}
           </div>
           <ResponsiveContainer width="100%" height={280}>
             <AreaChart data={activeData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
@@ -265,7 +381,6 @@ export default function WithdrawalOrderOptimizer() {
 
         {/* Phase decision guides */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
-          {/* Bridge phase */}
           <div style={{ background: '#141C28', borderRadius: 12, padding: '16px', border: '1px solid rgba(232,184,75,0.15)' }}>
             <div style={{ fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: COLORS.gold, marginBottom: 12 }}>
               Phase 1: Bridge Years (Retire → Age 59½)
@@ -287,7 +402,6 @@ export default function WithdrawalOrderOptimizer() {
             ))}
           </div>
 
-          {/* Post-bridge phase */}
           <div style={{ background: '#141C28', borderRadius: 12, padding: '16px', border: '1px solid rgba(45,212,191,0.15)' }}>
             <div style={{ fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: COLORS.teal, marginBottom: 12 }}>
               Phase 2: Post-59½ (401k Unlocked)
@@ -317,10 +431,11 @@ export default function WithdrawalOrderOptimizer() {
         }}>
           <div style={{ fontSize: 10, color: COLORS.gold, fontWeight: 600, marginBottom: 6, letterSpacing: 1 }}>💡 WHY ORDER MATTERS THIS MUCH</div>
           <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', margin: 0, lineHeight: 1.7 }}>
-            Drawing from your 401k during bridge years costs a 10% penalty plus ordinary income tax — potentially 30-35% total.
-            Drawing from taxable at long-term capital gains rates in a low-income year can cost 0-8%.
-            That gap, compounded over {Math.round(59.5 - retireAge)} bridge years and {90 - retireAge} years of portfolio growth,
+            Drawing from your 401k during bridge years triggers a 10% early withdrawal penalty plus ordinary income tax — up to 32% total cost.
+            Drawing from taxable accounts at long-term capital gains rates in a low-income year can cost as little as 0–8%.
+            That gap, compounded over {Math.round(59.5 - retireAge)} bridge years and {90 - retireAge} total years of portfolio growth,
             produces the <strong style={{ color: COLORS.gold }}>{formatDollars(Math.abs(wealthDifference))}</strong> difference shown above.
+            The wrong strategy also depletes your 401k early, leaving less to compound in the highest-returning account during your peak growth years.
           </p>
         </div>
       </div>
