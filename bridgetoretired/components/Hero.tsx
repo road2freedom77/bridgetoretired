@@ -75,7 +75,7 @@ export function Hero() {
                 <div className="w-2.5 h-2.5 rounded-full bg-[#28c941]" />
               </div>
               <span className="font-mono text-[11px] text-white/30 tracking-wide">
-                Early_Retirement_Bridge_Planner_v1.xlsx
+              Early_Retirement_Bridge_Planner_v2.xlsx
               </span>
             </div>
 
