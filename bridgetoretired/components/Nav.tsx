@@ -23,9 +23,9 @@ export function Nav() {
             { href: '/#how',        label: 'How It Works' },
             { href: '/#calculator', label: 'Calculator'   },
             { href: '/blog',        label: 'Blog'         },
-            { href: '/#tools',      label: 'Tools'        },
+            { href: '/#calculator', label: 'Tools'        },
           ].map(({ href, label }) => (
-            <li key={href}>
+            <li key={label}>
               <Link
                 href={href}
                 className="font-mono text-[11px] tracking-widest uppercase text-white/40 hover:text-white/80 transition-colors"
@@ -90,10 +90,10 @@ export function Nav() {
             { href: '/#how',        label: 'How It Works' },
             { href: '/#calculator', label: 'Calculator'   },
             { href: '/blog',        label: 'Blog'         },
-            { href: '/#tools',      label: 'Tools'        },
+            { href: '/#calculator', label: 'Tools'        },
           ].map(({ href, label }) => (
             <Link
-              key={href}
+              key={label}
               href={href}
               onClick={() => setOpen(false)}
               className="font-mono text-[12px] tracking-wider uppercase text-white/50 hover:text-white transition-colors"
