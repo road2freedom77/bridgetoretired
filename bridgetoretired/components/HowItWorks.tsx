@@ -1,26 +1,27 @@
 // components/HowItWorks.tsx
 import React from 'react'
+import Link from 'next/link'
 
 const steps = [
   {
     n: '01',
     title: 'Enter Your Numbers',
-    desc: 'Input current balances across taxable, 401(k), and Roth accounts, plus your planned retirement age and annual spending need.',
+    desc: <>Input current balances across taxable, 401(k), and Roth accounts, plus your planned retirement age and annual spending need.</>,
   },
   {
     n: '02',
     title: 'The Planner Maps Your Bridge',
-    desc: 'Automatically calculates the optimal withdrawal order (Taxable → 401k → Roth) year-by-year, showing exactly when each account is tapped.',
+    desc: <>Automatically calculates the optimal <Link href="/blog/withdrawal-order-taxable-roth-401k" className="text-gold/70 hover:text-gold underline underline-offset-2 transition-colors">withdrawal order</Link> (Taxable → 401k → Roth) year-by-year, showing exactly when each account is tapped.</>,
   },
   {
     n: '03',
     title: 'See Your Full Projection',
-    desc: 'From retirement through Social Security claim age to life expectancy — a complete inflation-adjusted picture of your financial future.',
+    desc: <>From retirement through Social Security claim age to life expectancy — a complete inflation-adjusted picture of your financial future.</>,
   },
   {
     n: '04',
     title: 'Stress Test & Optimize',
-    desc: 'Adjust return rates, spending, and Roth conversion strategies to find your optimal path to financial freedom.',
+    desc: <>Adjust return rates, spending, and <Link href="/blog/roth-conversion-ladder-guide" className="text-gold/70 hover:text-gold underline underline-offset-2 transition-colors">Roth conversion strategies</Link> to find your optimal path to financial freedom.</>,
   },
 ]
 
@@ -48,7 +49,9 @@ export function HowItWorks() {
           </h2>
           <p className="text-white/55 text-[15px] leading-relaxed mb-12 max-w-md">
             Retiring before 59½ means you can&apos;t touch your 401(k) without a 10% penalty.
-            The bridge strategy uses your taxable accounts to cover the gap — strategically and tax-efficiently.
+            The <Link href="/blog/what-is-retirement-bridge-strategy" className="text-gold/70 hover:text-gold underline underline-offset-2 transition-colors">bridge strategy</Link> uses
+            your taxable accounts to cover the gap — strategically and tax-efficiently.
+            Need penalty-free 401(k) access sooner? See <Link href="/blog/rule-72t-sepp-guide" className="text-gold/70 hover:text-gold underline underline-offset-2 transition-colors">Rule 72(t)</Link>.
           </p>
 
           <div className="divide-y divide-white/[0.05]">
