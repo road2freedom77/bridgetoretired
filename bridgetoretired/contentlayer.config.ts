@@ -11,6 +11,7 @@ export const Post = defineDocumentType(() => ({
     category:    { type: 'string',  required: true },
     readTime:    { type: 'string',  required: true },
     featured:    { type: 'boolean', default: false },
+    faq:         { type: 'json',    required: false },
   },
   computedFields: {
     slug: {
