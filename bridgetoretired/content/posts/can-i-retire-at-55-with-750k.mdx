@@ -44,26 +44,42 @@ Retiring at 55 creates a 4.5-year bridge before your 401(k) unlocks penalty-free
 
 If you leave your employer in the calendar year you turn 55 or later, you may qualify for penalty-free withdrawals from that specific employer's 401(k) under what's known as the Rule of 55. No fixed payment schedule. No complicated SEPP calculations. Just direct access to your largest account starting at exactly 55.
 
-| Question | Answer |
-|----------|--------|
-| Who qualifies? | Must separate from service in or after the calendar year you turn 55 (age 50 for public safety workers) |
-| Which accounts? | Only the 401(k) from the employer you are leaving — not IRAs, not old 401(k)s from previous employers |
-| Penalty? | No 10% early withdrawal penalty — ordinary income tax still applies |
-| Best for? | Someone with a large current-employer 401(k) retiring at exactly 55 |
-| vs. Rule 72(t)? | Rule of 55 requires no fixed payment schedule. [Rule 72(t)](/blog/rule-72t-sepp-guide) works at any age on any account but locks you into SEPP payments for 5 years or until 59½ — whichever is later |
+<FinanceTable
+  columns={[
+    { key: 'question', header: 'Question', highlight: true },
+    { key: 'answer',   header: 'Answer' },
+  ]}
+  rows={[
+    { question: 'Who qualifies?',  answer: 'Must separate from service in or after the calendar year you turn 55 (age 50 for public safety workers)' },
+    { question: 'Which accounts?', answer: 'Only the 401(k) from the employer you are leaving — not IRAs, not old 401(k)s from previous employers' },
+    { question: 'Penalty?',        answer: 'No 10% early withdrawal penalty — ordinary income tax still applies' },
+    { question: 'Best for?',       answer: 'Someone with a large current-employer 401(k) retiring at exactly 55' },
+    { question: 'vs. Rule 72(t)?', answer: 'Rule of 55 requires no fixed payment schedule. Rule 72(t) works at any age on any account but locks you into SEPP payments for 5 years or until 59½ — whichever is later' },
+  ]}
+/>
 
 **Critical caveat:** The Rule of 55 only works if you do not roll your current employer 401(k) into an IRA before retiring. If you roll it over, you lose this benefit permanently. Do not roll your active employer 401(k) into an IRA if you are planning to use Rule of 55 access.
 
-If the Rule of 55 applies to you, it dramatically simplifies your bridge. Instead of relying entirely on taxable assets or setting up a 72(t) SEPP structure, you can draw from your largest account without penalty from day one.
+If the Rule of 55 applies to you, it dramatically simplifies your bridge. Instead of relying entirely on taxable assets or setting up a [72(t) SEPP structure](/blog/rule-72t-sepp-guide), you can draw from your largest account without penalty from day one.
 
 ## The Account Location Problem
 
 $750,000 structured two different ways produces two very different retirements at 55:
 
-| | Taxable | 401(k) | Roth | Bridge Reality |
-|---|---|---|---|---|
-| **Person A** | $300,000 | $350,000 | $100,000 | Workable — 4.5 years of bridge well covered |
-| **Person B** | $40,000 | $660,000 | $50,000 | Problem — unless Rule of 55 or 72(t) applies |
+<FinanceTable
+  columns={[
+    { key: 'person',  header: '' },
+    { key: 'taxable', header: 'Taxable',        align: 'right' },
+    { key: 'k401',    header: '401(k)',          align: 'right' },
+    { key: 'roth',    header: 'Roth',            align: 'right' },
+    { key: 'bridge',  header: 'Bridge Reality' },
+  ]}
+  rows={[
+    { person: 'Person A', taxable: '$300,000', k401: '$350,000', roth: '$100,000', bridge: 'Workable — 4.5 years of bridge well covered', _highlight: true },
+    { person: 'Person B', taxable: '$40,000',  k401: '$660,000', roth: '$50,000',  bridge: 'Problem — unless Rule of 55 or 72(t) applies' },
+  ]}
+  caption="Same total portfolio · Very different early-retirement flexibility"
+/>
 
 Same total portfolio. Very different early-retirement flexibility. Person B is not broke — but Person B has a structural problem that net worth alone doesn't reveal.
 
@@ -95,13 +111,22 @@ That is why early retirement is not just about how much you have. It is about wh
 
 Before running detailed scenarios, a quick withdrawal rate screen gives you a starting range:
 
-| Withdrawal Rate | Annual Income | Notes |
-|----------------|---------------|-------|
-| 3.3% | $24,750/yr | Conservative — appropriate for 35+ year retirements |
-| 3.5% | $26,250/yr | Moderate |
-| 4.0% | $30,000/yr | Standard — designed for 30-year retirements, not 35 |
-| 4.5% | $33,750/yr | Aggressive for a long retirement |
-| 5.0% | $37,500/yr | High risk over a 35-year horizon |
+<FinanceTable
+  columns={[
+    { key: 'rate',    header: 'Withdrawal Rate', highlight: true },
+    { key: 'annual',  header: 'Annual Income',    align: 'right' },
+    { key: 'monthly', header: 'Monthly (Pre-Tax)', align: 'right' },
+    { key: 'fit',     header: 'Best Fit' },
+  ]}
+  rows={[
+    { rate: '3.3%', annual: '$24,750', monthly: '~$2,060', fit: 'Conservative — 35+ year retirement' },
+    { rate: '3.5%', annual: '$26,250', monthly: '~$2,190', fit: 'Moderate' },
+    { rate: '4.0%', annual: '$30,000', monthly: '~$2,500', fit: 'Standard 30-year benchmark', _highlight: true },
+    { rate: '4.5%', annual: '$33,750', monthly: '~$2,810', fit: 'Aggressive for a long horizon' },
+    { rate: '5.0%', annual: '$37,500', monthly: '~$3,125', fit: 'High risk over a 35-year horizon' },
+  ]}
+  caption="Based on $750,000 portfolio · Pre-tax, pre-healthcare"
+/>
 
 If your annual spending is around $30,000 or less, $750,000 at 55 starts to look workable. If your spending is $45,000 to $60,000+, the math gets hard without another income source, part-time work, or unusually low healthcare costs.
 
@@ -151,16 +176,25 @@ A $750,000 portfolio can work for some retirees at 55, but the answer depends on
 
 This is usually the first question people ask, so here is the honest range:
 
-| Withdrawal Rate | Annual Income | Monthly (pre-tax) | Horizon fit |
-|----------------|---------------|-------------------|-------------|
-| 3.3% | $24,750 | ~$2,060 | Conservative — 35+ yr retirement |
-| 3.5% | $26,250 | ~$2,190 | Moderate |
-| 4.0% | $30,000 | ~$2,500 | Standard 30-yr benchmark |
-| 4.5% | $33,750 | ~$2,810 | Aggressive for a long horizon |
+<FinanceTable
+  columns={[
+    { key: 'rate',    header: 'Withdrawal Rate', highlight: true },
+    { key: 'annual',  header: 'Annual Income',    align: 'right' },
+    { key: 'monthly', header: 'Monthly (Pre-Tax)', align: 'right' },
+    { key: 'fit',     header: 'Best Fit' },
+  ]}
+  rows={[
+    { rate: '3.3%', annual: '$24,750', monthly: '~$2,060', fit: 'Conservative — 35+ year retirement' },
+    { rate: '3.5%', annual: '$26,250', monthly: '~$2,190', fit: 'Moderate' },
+    { rate: '4.0%', annual: '$30,000', monthly: '~$2,500', fit: 'Standard 30-year benchmark', _highlight: true },
+    { rate: '4.5%', annual: '$33,750', monthly: '~$2,810', fit: 'Aggressive for a long horizon' },
+  ]}
+  caption="Based on $750,000 portfolio · Pre-tax, pre-healthcare"
+/>
 
-The 4% rule gives you roughly **$2,500/month before taxes and healthcare**. That is the headline number most people see — and it sounds workable until you add $1,000–$1,500/month in healthcare premiums on top.
+The 4% rule gives you roughly $2,500 per month before taxes and healthcare. That is the headline number many people focus on — but the real usable amount can drop fast once you add health insurance, taxes, and irregular expenses.
 
-A more realistic net spending budget for someone retiring at 55 with $750,000 is $1,800–$2,200/month after healthcare — enough to cover modest housing, food, transportation, and basic lifestyle in a lower-cost area, but not enough for a high-cost city, frequent travel, or significant discretionary spending without additional income. If your actual spending is higher than that, the math gets hard without another income source.
+A more realistic net spending budget for someone retiring at 55 with $750,000 is $1,800–$2,200/month after healthcare — enough to cover modest housing, food, transportation, and basic lifestyle in a lower-cost area, but not enough for a high-cost city, frequent travel, or significant discretionary spending without additional income.
 
 ## Is $750,000 Enough for a Married Couple to Retire at 55?
 
@@ -183,11 +217,19 @@ Where it typically doesn't work: two people with $45,000–$60,000+ in combined 
 
 $750,000 has to work harder during the years before Social Security kicks in. Once it does, portfolio pressure drops significantly — which is why SS timing is one of the highest-leverage decisions in an early retirement plan.
 
-| Claiming Age | Approximate Benefit | Notes |
-|-------------|---------------------|-------|
-| 62 | ~70–75% of FRA amount | Reduced permanently |
-| 67 (FRA) | 100% | Full retirement age for most people born after 1960 |
-| 70 | ~124% of FRA amount | Maximum — 8%/yr delayed credits |
+<FinanceTable
+  columns={[
+    { key: 'age',     header: 'Claiming Age', highlight: true },
+    { key: 'benefit', header: 'Approx. Benefit' },
+    { key: 'notes',   header: 'Notes' },
+  ]}
+  rows={[
+    { age: '62',       benefit: '~70–75% of FRA', notes: 'Reduced permanently' },
+    { age: '67 (FRA)', benefit: '100%',            notes: 'Full retirement age for most born after 1960' },
+    { age: '70',       benefit: '~124% of FRA',    notes: 'Maximum — 8%/yr delayed credits', _highlight: true },
+  ]}
+  caption="Delaying from 62 to 70 can add $8,000–$15,000/yr in lifetime income"
+/>
 
 For a $750,000 portfolio, the difference between claiming at 62 vs 70 can be $8,000–$15,000/year in additional lifetime income. That gap significantly affects how long your portfolio needs to last and how aggressively it needs to be drawn down.
 
