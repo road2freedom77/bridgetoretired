@@ -126,7 +126,7 @@ export default function BridgeStrategyVisualizer() {
           Bridge Strategy Timeline
         </h3>
         <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 11, margin: 0 }}>
-          See how your three buckets work together from retirement to 90. Watch the 401k grow untouched during bridge years.
+          See how taxable, 401(k), and Roth balances work together from retirement to age 90 — while your 401(k) compounds untouched during the bridge years.
         </p>
       </div>
 
@@ -256,7 +256,7 @@ export default function BridgeStrategyVisualizer() {
             <strong style={{ color: COLORS.gold }}>
               {formatDollars(retirement401k * Math.pow(1 + returnRate / 100, bridgeYears))}
             </strong>{' '}
-            by age 59½ — without touching a dollar of it.
+            by age 59½ — before standard penalty-free access begins.
           </p>
         </div>
 
