@@ -209,10 +209,22 @@ export default function BridgeStrategyVisualizer() {
             <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.25)', marginTop: 2 }}>Age {retireAge} → 59½</div>
           </div>
           <div style={{ background: '#141C28', borderRadius: 10, padding: '12px 14px', border: '1px solid rgba(45,212,191,0.15)', borderTop: `3px solid ${COLORS.teal}` }}>
-            <div style={{ fontSize: 8, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', marginBottom: 4 }}>Taxable Needed</div>
+            <div style={{ fontSize: 8, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', marginBottom: 4 }}>Bridge Funding Needed</div>
             <div style={{ fontSize: 18, fontWeight: 700, color: COLORS.teal, fontFamily: 'Georgia, serif' }}>{formatDollars(taxableNeeded)}</div>
-            <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.25)', marginTop: 2 }}>
-              {isFunded ? '✓ Funded' : '⚠ Shortfall'}
+            <div style={{ marginTop: 6 }}>
+              {isFunded ? (
+                <span style={{
+                  display: 'inline-block', fontSize: 9, fontWeight: 700, letterSpacing: 1,
+                  textTransform: 'uppercase', color: '#0D1420', background: COLORS.sage,
+                  borderRadius: 4, padding: '2px 7px',
+                }}>✓ Fully Funded</span>
+              ) : (
+                <span style={{
+                  display: 'inline-block', fontSize: 9, fontWeight: 700, letterSpacing: 1,
+                  textTransform: 'uppercase', color: '#0D1420', background: COLORS.red,
+                  borderRadius: 4, padding: '2px 7px',
+                }}>⚠ Shortfall</span>
+              )}
             </div>
           </div>
           <div style={{ background: '#141C28', borderRadius: 10, padding: '12px 14px', border: '1px solid rgba(74,222,128,0.15)', borderTop: `3px solid ${COLORS.sage}` }}>
@@ -247,6 +259,37 @@ export default function BridgeStrategyVisualizer() {
             by age 59½ — without touching a dollar of it.
           </p>
         </div>
+
+        {/* Free CTA */}
+        {!isPro && (
+          <div style={{
+            background: 'rgba(45,212,191,0.05)',
+            border: '1px solid rgba(45,212,191,0.15)',
+            borderRadius: 10,
+            padding: '14px 18px',
+            marginBottom: 12,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 16,
+          }}>
+            <div>
+              <div style={{ fontSize: 12, fontWeight: 600, color: COLORS.white, marginBottom: 3 }}>
+                Run your own numbers in the full calculator
+              </div>
+              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)' }}>
+                Enter your exact balances, spending, and retirement age — free, no account required.
+              </div>
+            </div>
+            <a href="/#calculator" style={{
+              background: 'transparent', color: COLORS.teal, border: `1px solid ${COLORS.teal}`,
+              fontFamily: 'monospace', fontWeight: 700, fontSize: 11, padding: '8px 16px',
+              borderRadius: 8, textDecoration: 'none', whiteSpace: 'nowrap' as const, flexShrink: 0,
+            }}>
+              Try Free →
+            </a>
+          </div>
+        )}
 
         {/* Pro upsell */}
         {!isPro && (
