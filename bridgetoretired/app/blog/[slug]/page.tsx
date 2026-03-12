@@ -4,6 +4,7 @@ import { format }             from 'date-fns'
 import { useMDXComponent } from 'next-contentlayer2/hooks'
 import type { Metadata }      from 'next'
 import Link                   from 'next/link'
+import Script                 from 'next/script'
 import SequenceOfReturnsSimulator from '@/components/SequenceOfReturnsSimulator'
 import BridgeStrategyVisualizer from '@/components/BridgeStrategyVisualizer'
 import RothLadderBuilder from '@/components/RothLadderBuilder'
@@ -16,6 +17,11 @@ import TaxableBrokerageAnalyzer from '@/components/TaxableBrokerageAnalyzer'
 import SEPPCalculator from '@/components/SEPPCalculator'
 
 interface Props { params: { slug: string } }
+
+interface FAQItem {
+  question: string
+  answer: string
+}
 
 function getMDX(code: string) {
   // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -51,9 +57,73 @@ export default function PostPage({ params }: Props) {
   if (!post) notFound()
 
   const MDXContent = getMDX(post.body.code)
+  const url = `https://bridgetoretired.com/blog/${params.slug}`
+
+  const articleSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: post.title,
+    description: post.description,
+    author: {
+      '@type': 'Organization',
+      name: 'BridgeToRetired',
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: 'BridgeToRetired',
+      logo: {
+        '@type': 'ImageObject',
+        url: 'https://bridgetoretired.com/logo.png',
+      },
+    },
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': url,
+    },
+    datePublished: post.date,
+  }
+
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://bridgetoretired.com/' },
+      { '@type': 'ListItem', position: 2, name: 'Blog', item: 'https://bridgetoretired.com/blog' },
+      { '@type': 'ListItem', position: 3, name: post.title, item: url },
+    ],
+  }
+
+  // Optional: add faq array to post frontmatter to get FAQPage schema
+  // e.g. faq: [{ question: "...", answer: "..." }]
+  const faqItems = (post as any).faq as FAQItem[] | undefined
+  const faqSchema = faqItems?.length ? {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map(item => ({
+      '@type': 'Question',
+      name: item.question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: item.answer,
+      },
+    })),
+  } : null
 
   return (
     <div className="min-h-screen bg-black">
+      {/* JSON-LD Schema */}
+      <Script id="schema-article" type="application/ld+json" strategy="beforeInteractive"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
+      />
+      <Script id="schema-breadcrumb" type="application/ld+json" strategy="beforeInteractive"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
+      {faqSchema && (
+        <Script id="schema-faq" type="application/ld+json" strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+        />
+      )}
+
       <div className="bg-navy border-b border-white/[0.06]">
         <div className="max-w-3xl mx-auto px-5 pt-14 pb-12">
           <Link href="/blog" className="font-mono text-[10px] tracking-widest uppercase text-white/30 hover:text-gold transition-colors flex items-center gap-2 mb-8">
