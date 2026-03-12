@@ -45,16 +45,19 @@ export default function BridgeStrategyVisualizer() {
   const { user } = useUser()
   const isPro = (user?.publicMetadata as any)?.isPro === true
 
-  const [retireAge, setRetireAge] = useState(52)
-  const [taxable, setTaxable] = useState(400_000)
-  const [retirement401k, setRetirement401k] = useState(800_000)
-  const [rothBalance, setRothBalance] = useState(150_000)
-  const [annualSpend, setAnnualSpend] = useState(60_000)
+  const [retireAge, setRetireAge] = useState(55)
+  const [taxable, setTaxable] = useState(250_000)
+  const [retirement401k, setRetirement401k] = useState(400_000)
+  const [rothBalance, setRothBalance] = useState(100_000)
+  const [annualSpend, setAnnualSpend] = useState(35_000)
   const [returnRate, setReturnRate] = useState(6)
 
   const bridgeEnd = 59.5
   const ssAge = 67
   const endAge = 90
+
+  // FIX: parentheses were missing — previously computed as (59.5 - retireAge * 10) / 10
+  const bridgeYears = Math.round((bridgeEnd - retireAge) * 10) / 10
 
   const data = useMemo(() => {
     const rows = []
@@ -98,10 +101,12 @@ export default function BridgeStrategyVisualizer() {
     return rows
   }, [retireAge, taxable, retirement401k, rothBalance, annualSpend, returnRate])
 
-  const bridgeYears = Math.round(bridgeEnd - retireAge * 10) / 10
   const totalAtEnd = (data[data.length - 1]?.['Taxable'] ?? 0) +
     (data[data.length - 1]?.['401k / IRA'] ?? 0) +
     (data[data.length - 1]?.['Roth'] ?? 0)
+
+  const taxableNeeded = Math.max(0, annualSpend * bridgeYears)
+  const isFunded = taxable >= taxableNeeded
 
   return (
     <div style={{
@@ -130,9 +135,9 @@ export default function BridgeStrategyVisualizer() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, marginBottom: 20 }}>
           {[
             { label: 'Retirement Age', value: retireAge, set: setRetireAge, min: 40, max: 58, step: 1, fmt: (v: number) => `Age ${v}` },
-            { label: 'Annual Spending', value: annualSpend, set: setAnnualSpend, min: 30000, max: 150000, step: 5000, fmt: (v: number) => formatDollars(v) },
-            { label: 'Taxable Account', value: taxable, set: setTaxable, min: 100000, max: 2000000, step: 50000, fmt: (v: number) => formatDollars(v) },
-            { label: '401k / IRA Balance', value: retirement401k, set: setRetirement401k, min: 200000, max: 3000000, step: 50000, fmt: (v: number) => formatDollars(v) },
+            { label: 'Annual Spending', value: annualSpend, set: setAnnualSpend, min: 20000, max: 150000, step: 5000, fmt: (v: number) => formatDollars(v) },
+            { label: 'Taxable Account', value: taxable, set: setTaxable, min: 0, max: 2000000, step: 25000, fmt: (v: number) => formatDollars(v) },
+            { label: '401k / IRA Balance', value: retirement401k, set: setRetirement401k, min: 0, max: 3000000, step: 50000, fmt: (v: number) => formatDollars(v) },
             { label: 'Roth Balance', value: rothBalance, set: setRothBalance, min: 0, max: 500000, step: 25000, fmt: (v: number) => formatDollars(v) },
             { label: 'Annual Return', value: returnRate, set: setReturnRate, min: 3, max: 10, step: 0.5, fmt: (v: number) => `${v}%` },
           ].map(({ label, value, set, min, max, step, fmt }) => (
@@ -205,9 +210,9 @@ export default function BridgeStrategyVisualizer() {
           </div>
           <div style={{ background: '#141C28', borderRadius: 10, padding: '12px 14px', border: '1px solid rgba(45,212,191,0.15)', borderTop: `3px solid ${COLORS.teal}` }}>
             <div style={{ fontSize: 8, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', marginBottom: 4 }}>Taxable Needed</div>
-            <div style={{ fontSize: 18, fontWeight: 700, color: COLORS.teal, fontFamily: 'Georgia, serif' }}>{formatDollars(annualSpend * bridgeYears)}</div>
+            <div style={{ fontSize: 18, fontWeight: 700, color: COLORS.teal, fontFamily: 'Georgia, serif' }}>{formatDollars(taxableNeeded)}</div>
             <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.25)', marginTop: 2 }}>
-              {taxable >= annualSpend * bridgeYears ? '✓ Funded' : '⚠ Shortfall'}
+              {isFunded ? '✓ Funded' : '⚠ Shortfall'}
             </div>
           </div>
           <div style={{ background: '#141C28', borderRadius: 10, padding: '12px 14px', border: '1px solid rgba(74,222,128,0.15)', borderTop: `3px solid ${COLORS.sage}` }}>
@@ -220,12 +225,12 @@ export default function BridgeStrategyVisualizer() {
         </div>
 
         {/* Warning */}
-        {taxable < annualSpend * bridgeYears && (
+        {!isFunded && (
           <div style={{ background: 'rgba(248,113,113,0.06)', border: '1px solid rgba(248,113,113,0.2)', borderLeft: `3px solid ${COLORS.red}`, borderRadius: 8, padding: '12px 14px', marginBottom: 16 }}>
             <div style={{ fontSize: 10, color: COLORS.red, fontWeight: 600, marginBottom: 4 }}>⚠ BRIDGE FUNDING GAP</div>
             <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', margin: 0, lineHeight: 1.6 }}>
               Your taxable account ({formatDollars(taxable)}) may not fully fund the {bridgeYears.toFixed(1)}-year bridge at {formatDollars(annualSpend)}/yr spending.
-              Consider Roth contributions, Rule 72(t), or reducing spending to close the gap.
+              Consider Roth contributions, Rule of 55, Rule 72(t), or reducing spending to close the gap.
             </p>
           </div>
         )}
@@ -243,7 +248,7 @@ export default function BridgeStrategyVisualizer() {
           </p>
         </div>
 
-        {/* Pro upsell — hidden for Pro users */}
+        {/* Pro upsell */}
         {!isPro && (
           <div style={{
             background: 'linear-gradient(135deg, rgba(232,184,75,0.06) 0%, rgba(232,184,75,0.02) 100%)',
