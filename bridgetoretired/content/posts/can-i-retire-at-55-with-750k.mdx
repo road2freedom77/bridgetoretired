@@ -46,15 +46,15 @@ If you leave your employer in the calendar year you turn 55 or later, you may qu
 
 <FinanceTable
   columns={[
-    { key: 'question', header: 'Question', highlight: true },
-    { key: 'answer',   header: 'Answer' },
+    { key: "question", header: "Question", highlight: true },
+    { key: "answer",   header: "Answer" },
   ]}
   rows={[
-    { question: 'Who qualifies?',  answer: 'Must separate from service in or after the calendar year you turn 55 (age 50 for public safety workers)' },
-    { question: 'Which accounts?', answer: 'Only the 401(k) from the employer you are leaving — not IRAs, not old 401(k)s from previous employers' },
-    { question: 'Penalty?',        answer: 'No 10% early withdrawal penalty — ordinary income tax still applies' },
-    { question: 'Best for?',       answer: 'Someone with a large current-employer 401(k) retiring at exactly 55' },
-    { question: 'vs. Rule 72(t)?', answer: 'Rule of 55 requires no fixed payment schedule. Rule 72(t) works at any age on any account but locks you into SEPP payments for 5 years or until 59½ — whichever is later' },
+    { question: "Who qualifies?",   answer: "Must separate from service in or after the calendar year you turn 55 (age 50 for public safety workers)" },
+    { question: "Which accounts?",  answer: "Only the 401(k) from the employer you are leaving — not IRAs, not old 401(k)s from previous employers" },
+    { question: "Penalty?",         answer: "No 10% early withdrawal penalty — ordinary income tax still applies" },
+    { question: "Best for?",        answer: "Someone with a large current-employer 401(k) retiring at exactly 55" },
+    { question: "vs. Rule 72(t)?",  answer: "Rule of 55 requires no fixed payment schedule. Rule 72(t) works at any age on any account but locks you into SEPP payments for 5 years or until age 59.5 — whichever is later" },
   ]}
 />
 
@@ -68,15 +68,15 @@ $750,000 structured two different ways produces two very different retirements a
 
 <FinanceTable
   columns={[
-    { key: 'person',  header: '' },
-    { key: 'taxable', header: 'Taxable',        align: 'right' },
-    { key: 'k401',    header: '401(k)',          align: 'right' },
-    { key: 'roth',    header: 'Roth',            align: 'right' },
-    { key: 'bridge',  header: 'Bridge Reality' },
+    { key: "person",  header: "" },
+    { key: "taxable", header: "Taxable",       align: "right" },
+    { key: "k401",    header: "401(k)",         align: "right" },
+    { key: "roth",    header: "Roth",           align: "right" },
+    { key: "bridge",  header: "Bridge Reality" },
   ]}
   rows={[
-    { person: 'Person A', taxable: '$300,000', k401: '$350,000', roth: '$100,000', bridge: 'Workable — 4.5 years of bridge well covered', _highlight: true },
-    { person: 'Person B', taxable: '$40,000',  k401: '$660,000', roth: '$50,000',  bridge: 'Problem — unless Rule of 55 or 72(t) applies' },
+    { person: "Person A", taxable: "$300,000", k401: "$350,000", roth: "$100,000", bridge: "Workable — 4.5 years of bridge well covered", _highlight: true },
+    { person: "Person B", taxable: "$40,000",  k401: "$660,000", roth: "$50,000",  bridge: "Problem — unless Rule of 55 or 72(t) applies" },
   ]}
   caption="Same total portfolio · Very different early-retirement flexibility"
 />
@@ -113,19 +113,19 @@ Before running detailed scenarios, a quick withdrawal rate screen gives you a st
 
 <FinanceTable
   columns={[
-    { key: 'rate',    header: 'Withdrawal Rate', highlight: true },
-    { key: 'annual',  header: 'Annual Income',    align: 'right' },
-    { key: 'monthly', header: 'Monthly (Pre-Tax)', align: 'right' },
-    { key: 'fit',     header: 'Best Fit' },
+    { key: "rate",    header: "Withdrawal Rate", highlight: true },
+    { key: "annual",  header: "Annual Income",   align: "right" },
+    { key: "monthly", header: "Monthly Pre-Tax", align: "right" },
+    { key: "fit",     header: "Best Fit" },
   ]}
   rows={[
-    { rate: '3.3%', annual: '$24,750', monthly: '~$2,060', fit: 'Conservative — 35+ year retirement' },
-    { rate: '3.5%', annual: '$26,250', monthly: '~$2,190', fit: 'Moderate' },
-    { rate: '4.0%', annual: '$30,000', monthly: '~$2,500', fit: 'Standard 30-year benchmark', _highlight: true },
-    { rate: '4.5%', annual: '$33,750', monthly: '~$2,810', fit: 'Aggressive for a long horizon' },
-    { rate: '5.0%', annual: '$37,500', monthly: '~$3,125', fit: 'High risk over a 35-year horizon' },
+    { rate: "3.3%", annual: "$24,750", monthly: "~$2,060", fit: "Conservative — 35+ year retirement" },
+    { rate: "3.5%", annual: "$26,250", monthly: "~$2,190", fit: "Moderate" },
+    { rate: "4.0%", annual: "$30,000", monthly: "~$2,500", fit: "Standard 30-year benchmark", _highlight: true },
+    { rate: "4.5%", annual: "$33,750", monthly: "~$2,810", fit: "Aggressive for a long horizon" },
+    { rate: "5.0%", annual: "$37,500", monthly: "~$3,125", fit: "High risk over a 35-year horizon" },
   ]}
-  caption="Based on $750,000 portfolio · Pre-tax, pre-healthcare"
+  caption="Based on $750,000 portfolio — pre-tax, pre-healthcare"
 />
 
 If your annual spending is around $30,000 or less, $750,000 at 55 starts to look workable. If your spending is $45,000 to $60,000+, the math gets hard without another income source, part-time work, or unusually low healthcare costs.
@@ -178,18 +178,18 @@ This is usually the first question people ask, so here is the honest range:
 
 <FinanceTable
   columns={[
-    { key: 'rate',    header: 'Withdrawal Rate', highlight: true },
-    { key: 'annual',  header: 'Annual Income',    align: 'right' },
-    { key: 'monthly', header: 'Monthly (Pre-Tax)', align: 'right' },
-    { key: 'fit',     header: 'Best Fit' },
+    { key: "rate",    header: "Withdrawal Rate", highlight: true },
+    { key: "annual",  header: "Annual Income",   align: "right" },
+    { key: "monthly", header: "Monthly Pre-Tax", align: "right" },
+    { key: "fit",     header: "Best Fit" },
   ]}
   rows={[
-    { rate: '3.3%', annual: '$24,750', monthly: '~$2,060', fit: 'Conservative — 35+ year retirement' },
-    { rate: '3.5%', annual: '$26,250', monthly: '~$2,190', fit: 'Moderate' },
-    { rate: '4.0%', annual: '$30,000', monthly: '~$2,500', fit: 'Standard 30-year benchmark', _highlight: true },
-    { rate: '4.5%', annual: '$33,750', monthly: '~$2,810', fit: 'Aggressive for a long horizon' },
+    { rate: "3.3%", annual: "$24,750", monthly: "~$2,060", fit: "Conservative — 35+ year retirement" },
+    { rate: "3.5%", annual: "$26,250", monthly: "~$2,190", fit: "Moderate" },
+    { rate: "4.0%", annual: "$30,000", monthly: "~$2,500", fit: "Standard 30-year benchmark", _highlight: true },
+    { rate: "4.5%", annual: "$33,750", monthly: "~$2,810", fit: "Aggressive for a long horizon" },
   ]}
-  caption="Based on $750,000 portfolio · Pre-tax, pre-healthcare"
+  caption="Based on $750,000 portfolio — pre-tax, pre-healthcare"
 />
 
 The 4% rule gives you roughly $2,500 per month before taxes and healthcare. That is the headline number many people focus on — but the real usable amount can drop fast once you add health insurance, taxes, and irregular expenses.
@@ -219,14 +219,14 @@ $750,000 has to work harder during the years before Social Security kicks in. On
 
 <FinanceTable
   columns={[
-    { key: 'age',     header: 'Claiming Age', highlight: true },
-    { key: 'benefit', header: 'Approx. Benefit' },
-    { key: 'notes',   header: 'Notes' },
+    { key: "age",     header: "Claiming Age",   highlight: true },
+    { key: "benefit", header: "Approx. Benefit" },
+    { key: "notes",   header: "Notes" },
   ]}
   rows={[
-    { age: '62',       benefit: '~70–75% of FRA', notes: 'Reduced permanently' },
-    { age: '67 (FRA)', benefit: '100%',            notes: 'Full retirement age for most born after 1960' },
-    { age: '70',       benefit: '~124% of FRA',    notes: 'Maximum — 8%/yr delayed credits', _highlight: true },
+    { age: "62",       benefit: "70-75% of FRA",  notes: "Reduced permanently" },
+    { age: "67 (FRA)", benefit: "100%",            notes: "Full retirement age for most born after 1960" },
+    { age: "70",       benefit: "~124% of FRA",   notes: "Maximum — 8% per year in delayed credits", _highlight: true },
   ]}
   caption="Delaying from 62 to 70 can add $8,000–$15,000/yr in lifetime income"
 />
@@ -266,7 +266,7 @@ Your bridge funding sources in order of simplicity:
 1. **Taxable brokerage** — cleanest option, no restrictions, capital gains rates
 2. **Roth contributions** (not earnings) — accessible at any age, tax-free and penalty-free
 3. **Current employer 401(k) via Rule of 55** — penalty-free if you qualify, ordinary income tax applies
-4. **Any account via 72(t) SEPP** — works at any age on any account, but locks you into fixed payments for 5 years or until 59½
+4. **Any account via 72(t) SEPP** — works at any age on any account, but locks you into fixed payments for 5 years or until age 59.5
 
 The [taxable brokerage account](/blog/taxable-brokerage-secret-weapon) is your most flexible bridge tool. If you have not built enough in taxable, assess whether Rule of 55 or 72(t) applies before concluding the plan doesn't work.
 
@@ -311,7 +311,7 @@ For most couples, it's tight. Low housing costs, lean spending ($28,000–$35,00
 That creates a bridge-year problem unless you qualify for the Rule of 55 (leaving your employer at age 55 or older) or are willing to set up a 72(t) SEPP structure. Without a penalty-free access strategy, a 401(k)-heavy portfolio leaves you income-poor during the bridge years even if your net worth looks fine on paper. Do not roll your current employer's 401(k) into an IRA if you plan to use Rule of 55.
 
 **What is the Rule of 55 and how is it different from Rule 72(t)?**
-The Rule of 55 lets you withdraw from your current employer's 401(k) without the 10% penalty if you leave that job in the calendar year you turn 55 or later. It requires no fixed payment schedule and no IRS approval. Rule 72(t) is more flexible — it works on any account at any age — but locks you into substantially equal periodic payments (SEPP) for 5 years or until 59½, whichever is later. For someone retiring at exactly 55 with a large current-employer 401(k), Rule of 55 is usually simpler.
+The Rule of 55 lets you withdraw from your current employer's 401(k) without the 10% penalty if you leave that job in the calendar year you turn 55 or later. It requires no fixed payment schedule and no IRS approval. Rule 72(t) is more flexible — it works on any account at any age — but locks you into substantially equal periodic payments (SEPP) for 5 years or until age 59.5, whichever is later. For someone retiring at exactly 55 with a large current-employer 401(k), Rule of 55 is usually simpler.
 
 **Should I use the 4% rule for this decision?**
 Use it as a rough screening tool, not a final answer. The 4% rule was designed for 30-year retirements starting around 65. At 55 you may be planning a 35-year retirement — which brings the research-supported safe withdrawal rate down to roughly 3.3%–3.5%. Model your specific numbers rather than anchoring to 4%.
