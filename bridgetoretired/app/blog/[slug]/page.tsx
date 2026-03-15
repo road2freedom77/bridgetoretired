@@ -180,8 +180,3 @@ export default function PostPage({ params }: Props) {
     </div>
   )
 }
-```
-
-Commit:
-```
-fix: restore [slug]/page.tsx with contentlayer2 import and FinanceTable component
