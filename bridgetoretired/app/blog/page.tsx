@@ -1,181 +1,88 @@
-import { allPosts } from 'contentlayer2/generated'
-import { notFound }           from 'next/navigation'
-import { format }             from 'date-fns'
-import { useMDXComponent }    from 'next-contentlayer2/hooks'
-import type { Metadata }      from 'next'
-import Link                   from 'next/link'
-import Script                 from 'next/script'
-import SequenceOfReturnsSimulator from '@/components/SequenceOfReturnsSimulator'
-import BridgeStrategyVisualizer   from '@/components/BridgeStrategyVisualizer'
-import RothLadderBuilder          from '@/components/RothLadderBuilder'
-import ACASubsidyEstimator        from '@/components/ACASubsidyEstimator'
-import SocialSecurityCalculator   from '@/components/SocialSecurityCalculator'
-import FIRENumberCalculator       from '@/components/FIRENumberCalculator'
-import WithdrawalOrderOptimizer   from '@/components/WithdrawalOrderOptimizer'
-import TaxBracketVisualizer       from '@/components/TaxBracketVisualizer'
-import TaxableBrokerageAnalyzer   from '@/components/TaxableBrokerageAnalyzer'
-import SEPPCalculator             from '@/components/SEPPCalculator'
-import FinanceTable               from '@/components/FinanceTable'
+import { getAllPosts }  from '@/lib/blog'
+import { format }       from 'date-fns'
+import Link             from 'next/link'
+import type { Metadata } from 'next'
 
-interface Props { params: { slug: string } }
-
-interface FAQItem {
-  question: string
-  answer: string
+export const metadata: Metadata = {
+  title: 'Blog – Early Retirement Guides & Strategy',
+  description: 'In-depth guides on bridge strategies, Roth conversions, tax planning, and everything FIRE for early retirees.',
 }
 
-function getMDX(code: string) {
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  return useMDXComponent(code)
-}
-
-export async function generateStaticParams() {
-  return allPosts.map(p => ({ slug: p.slug }))
-}
-
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const post = allPosts.find(p => p.slug === params.slug)
-  if (!post) return {}
-  const url = `https://bridgetoretired.com/blog/${params.slug}`
-  return {
-    title:       post.title,
-    description: post.description,
-    alternates: {
-      canonical: url,
-    },
-    openGraph: {
-      title:       post.title,
-      description: post.description,
-      type:        'article',
-      publishedTime: post.date,
-      url,
-    },
-  }
-}
-
-export default function PostPage({ params }: Props) {
-  const post = allPosts.find(p => p.slug === params.slug)
-  if (!post) notFound()
-
-  const MDXContent = getMDX(post.body.code)
-  const url = `https://bridgetoretired.com/blog/${params.slug}`
-
-  const articleSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'Article',
-    headline: post.title,
-    description: post.description,
-    author: {
-      '@type': 'Organization',
-      name: 'BridgeToRetired',
-    },
-    publisher: {
-      '@type': 'Organization',
-      name: 'BridgeToRetired',
-      logo: {
-        '@type': 'ImageObject',
-        url: 'https://bridgetoretired.com/logo.png',
-      },
-    },
-    mainEntityOfPage: {
-      '@type': 'WebPage',
-      '@id': url,
-    },
-    datePublished: post.date,
-  }
-
-  const breadcrumbSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://bridgetoretired.com/' },
-      { '@type': 'ListItem', position: 2, name: 'Blog', item: 'https://bridgetoretired.com/blog' },
-      { '@type': 'ListItem', position: 3, name: post.title, item: url },
-    ],
-  }
-
-  const faqItems = (post as any).faq as FAQItem[] | undefined
-  const faqSchema = faqItems?.length ? {
-    '@context': 'https://schema.org',
-    '@type': 'FAQPage',
-    mainEntity: faqItems.map(item => ({
-      '@type': 'Question',
-      name: item.question,
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: item.answer,
-      },
-    })),
-  } : null
+export default function BlogPage() {
+  const posts    = getAllPosts()
+  const featured = posts.find(p => p.featured) ?? posts[0]
+  const rest     = posts.filter(p => p !== featured)
 
   return (
     <div className="min-h-screen bg-black">
-      {/* JSON-LD Schema */}
-      <Script id="schema-article" type="application/ld+json" strategy="beforeInteractive"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
-      />
-      <Script id="schema-breadcrumb" type="application/ld+json" strategy="beforeInteractive"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
-      />
-      {faqSchema && (
-        <Script id="schema-faq" type="application/ld+json" strategy="beforeInteractive"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
-        />
-      )}
-
-      <div className="bg-navy border-b border-white/[0.06]">
-        <div className="max-w-3xl mx-auto px-5 pt-14 pb-12">
-          <Link href="/blog" className="font-mono text-[10px] tracking-widest uppercase text-white/30 hover:text-gold transition-colors flex items-center gap-2 mb-8">
-            ← Back to Blog
-          </Link>
-          <div className="font-mono text-[9px] tracking-widest uppercase text-gold mb-4">
-            {post.category}
+      <div className="bg-navy border-b border-white/[0.06] py-16 px-5">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-center gap-3 font-mono text-[10px] tracking-[0.24em] uppercase text-gold mb-4">
+            <span className="block w-6 h-px bg-gold" />
+            The Blog
           </div>
-          <h1 className="font-syne font-bold text-[clamp(26px,4vw,46px)] tracking-tight text-white leading-tight mb-5">
-            {post.title}
+          <h1 className="font-syne font-bold text-[clamp(32px,4vw,54px)] tracking-tight text-white mb-3">
+            Early Retirement Guides
           </h1>
-          <p className="text-white/55 text-[15px] leading-relaxed mb-6">
-            {post.description}
+          <p className="text-white/50 text-[15px] max-w-lg leading-relaxed">
+            In-depth, research-backed guides on bridge strategy, tax efficiency, and the FIRE path.
           </p>
-          <div className="flex items-center gap-4 font-mono text-[10px] text-white/30">
-            <span>{format(new Date(post.date), 'MMMM d, yyyy')}</span>
-            <span>·</span>
-            <span>{post.readTime}</span>
-          </div>
         </div>
       </div>
 
-      <div className="max-w-3xl mx-auto px-5 py-14">
-        <article className="prose-dark">
-          <MDXContent components={{
-            SequenceOfReturnsSimulator,
-            BridgeStrategyVisualizer,
-            RothLadderBuilder,
-            ACASubsidyEstimator,
-            SocialSecurityCalculator,
-            FIRENumberCalculator,
-            WithdrawalOrderOptimizer,
-            TaxBracketVisualizer,
-            TaxableBrokerageAnalyzer,
-            SEPPCalculator,
-            FinanceTable,
-          }} />
-        </article>
+      <div className="max-w-7xl mx-auto px-5 py-16">
+        {featured && (
+          <div className="mb-14">
+            <div className="font-mono text-[9px] tracking-widest uppercase text-white/30 mb-5">Featured</div>
+            <Link href={`/blog/${featured.slug}`} className="group block bg-ink border border-white/[0.07] rounded-xl overflow-hidden hover:border-gold/20 transition-all duration-300">
+              <div className="grid md:grid-cols-[1fr_1.4fr]">
+                <div className="h-56 md:h-full bg-slate flex items-center justify-center relative overflow-hidden">
+                  <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_60%_at_30%_50%,rgba(232,184,75,0.1),transparent)]" />
+                  <div className="font-syne font-black text-[120px] text-gold/[0.06] absolute right-4 bottom-0 leading-none">01</div>
+                  <span className="text-6xl relative z-10">🌉</span>
+                </div>
+                <div className="p-8 md:p-10">
+                  <div className="font-mono text-[9px] tracking-widest uppercase text-gold mb-3">{featured.category}</div>
+                  <h2 className="font-syne font-bold text-[22px] tracking-tight text-white mb-4 leading-tight group-hover:text-gold/90 transition-colors">
+                    {featured.title}
+                  </h2>
+                  <p className="text-white/50 text-[14px] leading-[1.75] mb-6">{featured.description}</p>
+                  <div className="flex items-center gap-4 font-mono text-[10px] text-white/30">
+                    <span>{format(new Date(featured.date), 'MMM d, yyyy')}</span>
+                    <span>·</span>
+                    <span>{featured.readTime}</span>
+                  </div>
+                </div>
+              </div>
+            </Link>
+          </div>
+        )}
 
-        <div className="mt-16 bg-ink border border-white/[0.07] rounded-xl p-7 text-center">
-          <div className="font-mono text-[9px] tracking-widest uppercase text-gold mb-3">Free Tool</div>
-          <h3 className="font-syne font-bold text-[20px] tracking-tight text-white mb-3">
-            Model this in the Bridge Planner
-          </h3>
-          <p className="text-white/50 text-[13px] mb-5 leading-relaxed">
-            Download the free spreadsheet and run your own numbers.
-          </p>
-          <Link
-            href="/#download"
-            className="inline-block bg-gold text-black font-syne font-semibold text-[12px] tracking-wide px-6 py-3 rounded hover:opacity-85 transition-opacity"
-          >
-            Download Free Planner →
-          </Link>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {rest.map(post => (
+            <Link
+              key={post.slug}
+              href={`/blog/${post.slug}`}
+              className="group bg-ink border border-white/[0.07] rounded-xl overflow-hidden hover:border-gold/20 hover:-translate-y-1 transition-all duration-300"
+            >
+              <div className="h-36 bg-slate flex items-center justify-center relative overflow-hidden">
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_60%_at_50%_50%,rgba(232,184,75,0.07),transparent)]" />
+                <span className="text-4xl relative z-10">📊</span>
+              </div>
+              <div className="p-5 pb-6">
+                <div className="font-mono text-[9px] tracking-widest uppercase text-gold mb-2">{post.category}</div>
+                <h3 className="font-syne font-semibold text-[15px] tracking-tight text-white mb-3 leading-snug group-hover:text-gold/90 transition-colors">
+                  {post.title}
+                </h3>
+                <p className="text-white/45 text-[12px] leading-[1.7] mb-4 line-clamp-2">{post.description}</p>
+                <div className="flex items-center gap-3 font-mono text-[9.5px] text-white/25">
+                  <span>{format(new Date(post.date), 'MMM d, yyyy')}</span>
+                  <span>·</span>
+                  <span>{post.readTime}</span>
+                </div>
+              </div>
+            </Link>
+          ))}
         </div>
       </div>
     </div>

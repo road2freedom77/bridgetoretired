@@ -1,20 +1,21 @@
-import { allPosts }          from 'contentlayer/generated'
+import { allPosts }          from 'contentlayer2/generated'
 import { notFound }           from 'next/navigation'
 import { format }             from 'date-fns'
-import { useMDXComponent } from 'next-contentlayer2/hooks'
+import { useMDXComponent }    from 'next-contentlayer2/hooks'
 import type { Metadata }      from 'next'
 import Link                   from 'next/link'
 import Script                 from 'next/script'
 import SequenceOfReturnsSimulator from '@/components/SequenceOfReturnsSimulator'
-import BridgeStrategyVisualizer from '@/components/BridgeStrategyVisualizer'
-import RothLadderBuilder from '@/components/RothLadderBuilder'
-import ACASubsidyEstimator from '@/components/ACASubsidyEstimator'
-import SocialSecurityCalculator from '@/components/SocialSecurityCalculator'
-import FIRENumberCalculator from '@/components/FIRENumberCalculator'
-import WithdrawalOrderOptimizer from '@/components/WithdrawalOrderOptimizer'
-import TaxBracketVisualizer from '@/components/TaxBracketVisualizer'
-import TaxableBrokerageAnalyzer from '@/components/TaxableBrokerageAnalyzer'
-import SEPPCalculator from '@/components/SEPPCalculator'
+import BridgeStrategyVisualizer   from '@/components/BridgeStrategyVisualizer'
+import RothLadderBuilder          from '@/components/RothLadderBuilder'
+import ACASubsidyEstimator        from '@/components/ACASubsidyEstimator'
+import SocialSecurityCalculator   from '@/components/SocialSecurityCalculator'
+import FIRENumberCalculator       from '@/components/FIRENumberCalculator'
+import WithdrawalOrderOptimizer   from '@/components/WithdrawalOrderOptimizer'
+import TaxBracketVisualizer       from '@/components/TaxBracketVisualizer'
+import TaxableBrokerageAnalyzer   from '@/components/TaxableBrokerageAnalyzer'
+import SEPPCalculator             from '@/components/SEPPCalculator'
+import FinanceTable               from '@/components/FinanceTable'
 
 interface Props { params: { slug: string } }
 
@@ -93,8 +94,6 @@ export default function PostPage({ params }: Props) {
     ],
   }
 
-  // Optional: add faq array to post frontmatter to get FAQPage schema
-  // e.g. faq: [{ question: "...", answer: "..." }]
   const faqItems = (post as any).faq as FAQItem[] | undefined
   const faqSchema = faqItems?.length ? {
     '@context': 'https://schema.org',
@@ -111,7 +110,6 @@ export default function PostPage({ params }: Props) {
 
   return (
     <div className="min-h-screen bg-black">
-      {/* JSON-LD Schema */}
       <Script id="schema-article" type="application/ld+json" strategy="beforeInteractive"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
       />
@@ -148,7 +146,19 @@ export default function PostPage({ params }: Props) {
 
       <div className="max-w-3xl mx-auto px-5 py-14">
         <article className="prose-dark">
-          <MDXContent components={{ SequenceOfReturnsSimulator, BridgeStrategyVisualizer, RothLadderBuilder, ACASubsidyEstimator, SocialSecurityCalculator, FIRENumberCalculator, WithdrawalOrderOptimizer, TaxBracketVisualizer, TaxableBrokerageAnalyzer, SEPPCalculator }} />
+          <MDXContent components={{
+            SequenceOfReturnsSimulator,
+            BridgeStrategyVisualizer,
+            RothLadderBuilder,
+            ACASubsidyEstimator,
+            SocialSecurityCalculator,
+            FIRENumberCalculator,
+            WithdrawalOrderOptimizer,
+            TaxBracketVisualizer,
+            TaxableBrokerageAnalyzer,
+            SEPPCalculator,
+            FinanceTable,
+          }} />
         </article>
 
         <div className="mt-16 bg-ink border border-white/[0.07] rounded-xl p-7 text-center">
@@ -170,3 +180,8 @@ export default function PostPage({ params }: Props) {
     </div>
   )
 }
+```
+
+Commit:
+```
+fix: restore [slug]/page.tsx with contentlayer2 import and FinanceTable component
