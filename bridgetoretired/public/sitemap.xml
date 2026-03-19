@@ -112,5 +112,10 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
+  <url>
+  <loc>https://bridgetoretired.com/blog/how-do-i-retire-at-50</loc>
+  <lastmod>2026-03-19</lastmod>
+  <priority>0.8</priority>
+</url>
 
 </urlset>
