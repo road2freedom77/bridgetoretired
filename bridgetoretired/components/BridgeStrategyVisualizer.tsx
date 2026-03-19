@@ -137,7 +137,7 @@ export default function BridgeStrategyVisualizer({
           Interactive Visualizer
         </div>
         <h3 style={{ color: COLORS.white, fontSize: 18, fontFamily: 'Georgia, serif', fontWeight: 700, margin: 0, marginBottom: 4 }}>
-          Bridge Strategy Timeline
+          {retireAge < 55 ? `Retire at ${retireAge}: Bridge Plan Timeline` : 'Bridge Strategy Timeline'}
         </h3>
         <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 11, margin: 0 }}>
           See how taxable, 401(k), and Roth balances work together from retirement to age 90 — while your 401(k) compounds untouched during the bridge years.
@@ -256,7 +256,7 @@ export default function BridgeStrategyVisualizer({
             <div style={{ fontSize: 10, color: COLORS.red, fontWeight: 600, marginBottom: 4 }}>⚠ BRIDGE FUNDING GAP</div>
             <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', margin: 0, lineHeight: 1.6 }}>
               Your taxable account ({formatDollars(taxable)}) may not fully fund the {bridgeYears.toFixed(1)}-year bridge at {formatDollars(annualSpend)}/yr spending.
-              Consider Roth contributions, Rule of 55, Rule 72(t), or reducing spending to close the gap.
+              Consider Roth contributions, {retireAge >= 55 ? 'Rule of 55, ' : ''}Rule 72(t), or reducing spending to close the gap.
             </p>
           </div>
         )}
