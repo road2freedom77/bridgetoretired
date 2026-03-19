@@ -41,15 +41,29 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   )
 }
 
-export default function BridgeStrategyVisualizer() {
+interface BridgeStrategyVisualizerProps {
+  defaultRetireAge?: number
+  defaultTaxable?: number
+  default401k?: number
+  defaultRoth?: number
+  defaultSpend?: number
+}
+
+export default function BridgeStrategyVisualizer({
+  defaultRetireAge = 55,
+  defaultTaxable   = 250_000,
+  default401k      = 400_000,
+  defaultRoth      = 100_000,
+  defaultSpend     = 35_000,
+}: BridgeStrategyVisualizerProps) {
   const { user } = useUser()
   const isPro = (user?.publicMetadata as any)?.isPro === true
 
-  const [retireAge, setRetireAge] = useState(55)
-  const [taxable, setTaxable] = useState(250_000)
-  const [retirement401k, setRetirement401k] = useState(400_000)
-  const [rothBalance, setRothBalance] = useState(100_000)
-  const [annualSpend, setAnnualSpend] = useState(35_000)
+  const [retireAge, setRetireAge] = useState(defaultRetireAge)
+  const [taxable, setTaxable] = useState(defaultTaxable)
+  const [retirement401k, setRetirement401k] = useState(default401k)
+  const [rothBalance, setRothBalance] = useState(defaultRoth)
+  const [annualSpend, setAnnualSpend] = useState(defaultSpend)
   const [returnRate, setReturnRate] = useState(6)
 
   const bridgeEnd = 59.5
