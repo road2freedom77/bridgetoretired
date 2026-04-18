@@ -1,0 +1,107 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 420" width="800" height="420" role="img" aria-labelledby="title desc">
+  <title id="title">Rule 72(t) and the 401(k) Bridge</title>
+  <desc id="desc">A locked vault on the left connected by a gold bridge structure to the number 59½ on the right, representing substantially equal periodic payments that bridge early retirement years.</desc>
+
+  <defs>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1a2a4a" stroke-width="0.5" opacity="0.4"/>
+    </pattern>
+    <linearGradient id="vaultSheen" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1a2a4a"/>
+      <stop offset="100%" stop-color="#0a1426"/>
+    </linearGradient>
+    <linearGradient id="goldShine" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#e0c070"/>
+      <stop offset="50%" stop-color="#c9a84c"/>
+      <stop offset="100%" stop-color="#9a7f30"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="420" fill="#0f1a2e"/>
+  <rect width="800" height="420" fill="url(#grid)"/>
+
+  <!-- Decorative scatter dots (stars / data points) -->
+  <circle cx="100" cy="60" r="1" fill="#c9a84c" opacity="0.3"/>
+  <circle cx="680" cy="80" r="1" fill="#c9a84c" opacity="0.4"/>
+  <circle cx="740" cy="340" r="1" fill="#c9a84c" opacity="0.3"/>
+  <circle cx="60" cy="350" r="1" fill="#c9a84c" opacity="0.3"/>
+  <circle cx="220" cy="40" r="1" fill="#c9a84c" opacity="0.25"/>
+
+  <!-- LEFT: Vault/safe representing the locked 401(k) -->
+  <g transform="translate(80, 110)">
+    <!-- Vault body -->
+    <rect x="0" y="0" width="200" height="200" rx="8" fill="url(#vaultSheen)" stroke="#c9a84c" stroke-width="2"/>
+    <!-- Inner panel -->
+    <rect x="15" y="15" width="170" height="170" rx="4" fill="none" stroke="#c9a84c" stroke-width="0.8" opacity="0.5"/>
+    <!-- Vault dial -->
+    <circle cx="100" cy="100" r="45" fill="none" stroke="#c9a84c" stroke-width="2"/>
+    <circle cx="100" cy="100" r="35" fill="#0a1426" stroke="#c9a84c" stroke-width="1"/>
+    <circle cx="100" cy="100" r="4" fill="#c9a84c"/>
+    <!-- Dial tick marks -->
+    <line x1="100" y1="60" x2="100" y2="68" stroke="#c9a84c" stroke-width="1.5"/>
+    <line x1="100" y1="132" x2="100" y2="140" stroke="#c9a84c" stroke-width="1.5"/>
+    <line x1="60" y1="100" x2="68" y2="100" stroke="#c9a84c" stroke-width="1.5"/>
+    <line x1="132" y1="100" x2="140" y2="100" stroke="#c9a84c" stroke-width="1.5"/>
+    <!-- Dial indicator pointing to upper-right (locked at 59½) -->
+    <line x1="100" y1="100" x2="125" y2="75" stroke="#c9a84c" stroke-width="2" stroke-linecap="round"/>
+    <!-- Handle bolts on corners -->
+    <circle cx="25" cy="25" r="4" fill="#c9a84c"/>
+    <circle cx="175" cy="25" r="4" fill="#c9a84c"/>
+    <circle cx="25" cy="175" r="4" fill="#c9a84c"/>
+    <circle cx="175" cy="175" r="4" fill="#c9a84c"/>
+    <!-- Label -->
+    <text x="100" y="235" text-anchor="middle" fill="#c9a84c" font-family="Georgia, serif" font-size="18" font-style="italic">401(k)</text>
+  </g>
+
+  <!-- BRIDGE: SEPP payment flow from vault to 59½ -->
+  <g transform="translate(300, 190)">
+    <!-- Main bridge deck -->
+    <line x1="0" y1="40" x2="200" y2="40" stroke="#c9a84c" stroke-width="2"/>
+    <line x1="0" y1="60" x2="200" y2="60" stroke="#c9a84c" stroke-width="2"/>
+
+    <!-- Bridge suspension cables (arc) -->
+    <path d="M 0 40 Q 100 -10 200 40" fill="none" stroke="#c9a84c" stroke-width="1.5" opacity="0.7"/>
+
+    <!-- Vertical support lines -->
+    <line x1="25" y1="40" x2="25" y2="20" stroke="#c9a84c" stroke-width="1" opacity="0.6"/>
+    <line x1="65" y1="40" x2="65" y2="5" stroke="#c9a84c" stroke-width="1" opacity="0.6"/>
+    <line x1="100" y1="40" x2="100" y2="0" stroke="#c9a84c" stroke-width="1" opacity="0.6"/>
+    <line x1="135" y1="40" x2="135" y2="5" stroke="#c9a84c" stroke-width="1" opacity="0.6"/>
+    <line x1="175" y1="40" x2="175" y2="20" stroke="#c9a84c" stroke-width="1" opacity="0.6"/>
+
+    <!-- Payment markers (substantially equal periodic payments) -->
+    <circle cx="25" cy="50" r="5" fill="url(#goldShine)"/>
+    <circle cx="65" cy="50" r="5" fill="url(#goldShine)"/>
+    <circle cx="100" cy="50" r="5" fill="url(#goldShine)"/>
+    <circle cx="135" cy="50" r="5" fill="url(#goldShine)"/>
+    <circle cx="175" cy="50" r="5" fill="url(#goldShine)"/>
+
+    <!-- Bridge label -->
+    <text x="100" y="95" text-anchor="middle" fill="#faf8f4" font-family="Georgia, serif" font-size="15" font-style="italic" opacity="0.85">SEPP</text>
+    <text x="100" y="115" text-anchor="middle" fill="#c9a84c" font-family="'Source Sans 3', sans-serif" font-size="10" letter-spacing="2">BRIDGE PAYMENTS</text>
+  </g>
+
+  <!-- RIGHT: 59½ milestone circle -->
+  <g transform="translate(560, 130)">
+    <!-- Outer ring -->
+    <circle cx="80" cy="80" r="78" fill="none" stroke="#c9a84c" stroke-width="1.5" opacity="0.6"/>
+    <!-- Inner disc -->
+    <circle cx="80" cy="80" r="68" fill="#faf8f4" stroke="#c9a84c" stroke-width="2"/>
+    <!-- Large 59½ -->
+    <text x="80" y="90" text-anchor="middle" fill="#0f1a2e" font-family="Georgia, serif" font-size="48" font-weight="600">59½</text>
+    <!-- Small label above -->
+    <text x="80" y="50" text-anchor="middle" fill="#0f1a2e" font-family="'Source Sans 3', sans-serif" font-size="9" letter-spacing="2" opacity="0.7">AGE</text>
+    <!-- Small label below -->
+    <text x="80" y="112" text-anchor="middle" fill="#0f1a2e" font-family="'Source Sans 3', sans-serif" font-size="9" letter-spacing="2" opacity="0.7">UNLOCK</text>
+  </g>
+
+  <!-- TOP BANNER: Rule 72(t) -->
+  <g transform="translate(400, 55)">
+    <text x="0" y="0" text-anchor="middle" fill="#c9a84c" font-family="'Source Sans 3', sans-serif" font-size="11" letter-spacing="4">IRS SECTION</text>
+    <text x="0" y="34" text-anchor="middle" fill="#faf8f4" font-family="Georgia, serif" font-size="34" font-style="italic">Rule 72(t)</text>
+  </g>
+
+  <!-- Small caption at bottom -->
+  <text x="400" y="390" text-anchor="middle" fill="#c9a84c" font-family="'Source Sans 3', sans-serif" font-size="10" letter-spacing="3" opacity="0.7">SUBSTANTIALLY EQUAL PERIODIC PAYMENTS</text>
+</svg>
