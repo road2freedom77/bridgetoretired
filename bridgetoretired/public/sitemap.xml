@@ -66,7 +66,7 @@
   </url>
   <url>
     <loc>https://bridgetoretired.com/blog/rule-72t-sepp-guide</loc>
-    <lastmod>2026-03-15</lastmod>
+    <lastmod>2026-04-18</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -118,4 +118,11 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
- </urlset>
+  <url>
+    <loc>https://bridgetoretired.com/blog/coastfire-explained</loc>
+    <lastmod>2026-04-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+</urlset>
