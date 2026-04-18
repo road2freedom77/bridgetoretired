@@ -79,9 +79,10 @@ export default function SEPPCalculator() {
   const annuitization = calcSEPP(accountBalance, startAge, interestRate, 'annuitization')
   const rmd = calcSEPP(accountBalance, startAge, interestRate, 'rmd')
 
+  // FIX 2: Changed "Highest" label on Fixed Annuitization to accurate description
   const methods = [
     { name: 'Fixed Amortization', value: amortization, color: COLORS.gold, recommended: true, description: 'Fixed payments, most popular. Best for predictable income planning.' },
-    { name: 'Fixed Annuitization', value: annuitization, color: COLORS.teal, recommended: false, description: 'Similar to amortization, slightly different formula.' },
+    { name: 'Fixed Annuitization', value: annuitization, color: COLORS.teal, recommended: false, description: 'Often similar to amortization. Slightly different annuity-factor formula.' },
     { name: 'RMD Method', value: rmd, color: COLORS.purple, recommended: false, description: 'Lowest, variable payments. Recalculates each year. Most flexible post-start.' },
   ]
 
@@ -134,6 +135,8 @@ export default function SEPPCalculator() {
               <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} style={{ width: '100%', accentColor: COLORS.gold, cursor: 'pointer' }} />
             </div>
           ))}
+
+          {/* SEPP Schedule summary card */}
           <div style={{ background: '#141C28', borderRadius: 10, padding: '12px 14px', border: `1px solid ${COLORS.teal}20` }}>
             <div style={{ fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)', marginBottom: 10 }}>SEPP Schedule</div>
             <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 6 }}>
@@ -141,9 +144,11 @@ export default function SEPPCalculator() {
                 { label: 'Start age', value: `Age ${startAge}` },
                 { label: 'Free at', value: `Age ${freeAge.toFixed(1)} (${sepp59 ? '59½ reached' : '5-yr rule'})` },
                 { label: 'Duration', value: `${durationYears.toFixed(1)} years` },
-                { label: 'Modification penalty', value: formatDollars(retroactivePenalty) + ' if broken at 3yr' },
-              ].map(({ label, value }) => (
-                <div key={label} style={{ display: 'flex', justifyContent: 'space-between' }}>
+                // FIX 1: Changed "if broken at 3yr" to "~X before interest / if broken at year 3"
+                { label: 'Modification penalty', value: `~${formatDollars(retroactivePenalty)} before interest` },
+                { label: '', value: 'if broken at year 3' },
+              ].map(({ label, value }, i) => (
+                <div key={i} style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.3)' }}>{label}</span>
                   <span style={{ fontSize: 9, color: COLORS.teal, fontWeight: 600 }}>{value}</span>
                 </div>
@@ -175,9 +180,25 @@ export default function SEPPCalculator() {
         {/* KPI cards */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 20 }}>
           {[
-            { label: 'Penalty Avoided', value: formatDollars(Math.round(amortization * taxComparison.years * 0.10)), sub: `over ${taxComparison.years} years`, color: COLORS.sage },
-            { label: 'Tax Still Owed', value: formatDollars(taxComparison.sepp_tax), sub: '~18% ordinary income', color: COLORS.orange },
-            { label: 'Modification Risk', value: formatDollars(retroactivePenalty), sub: 'if broken at 3 years', color: COLORS.red },
+            {
+              label: 'Penalty Avoided',
+              value: formatDollars(Math.round(amortization * taxComparison.years * 0.10)),
+              // unchanged
+              sub: `over ${taxComparison.years} years`,
+              color: COLORS.sage,
+            },
+            {
+              label: 'Estimated Income Tax',          // FIX 3: was "Tax Still Owed"
+              value: formatDollars(taxComparison.sepp_tax),
+              sub: 'Assumes 18% ordinary-income tax rate',  // FIX 3: was "~18% ordinary income"
+              color: COLORS.orange,
+            },
+            {
+              label: 'Modification Risk',
+              value: `~${formatDollars(retroactivePenalty)}`,
+              sub: 'before interest · if broken at year 3',  // FIX 1 reflected in KPI sub too
+              color: COLORS.red,
+            },
           ].map(({ label, value, sub, color }) => (
             <div key={label} style={{ background: '#141C28', borderRadius: 10, padding: '12px 14px', border: `1px solid ${color}20`, borderTop: `3px solid ${color}` }}>
               <div style={{ fontSize: 8, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', marginBottom: 4 }}>{label}</div>
@@ -187,7 +208,7 @@ export default function SEPPCalculator() {
           ))}
         </div>
 
-        {/* Portfolio chart */}
+        {/* Portfolio balance chart */}
         <div style={{ background: '#141C28', borderRadius: 12, padding: '20px 16px 12px', border: '1px solid rgba(255,255,255,0.06)', marginBottom: 16 }}>
           <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginBottom: 4, fontFamily: 'Georgia, serif' }}>Account Balance During and After SEPP</div>
           <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.25)', marginBottom: 16 }}>Balance depletes during SEPP, then grows freely after age {freeAge.toFixed(1)}</div>
@@ -227,23 +248,23 @@ export default function SEPPCalculator() {
           </ResponsiveContainer>
         </div>
 
-        {/* Warning */}
+        {/* Modification warning */}
         <div style={{ background: 'rgba(248,113,113,0.06)', border: '1px solid rgba(248,113,113,0.2)', borderLeft: `3px solid ${COLORS.red}`, borderRadius: 8, padding: '12px 14px', marginBottom: 16 }}>
           <div style={{ fontSize: 10, color: COLORS.red, fontWeight: 600, marginBottom: 6, letterSpacing: 1 }}>⚠ CRITICAL: THE MODIFICATION TRAP</div>
           <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', margin: 0, lineHeight: 1.7 }}>
-            If you modify or stop payments before your schedule ends (age {freeAge.toFixed(1)}), the IRS retroactively applies the 10% penalty to <strong style={{ color: COLORS.red }}>every prior withdrawal</strong> plus interest. Breaking SEPP after 3 years could cost <strong style={{ color: COLORS.red }}>{formatDollars(retroactivePenalty)}</strong> in retroactive penalties.
+            If you modify or stop payments before your schedule ends (age {freeAge.toFixed(1)}), the IRS retroactively applies the 10% penalty to <strong style={{ color: COLORS.red }}>every prior withdrawal</strong> plus interest. Breaking SEPP after 3 years could cost <strong style={{ color: COLORS.red }}>~{formatDollars(retroactivePenalty)} before interest</strong> in retroactive penalties — the actual total will be higher once the IRS adds interest on each prior year.
           </p>
         </div>
 
-        {/* Insight */}
+        {/* When 72(t) makes sense */}
         <div style={{ background: 'rgba(232,184,75,0.06)', border: '1px solid rgba(232,184,75,0.15)', borderLeft: `3px solid ${COLORS.gold}`, borderRadius: 8, padding: '14px 16px', marginBottom: 16 }}>
           <div style={{ fontSize: 10, color: COLORS.gold, fontWeight: 600, marginBottom: 6, letterSpacing: 1 }}>💡 WHEN 72(t) MAKES SENSE</div>
           <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', margin: 0, lineHeight: 1.7 }}>
-            72(t) is a <em>backup bridge tool</em>, not a first choice. Use it only if your taxable account and Roth contributions can't cover the bridge to 59½. The amortization method generates <strong style={{ color: COLORS.gold }}>{formatDollars(amortization)}/year</strong> from your <strong style={{ color: COLORS.gold }}>{formatDollars(accountBalance)}</strong> account — saving <strong style={{ color: COLORS.sage }}>{formatDollars(Math.round(amortization * taxComparison.years * 0.10))}</strong> in penalties over {taxComparison.years} years.
+            72(t) is a <em>backup bridge tool</em>, not a first choice. Use it only if your taxable account and Roth contributions can't cover the bridge to 59½. The amortization method generates <strong style={{ color: COLORS.gold }}>{formatDollars(amortization)}/year</strong> from your <strong style={{ color: COLORS.gold }}>{formatDollars(accountBalance)}</strong> account — saving <strong style={{ color: COLORS.sage }}>{formatDollars(Math.round(amortization * taxComparison.years * 0.10))}</strong> in penalties over {taxComparison.years} years. But that tax savings comes with {durationYears.toFixed(1)} years of inflexibility. Model the full bridge before committing.
           </p>
         </div>
 
-        {/* Pro upsell — hidden for Pro users */}
+        {/* Pro upsell */}
         {!isPro && (
           <div style={{ background: 'linear-gradient(135deg, rgba(232,184,75,0.06) 0%, rgba(232,184,75,0.02) 100%)', border: '1px solid rgba(232,184,75,0.2)', borderLeft: '3px solid #E8B84B', borderRadius: 12, padding: '20px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 20 }}>
             <div>
