@@ -23,7 +23,7 @@ export function Nav() {
             { href: '/#how',        label: 'How It Works' },
             { href: '/#calculator', label: 'Calculator'   },
             { href: '/blog',        label: 'Blog'         },
-            { href: '/#calculator', label: 'Tools'        },
+            { href: '/tools',       label: 'Tools'        },
           ].map(({ href, label }) => (
             <li key={label}>
               <Link
@@ -90,7 +90,7 @@ export function Nav() {
             { href: '/#how',        label: 'How It Works' },
             { href: '/#calculator', label: 'Calculator'   },
             { href: '/blog',        label: 'Blog'         },
-            { href: '/#calculator', label: 'Tools'        },
+            { href: '/tools',       label: 'Tools'        },
           ].map(({ href, label }) => (
             <Link
               key={label}

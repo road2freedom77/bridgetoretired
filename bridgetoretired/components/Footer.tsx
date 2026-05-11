@@ -16,8 +16,12 @@ export function Footer() {
     {
       title: 'Tools',
       links: [
-        { label: 'Bridge Planner',  href: '/#download'   },
-        { label: 'FIRE Calculator', href: '/#calculator' },
+        { label: 'All Calculators',           href: '/tools'                                    },
+        { label: 'Bridge Strategy Calculator', href: '/tools/bridge-strategy-calculator'         },
+        { label: '72(t) SEPP Calculator',      href: '/tools/72t-sepp-calculator'               },
+        { label: 'FIRE Number Calculator',     href: '/tools/fire-number-calculator'             },
+        { label: 'Withdrawal Order Optimizer', href: '/tools/withdrawal-order-optimizer'         },
+        { label: 'Free Bridge Planner',        href: '/#download'                               },
       ],
     },
     {
