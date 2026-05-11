@@ -73,11 +73,9 @@ export default function SequenceOfReturnsSimulator() {
   const [crashMagnitude, setCrashMagnitude] = useState(30)
   const [years, setYears] = useState(30)
 
-  // Build return sequences
   const goodReturns = useMemo(() => {
     const baseReturn = 7
     const arr = Array(years).fill(baseReturn)
-    // Bad years at END (years 20-22)
     const crashStart = Math.floor(years * 0.65)
     for (let i = crashStart; i < Math.min(crashStart + 3, years); i++) {
       arr[i] = -crashMagnitude
@@ -87,7 +85,6 @@ export default function SequenceOfReturnsSimulator() {
 
   const badReturns = useMemo(() => {
     const arr = [...goodReturns]
-    // Swap: bad years at BEGINNING (years 1-3)
     const crashStart = Math.floor(years * 0.65)
     const earlyEnd = Math.min(3, years)
     for (let i = 0; i < earlyEnd; i++) arr[i] = goodReturns[crashStart + i] ?? -crashMagnitude
@@ -109,9 +106,28 @@ export default function SequenceOfReturnsSimulator() {
 
   const luckyFinal = luckyData[luckyData.length - 1]?.balance ?? 0
   const unluckyFinal = unluckyData[unluckyData.length - 1]?.balance ?? 0
-  const difference = luckyFinal - unluckyFinal
+
+  // Timing difference card: meaningful regardless of depletion state
+  const bothSurvive = !luckyDepletion && !unluckyDepletion
+  const onlyUnluckyDepletes = !luckyDepletion && unluckyDepletion
+  const bothDeplete = !!luckyDepletion && !!unluckyDepletion
+
+  const timingDifferenceLabel = bothSurvive
+    ? formatDollars(Math.abs(luckyFinal - unluckyFinal))
+    : onlyUnluckyDepletes
+    ? `${years - (unluckyDepletion ?? years)} fewer yrs`
+    : bothDeplete
+    ? `${(unluckyDepletion ?? 0) - (luckyDepletion ?? 0) > 0 ? (unluckyDepletion ?? 0) - (luckyDepletion ?? 0) : (luckyDepletion ?? 0) - (unluckyDepletion ?? 0)} yr gap`
+    : formatDollars(Math.abs(luckyFinal - unluckyFinal))
+
+  const timingDifferenceSub = bothSurvive
+    ? 'final balance difference'
+    : onlyUnluckyDepletes
+    ? `unlucky depletes yr ${unluckyDepletion} · lucky survives`
+    : 'same returns, different order'
 
   const withdrawalRate = ((withdrawal / startBalance) * 100).toFixed(1)
+  const crashYear = Math.floor(years * 0.65) + 1
 
   return (
     <div style={{
@@ -123,11 +139,7 @@ export default function SequenceOfReturnsSimulator() {
       margin: '2rem 0',
     }}>
       {/* Header */}
-      <div style={{
-        background: '#141C28',
-        borderBottom: '1px solid rgba(255,255,255,0.06)',
-        padding: '20px 24px',
-      }}>
+      <div style={{ background: '#141C28', borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '20px 24px' }}>
         <div style={{ fontSize: 9, letterSpacing: 3, textTransform: 'uppercase', color: COLORS.gold, marginBottom: 6 }}>
           Interactive Simulator
         </div>
@@ -140,12 +152,8 @@ export default function SequenceOfReturnsSimulator() {
       </div>
 
       <div style={{ padding: '24px' }}>
-
         {/* Controls */}
-        <div style={{
-          display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)',
-          gap: 16, marginBottom: 24,
-        }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16, marginBottom: 24 }}>
           {[
             { label: 'Starting Portfolio', value: startBalance, set: setStartBalance, min: 250000, max: 3000000, step: 50000, fmt: (v: number) => formatDollars(v) },
             { label: 'Annual Withdrawal', value: withdrawal, set: setWithdrawal, min: 10000, max: 150000, step: 5000, fmt: (v: number) => formatDollars(v) },
@@ -170,16 +178,12 @@ export default function SequenceOfReturnsSimulator() {
         <div style={{
           display: 'flex', alignItems: 'center', gap: 8,
           marginBottom: 20, padding: '10px 14px',
-          background: Number(withdrawalRate) <= 4
-            ? 'rgba(74,222,128,0.08)' : 'rgba(248,113,113,0.08)',
+          background: Number(withdrawalRate) <= 4 ? 'rgba(74,222,128,0.08)' : 'rgba(248,113,113,0.08)',
           border: `1px solid ${Number(withdrawalRate) <= 4 ? 'rgba(74,222,128,0.2)' : 'rgba(248,113,113,0.2)'}`,
           borderRadius: 8,
         }}>
           <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)' }}>Withdrawal Rate:</span>
-          <span style={{
-            fontSize: 13, fontWeight: 700,
-            color: Number(withdrawalRate) <= 4 ? COLORS.sage : COLORS.red
-          }}>{withdrawalRate}%</span>
+          <span style={{ fontSize: 13, fontWeight: 700, color: Number(withdrawalRate) <= 4 ? COLORS.sage : COLORS.red }}>{withdrawalRate}%</span>
           <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', marginLeft: 4 }}>
             {Number(withdrawalRate) <= 4 ? '✓ Within 4% guideline' : '⚠ Exceeds 4% — higher risk'}
           </span>
@@ -189,24 +193,28 @@ export default function SequenceOfReturnsSimulator() {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, marginBottom: 24 }}>
           <div style={{ background: '#141C28', border: '1px solid rgba(45,212,191,0.2)', borderRadius: 10, padding: '14px 16px', borderTop: `3px solid ${COLORS.teal}` }}>
             <div style={{ fontSize: 8, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', marginBottom: 6 }}>Lucky — Final Balance</div>
-            <div style={{ fontSize: 20, fontWeight: 700, color: COLORS.teal, fontFamily: 'Georgia, serif' }}>
+            <div style={{ fontSize: 20, fontWeight: 700, color: luckyDepletion ? COLORS.red : COLORS.teal, fontFamily: 'Georgia, serif' }}>
               {luckyDepletion ? `Depleted yr ${luckyDepletion}` : formatDollars(luckyFinal)}
             </div>
-            <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.25)', marginTop: 4 }}>crash in later years</div>
+            <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.25)', marginTop: 4 }}>
+              {crashMagnitude}% crash hits year {crashYear}
+            </div>
           </div>
           <div style={{ background: '#141C28', border: '1px solid rgba(248,113,113,0.2)', borderRadius: 10, padding: '14px 16px', borderTop: `3px solid ${COLORS.red}` }}>
             <div style={{ fontSize: 8, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', marginBottom: 6 }}>Unlucky — Final Balance</div>
-            <div style={{ fontSize: 20, fontWeight: 700, color: unluckyDepletion ? COLORS.red : COLORS.white, fontFamily: 'Georgia, serif' }}>
+            <div style={{ fontSize: 20, fontWeight: 700, color: COLORS.red, fontFamily: 'Georgia, serif' }}>
               {unluckyDepletion ? `Depleted yr ${unluckyDepletion}` : formatDollars(unluckyFinal)}
             </div>
-            <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.25)', marginTop: 4 }}>crash in first 3 years</div>
+            <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.25)', marginTop: 4 }}>
+              {crashMagnitude}% crash hits year 1
+            </div>
           </div>
           <div style={{ background: '#141C28', border: '1px solid rgba(232,184,75,0.2)', borderRadius: 10, padding: '14px 16px', borderTop: `3px solid ${COLORS.gold}` }}>
-            <div style={{ fontSize: 8, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', marginBottom: 6 }}>Timing Difference</div>
+            <div style={{ fontSize: 8, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', marginBottom: 6 }}>Timing Impact</div>
             <div style={{ fontSize: 20, fontWeight: 700, color: COLORS.gold, fontFamily: 'Georgia, serif' }}>
-              {formatDollars(Math.abs(difference))}
+              {timingDifferenceLabel}
             </div>
-            <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.25)', marginTop: 4 }}>same returns, different order</div>
+            <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.25)', marginTop: 4 }}>{timingDifferenceSub}</div>
           </div>
         </div>
 
@@ -228,57 +236,37 @@ export default function SequenceOfReturnsSimulator() {
                 tickFormatter={formatDollars}
               />
               <Tooltip content={<CustomTooltip />} />
-              <Legend
-                wrapperStyle={{ fontSize: 10, fontFamily: 'monospace', color: 'rgba(255,255,255,0.4)', paddingTop: 12 }}
-              />
+              <Legend wrapperStyle={{ fontSize: 10, fontFamily: 'monospace', color: 'rgba(255,255,255,0.4)', paddingTop: 12 }} />
               <ReferenceLine y={0} stroke="rgba(248,113,113,0.3)" strokeDasharray="4 4" />
-              <Line
-                type="monotone" dataKey="Lucky (crash later)"
-                stroke={COLORS.teal} strokeWidth={2.5}
-                dot={false} activeDot={{ r: 4, fill: COLORS.teal }}
-              />
-              <Line
-                type="monotone" dataKey="Unlucky (crash early)"
-                stroke={COLORS.red} strokeWidth={2.5}
-                dot={false} activeDot={{ r: 4, fill: COLORS.red }}
-                strokeDasharray="6 3"
-              />
+              <Line type="monotone" dataKey="Lucky (crash later)" stroke={COLORS.teal} strokeWidth={2.5} dot={false} activeDot={{ r: 4, fill: COLORS.teal }} />
+              <Line type="monotone" dataKey="Unlucky (crash early)" stroke={COLORS.red} strokeWidth={2.5} dot={false} activeDot={{ r: 4, fill: COLORS.red }} strokeDasharray="6 3" />
             </LineChart>
           </ResponsiveContainer>
         </div>
 
         {/* Key insight */}
-        <div style={{
-          background: 'rgba(232,184,75,0.06)',
-          border: '1px solid rgba(232,184,75,0.15)',
-          borderLeft: '3px solid #E8B84B',
-          borderRadius: 8, padding: '14px 16px',
-        }}>
+        <div style={{ background: 'rgba(232,184,75,0.06)', border: '1px solid rgba(232,184,75,0.15)', borderLeft: '3px solid #E8B84B', borderRadius: 8, padding: '14px 16px' }}>
           <div style={{ fontSize: 10, color: COLORS.gold, fontWeight: 600, marginBottom: 6, letterSpacing: 1 }}>
             💡 KEY INSIGHT
           </div>
           <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', margin: 0, lineHeight: 1.7 }}>
             Both portfolios experience the <em>exact same returns</em> — just in different order.
-            The {crashMagnitude}% crash hits in year {Math.floor(years * 0.65) + 1} for the lucky investor,
-            and year 1 for the unlucky one. Same average. {formatDollars(Math.abs(difference))} difference.
-            This is why the bridge strategy — keeping 2-3 years of cash in taxable before tapping investments — is critical.
+            The {crashMagnitude}% crash hits in year {crashYear} for the lucky investor and year 1 for the unlucky one.
+            {onlyUnluckyDepletes
+              ? ` The unlucky portfolio runs out of money in year ${unluckyDepletion} while the lucky portfolio survives to year ${years} with ${formatDollars(luckyFinal)} remaining.`
+              : bothSurvive
+              ? ` Same average return. ${formatDollars(Math.abs(luckyFinal - unluckyFinal))} difference at year ${years}.`
+              : ` The unlucky portfolio depletes ${(unluckyDepletion ?? 0) < (luckyDepletion ?? years) ? (luckyDepletion ?? years) - (unluckyDepletion ?? 0) : 0} years earlier.`
+            }
+            {' '}This is why keeping 2-3 years of spending in stable assets during the bridge years is critical — it lets you avoid selling equities at depressed prices in year one.
           </p>
         </div>
-
       </div>
 
       {/* Footer */}
-      <div style={{
-        borderTop: '1px solid rgba(255,255,255,0.05)',
-        padding: '12px 24px',
-        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-      }}>
-        <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.15)', letterSpacing: 1 }}>
-          For educational purposes only · Not financial advice
-        </span>
-        <a href="/#download" style={{ fontSize: 9, color: COLORS.gold, textDecoration: 'none', letterSpacing: 2, textTransform: 'uppercase' }}>
-          Get Free Planner →
-        </a>
+      <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '12px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.15)', letterSpacing: 1 }}>For educational purposes only · Not financial advice</span>
+        <a href="/#download" style={{ fontSize: 9, color: COLORS.gold, textDecoration: 'none', letterSpacing: 2, textTransform: 'uppercase' }}>Get Free Planner →</a>
       </div>
     </div>
   )
