@@ -25,14 +25,20 @@ faq:
 ---
 
 <img
-  src="/images/how-much-taxable-brokerage-to-retire-early.webp"
+  src="/images/can-i-retire-at-55-with-750k.webp"
   alt="How much taxable brokerage do I need to retire early bridge account planning"
   width={800}
   height={420}
   style={{ width: "100%", height: "auto", borderRadius: "12px", marginBottom: "2rem" }}
 />
 
-<BridgeStrategyVisualizer />
+<BridgeStrategyVisualizer
+  defaultRetireAge={50}
+  defaultSpend={40000}
+  defaultTaxable={450000}
+  default401k={300000}
+  defaultRoth={100000}
+/>
 
 If you want to retire early, one of the biggest mistakes you can make is focusing only on your total net worth.
 
@@ -40,7 +46,7 @@ The better question is: **how much of your money is actually accessible before a
 
 That is where a taxable brokerage account stops being a nice extra and starts becoming a real retirement tool. For many early retirees, it is the bridge account that funds life between the day work ends and the day retirement accounts become easier to access.
 
-Use the calculator above to model your own bridge, then read the breakdown below to understand how the taxable brokerage number is calculated.
+Use the calculator above — preset to a retire-at-50 scenario with $40K spending — to model your own bridge, then read the breakdown below to understand how the taxable brokerage number is calculated.
 
 ## Quick Answer
 
@@ -111,9 +117,9 @@ Here is a planning table using **$40,000 annual spending** and rough healthcare 
     { key: "with_buf",  header: "With 20% Buffer",  align: "right" },
   ]}
   rows={[
-    { age: "50", bridge: "9.5 yrs", spending: "$380,000", health: "$114,000", total: "$494,000", with_buf: "$593,000" },
+    { age: "50", bridge: "9.5 yrs", spending: "$380,000", health: "$114,000", total: "$494,000", with_buf: "$593,000", _highlight: true },
     { age: "52", bridge: "7.5 yrs", spending: "$300,000", health: "$90,000",  total: "$390,000", with_buf: "$468,000" },
-    { age: "55", bridge: "4.5 yrs", spending: "$180,000", health: "$54,000",  total: "$234,000", with_buf: "$281,000", _highlight: true },
+    { age: "55", bridge: "4.5 yrs", spending: "$180,000", health: "$54,000",  total: "$234,000", with_buf: "$281,000" },
     { age: "57", bridge: "2.5 yrs", spending: "$100,000", health: "$30,000",  total: "$130,000", with_buf: "$156,000" },
   ]}
   caption="Based on $40,000 annual spending and $12,000/yr healthcare estimate — adjust for your situation"
@@ -170,6 +176,16 @@ Spending bridge: **$40,000 x 4.5 = $180,000**
 That is a completely different problem. And depending on the situation, [Rule of 55](/blog/rule-72t-sepp-guide) may also be relevant if you separate from service in or after the year you turn 55 and your employer plan supports distributions. That can reduce how much taxable brokerage is required — though it does not solve healthcare before Medicare.
 
 A 55-year-old may be able to retire with a smaller taxable account if spending is moderate, Rule of 55 is available, and healthcare is manageable. See the full [retire at 55 with $750,000 breakdown](/blog/can-i-retire-at-55-with-750k) for a detailed scenario.
+
+---
+
+**Run your own bridge numbers**
+
+The right taxable brokerage target depends on your specific spending, retirement age, healthcare costs, and which bridge tools apply to you. Use the calculator at the top of this page — or test more scenarios in the free Bridge Planner.
+
+[Try the Free Calculator →](/#calculator)
+
+---
 
 ## When Taxable Brokerage Does Not Need to Cover Everything
 
