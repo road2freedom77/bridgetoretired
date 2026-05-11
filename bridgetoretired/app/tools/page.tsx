@@ -29,10 +29,21 @@ const tools = [
     pro:         'All 3 methods compared + 5-yr schedule',
   },
   {
+    slug:        'hourly-to-annual-salary-calculator',
+    title:       'Hourly to Annual Salary Calculator',
+    description: 'Convert your hourly wage to an annual salary and see what it means for your early retirement timeline. Includes FIRE number estimate and years-to-retirement projection.',
+    tag:         'New',
+    tagColor:    'teal',
+    icon:        '💰',
+    free:        'Full salary breakdown + FIRE estimate',
+    pro:         null,
+  },
+  {
     slug:        'roth-conversion-ladder-calculator',
     title:       'Roth Conversion Ladder',
     description: 'Plan your Roth conversion strategy to minimize taxes and build penalty-free access before 59½. See the optimal conversion amounts by year.',
     tag:         null,
+    tagColor:    null,
     icon:        '🪜',
     free:        'Single-year conversion preview',
     pro:         'Full multi-year ladder + tax optimization',
@@ -42,6 +53,7 @@ const tools = [
     title:       'FIRE Number Calculator',
     description: 'Calculate exactly how much you need to retire early using the 4% rule, 3.5% rule, and Coast FIRE variants. Includes inflation adjustments.',
     tag:         null,
+    tagColor:    null,
     icon:        '🔥',
     free:        'Your FIRE number',
     pro:         'Coast FIRE + trajectory chart',
@@ -51,6 +63,7 @@ const tools = [
     title:       'ACA Subsidy Estimator',
     description: 'Estimate your Marketplace health insurance premium and subsidy eligibility based on income, household size, and state. Essential for early retirement healthcare planning.',
     tag:         null,
+    tagColor:    null,
     icon:        '🏥',
     free:        'Premium + subsidy estimate',
     pro:         'MAGI optimization strategy',
@@ -60,6 +73,7 @@ const tools = [
     title:       'Withdrawal Order Optimizer',
     description: 'Find the tax-optimal order to draw from taxable, Roth, and traditional accounts in retirement. Minimize lifetime taxes across your entire retirement horizon.',
     tag:         null,
+    tagColor:    null,
     icon:        '📋',
     free:        'Recommended draw order',
     pro:         'Year-by-year tax-optimized plan',
@@ -69,6 +83,7 @@ const tools = [
     title:       'Social Security Timing Calculator',
     description: 'Compare claiming Social Security at 62, 67, or 70. See the break-even age, lifetime benefit totals, and how timing affects your portfolio withdrawal rate.',
     tag:         null,
+    tagColor:    null,
     icon:        '🏛️',
     free:        '62 vs 67 vs 70 comparison',
     pro:         'Break-even analysis + spousal strategy',
@@ -78,6 +93,7 @@ const tools = [
     title:       'Sequence of Returns Simulator',
     description: 'See how bad early market returns can permanently damage your retirement — and test strategies to protect against sequence risk during the bridge years.',
     tag:         null,
+    tagColor:    null,
     icon:        '📉',
     free:        'Single scenario simulation',
     pro:         'Monte Carlo stress test',
@@ -142,10 +158,12 @@ export default function ToolsPage() {
                     <span className="font-mono text-[8px] tracking-widest uppercase text-sage/70 bg-sage/10 border border-sage/20 px-1.5 py-0.5 rounded">Free</span>
                     <span className="font-mono text-[10px] text-white/35">{tool.free}</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-[8px] tracking-widest uppercase text-gold/70 bg-gold/10 border border-gold/20 px-1.5 py-0.5 rounded">Pro</span>
-                    <span className="font-mono text-[10px] text-white/35">{tool.pro}</span>
-                  </div>
+                  {tool.pro && (
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-[8px] tracking-widest uppercase text-gold/70 bg-gold/10 border border-gold/20 px-1.5 py-0.5 rounded">Pro</span>
+                      <span className="font-mono text-[10px] text-white/35">{tool.pro}</span>
+                    </div>
+                  )}
                 </div>
               </div>
             </Link>
