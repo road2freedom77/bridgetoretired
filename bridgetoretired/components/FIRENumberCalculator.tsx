@@ -48,6 +48,7 @@ export default function FIRENumberCalculator() {
   const retirementYears = lifeExpectancy - retireAge
   const bridgeYears = 59.5 - retireAge
   const withdrawalRate = WITHDRAWAL_RATES[Math.min(50, Math.max(30, Math.round(retirementYears / 5) * 5))] ?? 0.033
+  const withdrawalRatePct = (withdrawalRate * 100).toFixed(1)
   const ssAnnual = ssMonthly * 12
 
   const bridgeNeeded = Math.round(annualSpend * bridgeYears * 1.15)
@@ -63,7 +64,7 @@ export default function FIRENumberCalculator() {
 
   const breakdown = [
     { name: 'Bridge Account\n(Taxable/Roth)', value: bridgeNeeded, color: COLORS.teal, description: `${bridgeYears.toFixed(1)} years × $${(annualSpend / 1000).toFixed(0)}k + buffer` },
-    { name: '401k at Retire', value: k401kNeeded, color: COLORS.gold, description: `Funds $${(postSSSpend / 1000).toFixed(0)}k/yr after SS at ${withdrawalRate * 100}%` },
+    { name: '401k at Retire', value: k401kNeeded, color: COLORS.gold, description: `Funds $${(postSSSpend / 1000).toFixed(0)}k/yr after SS at ${withdrawalRatePct}%` },
     { name: 'Healthcare\nBuffer', value: healthcareNeeded, color: COLORS.purple, description: `${65 - retireAge} yrs × $${(healthcareBudget / 1000).toFixed(0)}k/yr` },
     { name: 'Sequence Risk\nBuffer', value: sequenceBuffer, color: COLORS.orange, description: '1.5 years spending cushion' },
   ]
@@ -153,13 +154,13 @@ export default function FIRENumberCalculator() {
 
         {/* Insight */}
         <div style={{ background: 'rgba(232,184,75,0.06)', border: '1px solid rgba(232,184,75,0.15)', borderLeft: `3px solid ${COLORS.gold}`, borderRadius: 8, padding: '14px 16px', marginBottom: 16 }}>
-          <div style={{ fontSize: 10, color: COLORS.gold, fontWeight: 600, marginBottom: 6, letterSpacing: 1 }}>💡 WHY {(withdrawalRate * 100).toFixed(1)}% NOT 4%</div>
+          <div style={{ fontSize: 10, color: COLORS.gold, fontWeight: 600, marginBottom: 6, letterSpacing: 1 }}>💡 WHY {withdrawalRatePct}% NOT 4%</div>
           <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', margin: 0, lineHeight: 1.7 }}>
-            The 4% rule was designed for 30-year retirements. Retiring at age {retireAge} means a {retirementYears}-year retirement horizon. Research supports a {(withdrawalRate * 100).toFixed(1)}% withdrawal rate for {retirementYears} years, which requires {formatDollars(Math.round(annualSpend / withdrawalRate))} vs the 4% rule's {formatDollars(Math.round(annualSpend / 0.04))} — a difference of {formatDollars(Math.round(annualSpend / withdrawalRate) - Math.round(annualSpend / 0.04))}. This calculator also adds healthcare and a sequence risk buffer the simple rule ignores entirely.
+            The 4% rule was designed for 30-year retirements. Retiring at age {retireAge} means a {retirementYears}-year retirement horizon. Research supports a {withdrawalRatePct}% withdrawal rate for {retirementYears} years, which requires {formatDollars(Math.round(annualSpend / withdrawalRate))} vs the 4% rule's {formatDollars(Math.round(annualSpend / 0.04))} — a difference of {formatDollars(Math.round(annualSpend / withdrawalRate) - Math.round(annualSpend / 0.04))}. This calculator also adds healthcare and a sequence risk buffer the simple rule ignores entirely.
           </p>
         </div>
 
-        {/* Pro upsell — hidden for Pro users */}
+        {/* Pro upsell */}
         {!isPro && (
           <div style={{ background: 'linear-gradient(135deg, rgba(232,184,75,0.06) 0%, rgba(232,184,75,0.02) 100%)', border: '1px solid rgba(232,184,75,0.2)', borderLeft: '3px solid #E8B84B', borderRadius: 12, padding: '20px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 20 }}>
             <div>
