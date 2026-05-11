@@ -11,7 +11,6 @@ export const metadata: Metadata = {
 export default function FIRENumberCalculatorPage() {
   return (
     <div className="min-h-screen bg-black">
-      {/* Header */}
       <div className="bg-navy border-b border-white/[0.06]">
         <div className="max-w-4xl mx-auto px-5 pt-12 pb-10">
           <Link href="/tools" className="font-mono text-[10px] tracking-widest uppercase text-white/30 hover:text-gold transition-colors flex items-center gap-2 mb-6">
@@ -27,12 +26,30 @@ export default function FIRENumberCalculatorPage() {
         </div>
       </div>
 
-      {/* Calculator */}
       <div className="max-w-4xl mx-auto px-5 py-12">
         <FIRENumberCalculator />
 
-        {/* SEO content */}
-        <div className="mt-8 max-w-3xl">
+        {/* Tool-specific CTA */}
+        <div className="my-10 bg-ink border border-gold/20 rounded-xl p-6 flex items-start gap-5">
+          <div className="text-3xl shrink-0">🌉</div>
+          <div className="flex-1">
+            <div className="font-mono text-[9px] tracking-widest uppercase text-gold mb-2">Next Step</div>
+            <h3 className="font-syne font-semibold text-[16px] text-white mb-2">
+              Now check if your bridge years are funded
+            </h3>
+            <p className="text-white/45 text-[13px] leading-relaxed mb-4">
+              Your FIRE number shows the total target. The Bridge Strategy Calculator shows whether your taxable, 401(k), and Roth accounts are structured to actually get you there — year by year from retirement to age 90.
+            </p>
+            <Link
+              href="/tools/bridge-strategy-calculator"
+              className="inline-block font-syne font-semibold text-[12px] bg-gold text-black px-5 py-2.5 rounded hover:opacity-85 transition-opacity"
+            >
+              Model Your Bridge Plan →
+            </Link>
+          </div>
+        </div>
+
+        <div className="max-w-3xl">
           <h2 className="font-syne font-bold text-[22px] tracking-tight text-white mb-4">
             What Is a FIRE Number?
           </h2>
@@ -118,7 +135,6 @@ export default function FIRENumberCalculatorPage() {
             ))}
           </div>
 
-          {/* Related tools */}
           <h2 className="font-syne font-bold text-[22px] tracking-tight text-white mb-4">Related Tools & Guides</h2>
           <div className="grid sm:grid-cols-2 gap-3">
             {[
@@ -129,11 +145,7 @@ export default function FIRENumberCalculatorPage() {
               { href: '/blog/how-much-taxable-brokerage-to-retire-early', label: 'How Much Taxable Do I Need?' },
               { href: '/blog/what-is-retirement-bridge-strategy',        label: 'Bridge Strategy Guide' },
             ].map(({ href, label }) => (
-              <Link
-                key={href}
-                href={href}
-                className="flex items-center gap-3 bg-ink border border-white/[0.07] rounded-lg px-4 py-3 hover:border-gold/20 transition-colors group"
-              >
+              <Link key={href} href={href} className="flex items-center gap-3 bg-ink border border-white/[0.07] rounded-lg px-4 py-3 hover:border-gold/20 transition-colors group">
                 <span className="font-mono text-[11px] text-white/50 group-hover:text-gold/80 transition-colors">{label} →</span>
               </Link>
             ))}

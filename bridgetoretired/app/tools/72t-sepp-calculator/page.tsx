@@ -11,7 +11,6 @@ export const metadata: Metadata = {
 export default function SEPPCalculatorPage() {
   return (
     <div className="min-h-screen bg-black">
-      {/* Header */}
       <div className="bg-navy border-b border-white/[0.06]">
         <div className="max-w-4xl mx-auto px-5 pt-12 pb-10">
           <Link href="/tools" className="font-mono text-[10px] tracking-widest uppercase text-white/30 hover:text-gold transition-colors flex items-center gap-2 mb-6">
@@ -27,12 +26,38 @@ export default function SEPPCalculatorPage() {
         </div>
       </div>
 
-      {/* Calculator */}
       <div className="max-w-4xl mx-auto px-5 py-12">
         <SEPPCalculator />
 
-        {/* SEO content */}
-        <div className="mt-8 max-w-3xl">
+        {/* Tool-specific CTA */}
+        <div className="my-10 bg-ink border border-teal/20 rounded-xl p-6 flex items-start gap-5">
+          <div className="text-3xl shrink-0">📋</div>
+          <div className="flex-1">
+            <div className="font-mono text-[9px] tracking-widest uppercase text-teal mb-2">Before You Commit</div>
+            <h3 className="font-syne font-semibold text-[16px] text-white mb-2">
+              Compare 72(t) against your taxable bridge and Roth ladder
+            </h3>
+            <p className="text-white/45 text-[13px] leading-relaxed mb-4">
+              Rule 72(t) locks you into fixed payments for 5+ years. Before committing, model whether a taxable brokerage bridge or Roth conversion ladder could cover the same gap with more flexibility — and less modification risk.
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <Link
+                href="/tools/bridge-strategy-calculator"
+                className="inline-block font-syne font-semibold text-[12px] bg-gold text-black px-5 py-2.5 rounded hover:opacity-85 transition-opacity"
+              >
+                Model the Full Bridge →
+              </Link>
+              <Link
+                href="/tools/roth-conversion-ladder-calculator"
+                className="inline-block font-syne font-semibold text-[12px] border border-white/20 text-white/70 px-5 py-2.5 rounded hover:border-gold/30 hover:text-white transition-all"
+              >
+                Compare Roth Ladder →
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        <div className="max-w-3xl">
           <h2 className="font-syne font-bold text-[22px] tracking-tight text-white mb-4">
             What Is a 72(t) SEPP Distribution?
           </h2>
@@ -115,7 +140,6 @@ export default function SEPPCalculatorPage() {
             ))}
           </div>
 
-          {/* Related tools */}
           <h2 className="font-syne font-bold text-[22px] tracking-tight text-white mb-4">Related Tools & Guides</h2>
           <div className="grid sm:grid-cols-2 gap-3">
             {[
@@ -126,11 +150,7 @@ export default function SEPPCalculatorPage() {
               { href: '/blog/what-is-retirement-bridge-strategy',        label: 'Bridge Strategy Guide' },
               { href: '/blog/roth-conversion-ladder-guide',              label: 'Roth Conversion Ladder Guide' },
             ].map(({ href, label }) => (
-              <Link
-                key={href}
-                href={href}
-                className="flex items-center gap-3 bg-ink border border-white/[0.07] rounded-lg px-4 py-3 hover:border-gold/20 transition-colors group"
-              >
+              <Link key={href} href={href} className="flex items-center gap-3 bg-ink border border-white/[0.07] rounded-lg px-4 py-3 hover:border-gold/20 transition-colors group">
                 <span className="font-mono text-[11px] text-white/50 group-hover:text-gold/80 transition-colors">{label} →</span>
               </Link>
             ))}

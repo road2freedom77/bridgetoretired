@@ -11,7 +11,6 @@ export const metadata: Metadata = {
 export default function SocialSecurityCalculatorPage() {
   return (
     <div className="min-h-screen bg-black">
-      {/* Header */}
       <div className="bg-navy border-b border-white/[0.06]">
         <div className="max-w-4xl mx-auto px-5 pt-12 pb-10">
           <Link href="/tools" className="font-mono text-[10px] tracking-widest uppercase text-white/30 hover:text-gold transition-colors flex items-center gap-2 mb-6">
@@ -27,12 +26,30 @@ export default function SocialSecurityCalculatorPage() {
         </div>
       </div>
 
-      {/* Calculator */}
       <div className="max-w-4xl mx-auto px-5 py-12">
         <SocialSecurityCalculator />
 
-        {/* SEO content */}
-        <div className="mt-8 max-w-3xl">
+        {/* Tool-specific CTA */}
+        <div className="my-10 bg-ink border border-sage/20 rounded-xl p-6 flex items-start gap-5">
+          <div className="text-3xl shrink-0">🌉</div>
+          <div className="flex-1">
+            <div className="font-mono text-[9px] tracking-widest uppercase text-sage mb-2">Layer Into Your Plan</div>
+            <h3 className="font-syne font-semibold text-[16px] text-white mb-2">
+              See how your claiming age affects your full bridge projection
+            </h3>
+            <p className="text-white/45 text-[13px] leading-relaxed mb-4">
+              Delaying Social Security to 70 means drawing more from your portfolio for 5-8 extra years. The Bridge Strategy Calculator lets you test both scenarios side by side — showing exactly how your portfolio balance changes at 90 depending on when SS starts.
+            </p>
+            <Link
+              href="/tools/bridge-strategy-calculator"
+              className="inline-block font-syne font-semibold text-[12px] bg-gold text-black px-5 py-2.5 rounded hover:opacity-85 transition-opacity"
+            >
+              Model Both SS Scenarios →
+            </Link>
+          </div>
+        </div>
+
+        <div className="max-w-3xl">
           <h2 className="font-syne font-bold text-[22px] tracking-tight text-white mb-4">
             When Should You Claim Social Security?
           </h2>
@@ -115,7 +132,6 @@ export default function SocialSecurityCalculatorPage() {
             ))}
           </div>
 
-          {/* Related tools */}
           <h2 className="font-syne font-bold text-[22px] tracking-tight text-white mb-4">Related Tools & Guides</h2>
           <div className="grid sm:grid-cols-2 gap-3">
             {[
@@ -126,11 +142,7 @@ export default function SocialSecurityCalculatorPage() {
               { href: '/blog/can-i-retire-at-55-with-750k',       label: 'Can I Retire at 55 With $750K?' },
               { href: '/blog/sequence-of-returns-risk',           label: 'Sequence of Returns Risk' },
             ].map(({ href, label }) => (
-              <Link
-                key={href}
-                href={href}
-                className="flex items-center gap-3 bg-ink border border-white/[0.07] rounded-lg px-4 py-3 hover:border-gold/20 transition-colors group"
-              >
+              <Link key={href} href={href} className="flex items-center gap-3 bg-ink border border-white/[0.07] rounded-lg px-4 py-3 hover:border-gold/20 transition-colors group">
                 <span className="font-mono text-[11px] text-white/50 group-hover:text-gold/80 transition-colors">{label} →</span>
               </Link>
             ))}
