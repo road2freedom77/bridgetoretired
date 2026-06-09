@@ -15,10 +15,12 @@ faq:
   - question: "What does the Bridge Planner show for a retire-at-50 scenario?"
     answer: "The BRIDGE sheet shows which account gets tapped each year, running balances for taxable, 401(k), and Roth, and whether the taxable account fully funds the bridge. RISK FLAGS automatically checks withdrawal rate, ACA exposure, SS delay opportunity, and whether the portfolio survives to 90."
   - question: "How much taxable brokerage do I need to retire at 50?"
-    answer: "There is no universal number, but the more of your first 9.5 years you can cover from taxable assets, the more realistic a retirement-at-50 plan becomes. The Bridge Planner's BRIDGE sheet shows exactly how many years your taxable account covers."
+    answer: "There is no universal number, but the more of your first 9.5 years you can cover from taxable assets, the more realistic a retirement-at-50 plan becomes. The Bridge Planner BRIDGE sheet shows exactly how many years your taxable account covers."
   - question: "What withdrawal rate is safe for retiring at 50?"
-    answer: "The 4% rule was designed for 30-year retirements. At 50 with a 40-year horizon, research supports 3.0-3.3%. The Bridge Planner flags any withdrawal rate above 4% automatically in the RISK FLAGS sheet."
+    answer: "The 4% rule was designed for 30-year retirements. At 50 with a 40-year horizon, research supports 3.0-3.3%. The Bridge Planner flags any withdrawal rate above 4% automatically in RISK FLAGS."
 ---
+
+Most retirement calculators tell you whether your withdrawal rate is above or below 4%. That misses the real question at 50: can your taxable, 401(k), and Roth accounts actually carry you through 9.5 years before penalty-free retirement account access — and still leave enough for the decades after? Here's what the Bridge Planner shows when you run three real $1M scenarios.
 
 <BridgeStrategyVisualizer
   defaultRetireAge={50}
@@ -28,25 +30,13 @@ faq:
   defaultRoth={150000}
 />
 
-Most "can I retire at 50 with $1 million" articles give you a withdrawal rate calculation and call it done. That misses the actual problem.
-
-At 50, retirement isn't a simple math exercise. It's a **bridge problem**: getting from age 50, through 9.5 years before penalty-free retirement account access at 59½, through 15 years before Medicare at 65, and into a stable long-term retirement. Two people with identical $1 million portfolios can have completely different outcomes based purely on how that million is structured.
-
-The best way to see this isn't a formula — it's running the actual numbers through a year-by-year planner. Here's what the [Bridge Planner](/tools/bridge-strategy-calculator) shows across three real scenarios.
+At 50, retirement isn't a simple math exercise. It's a **bridge problem**: getting from age 50, through 9.5 years before penalty-free retirement account access at 59½, through 15 years before Medicare at 65, and into stable long-term retirement. Two people with identical $1 million portfolios can have completely different outcomes based purely on how that million is structured.
 
 ## How the Bridge Planner Works
 
-The planner has seven sheets that update automatically when you change the INPUTS:
+The free Bridge Planner models your bridge years with a DASHBOARD, INPUTS, BRIDGE YEARS, POST-59½, PROJECTION, and RISK FLAGS sheet — all updating automatically when you change one number. The Pro version adds TAX ESTIMATE, ROTH LADDER, REBALANCE, and a full 7-sheet planning stack.
 
-- **INPUTS** — single entry point for age, account balances, spending, return assumptions, SS claiming age
-- **BRIDGE** — year-by-year plan from retirement to 59½, showing which account gets tapped and running balances for all three buckets
-- **TAX ESTIMATE** — federal tax estimate per bridge year using 2026 brackets, showing taxable income and estimated tax after standard deduction
-- **ROTH LADDER** — 5-year conversion pipeline showing remaining bracket space, conversion amounts, and when each rung unlocks
-- **POST-59½** — full portfolio projection from 59½ to age 90 with SS income layered in
-- **RISK FLAGS** — automated checks: withdrawal rate, bridge gap, cash buffer, ACA cliff risk, SS delay opportunity, IRMAA trigger, survives to 90
-- **REBALANCE** — annual allocation tracker showing target vs actual by asset class
-
-Change one number in INPUTS and everything cascades. That's what makes it useful for this question — you can see the plan break or hold in real time.
+The core logic: change one number in INPUTS and see the plan break or hold in real time across every sheet.
 
 ## Scenario 1: David — $1M Can Work
 
@@ -54,52 +44,52 @@ Change one number in INPUTS and everything cascades. That's what makes it useful
 
 <FinanceTable
   columns={[
-    { key: "field",  header: "Input",         highlight: true },
-    { key: "value",  header: "David's Numbers" },
+    { key: "field",  header: "Input",           highlight: true },
+    { key: "value",  header: "Davids Numbers" },
     { key: "note",   header: "Notes" },
   ]}
   rows={[
-    { field: "Current Age",          value: "50",       note: "Wants to retire now" },
-    { field: "Planned Retirement Age", value: "50",     note: "Immediate retirement" },
-    { field: "Taxable Brokerage",    value: "$350,000", note: "Primary bridge asset", _highlight: true },
-    { field: "Traditional 401(k)/IRA", value: "$500,000", note: "Stays mostly untouched early" },
-    { field: "Roth IRA",             value: "$150,000", note: "Backup flexibility" },
-    { field: "Annual Spending",      value: "$42,000",  note: "Paid-off house, modest lifestyle" },
-    { field: "SS Claiming Age",      value: "67",       note: "Delay for larger benefit" },
-    { field: "Estimated SS",         value: "$22,000",  note: "Annual at FRA" },
-    { field: "Portfolio Return",     value: "6.5%",     note: "Conservative nominal" },
+    { field: "Current Age",            value: "50",       note: "Wants to retire now" },
+    { field: "Planned Retirement Age", value: "50",       note: "Immediate retirement" },
+    { field: "Taxable Brokerage",      value: "$350,000", note: "Primary bridge asset", _highlight: true },
+    { field: "Traditional 401k/IRA",   value: "$500,000", note: "Can compound mostly untouched early" },
+    { field: "Roth IRA",               value: "$150,000", note: "Backup flexibility" },
+    { field: "Annual Spending",        value: "$42,000",  note: "Paid-off house, modest lifestyle" },
+    { field: "SS Claiming Age",        value: "67",       note: "Delay for larger benefit" },
+    { field: "Estimated SS",           value: "$22,000",  note: "Annual at FRA" },
+    { field: "Portfolio Return",       value: "6.5%",     note: "Conservative nominal" },
   ]}
-  caption="David's INPUTS — total portfolio $1,000,000"
+  caption="Davids INPUTS — total portfolio $1,000,000"
 />
 
 **What the BRIDGE sheet shows:**
 
-The BRIDGE sheet runs year by year from age 50 to 59½. For David, the taxable account covers most of the bridge years cleanly — drawing down from $350K while the 401(k) compounds untouched. By 59½ the taxable is mostly spent but the 401(k) has grown significantly from compounding during those 9.5 bridge years.
+The BRIDGE sheet runs year by year from age 50 to 59½. For David, the taxable account covers the bridge years — drawing down from $350K while the 401(k) can compound mostly untouched in a strong taxable-first plan. By 59½ the taxable is largely spent but the 401(k) has grown significantly from those 9.5 years of compounding.
 
 **What RISK FLAGS shows:**
 
 <FinanceTable
   columns={[
-    { key: "check",   header: "Risk Check",              highlight: true },
+    { key: "check",   header: "Risk Check",           highlight: true },
     { key: "status",  header: "Status" },
     { key: "detail",  header: "Detail" },
   ]}
   rows={[
-    { check: "Withdrawal Rate > 4%",     status: "✓ OK",              detail: "4.2% — close but manageable at this spending level" },
-    { check: "Taxable Bridge Gap",       status: "✓ FUNDED",          detail: "Taxable covers bridge years", _highlight: true },
-    { check: "Cash Buffer < 1 Year",     status: "✓ OK",              detail: "Covers 1.5+ years spending" },
-    { check: "ACA Subsidy Cliff Risk",   status: "✓ OK",              detail: "Income level qualifies for subsidies" },
-    { check: "SS Delay Opportunity",     status: "💡 Consider 70",    detail: "Delaying to 70 adds ~$5,700/yr permanently" },
-    { check: "Portfolio Survives to 90", status: "✓ FUNDED TO 90",    detail: "Strong projected balance at 90" },
+    { check: "Withdrawal Rate over 4%",  status: "OK",             detail: "4.2% — close but manageable at this spending level" },
+    { check: "Taxable Bridge Gap",        status: "FUNDED",         detail: "Taxable covers bridge years", _highlight: true },
+    { check: "Cash Buffer",               status: "OK",             detail: "Covers 1.5+ years spending" },
+    { check: "ACA Subsidy Cliff Risk",    status: "OK",             detail: "Income level qualifies for subsidies" },
+    { check: "SS Delay Opportunity",      status: "Consider age 70", detail: "Delaying to 70 adds ~$5,700/yr permanently" },
+    { check: "Portfolio Survives to 90",  status: "FUNDED TO 90",   detail: "Strong projected balance at 90" },
   ]}
-  caption="David's RISK FLAGS output — one advisory flag, no hard stops"
+  caption="Davids RISK FLAGS — one advisory flag, no hard stops"
 />
 
 **What POST-59½ shows:**
 
-Once SS starts at 67, the required annual portfolio withdrawal drops significantly — the portfolio no longer has to carry 100% of spending. The POST-59½ sheet projects David's balance continuing to grow through his 80s. The plan works.
+Once SS starts at 67, the required annual portfolio withdrawal drops significantly. The POST-59½ sheet projects David's balance growing through his 80s. The plan works.
 
-**Why it works:** The taxable account is large enough to fund the bridge without touching the 401(k) early. The 401(k) compounds for 9.5 years uninterrupted. Spending is modest enough that the withdrawal rate stays near 4%.
+**Why it works:** The taxable account is large enough to fund the bridge in a taxable-first plan. Spending is modest enough that the withdrawal rate stays near 4%.
 
 ---
 
@@ -109,38 +99,30 @@ Once SS starts at 67, the required annual portfolio withdrawal drops significant
 
 <FinanceTable
   columns={[
-    { key: "field",  header: "Input",          highlight: true },
-    { key: "value",  header: "Chris's Numbers" },
+    { key: "field",  header: "Input",           highlight: true },
+    { key: "value",  header: "Chris Numbers" },
     { key: "note",   header: "Notes" },
   ]}
   rows={[
-    { field: "Taxable Brokerage",      value: "$250,000", note: "Covers ~4-5 years at spending rate", _highlight: true },
-    { field: "Traditional 401(k)/IRA", value: "$600,000", note: "Main retirement asset" },
-    { field: "Roth IRA",               value: "$150,000", note: "Backup" },
-    { field: "Annual Spending",        value: "$55,000",  note: "Higher than David" },
-    { field: "Other Retirement Income", value: "$17,000", note: "$15K-$20K part-time consulting" },
-    { field: "SS Claiming Age",        value: "67",       note: "FRA" },
+    { field: "Taxable Brokerage",       value: "$250,000", note: "Covers ~4-5 years at spending rate", _highlight: true },
+    { field: "Traditional 401k/IRA",    value: "$600,000", note: "Main retirement asset" },
+    { field: "Roth IRA",                value: "$150,000", note: "Backup" },
+    { field: "Annual Spending",         value: "$55,000",  note: "Higher than David" },
+    { field: "Other Retirement Income", value: "$17,000",  note: "$15K-$20K part-time consulting" },
+    { field: "SS Claiming Age",         value: "67",       note: "FRA" },
   ]}
-  rows={[
-    { field: "Taxable Brokerage",      value: "$250,000", note: "Covers ~4-5 years at spending rate", _highlight: true },
-    { field: "Traditional 401(k)/IRA", value: "$600,000", note: "Main retirement asset" },
-    { field: "Roth IRA",               value: "$150,000", note: "Backup" },
-    { field: "Annual Spending",        value: "$55,000",  note: "Higher than David" },
-    { field: "Other Retirement Income", value: "$17,000", note: "$15K-$20K part-time consulting" },
-    { field: "SS Claiming Age",        value: "67",       note: "FRA" },
-  ]}
-  caption="Chris's INPUTS — total portfolio $1,000,000 + part-time income"
+  caption="Chris INPUTS — total portfolio $1,000,000 plus part-time income"
 />
 
 **What the BRIDGE sheet shows:**
 
-Without part-time income, the BRIDGE sheet flags a gap — taxable alone doesn't cover 9.5 bridge years at $55K spending. With $17K/year in "Other Retirement Income" entered in INPUTS, the net needed from taxable drops significantly. The BRIDGE sheet shows the taxable account lasting through the bridge with a buffer remaining.
+Without part-time income, BRIDGE flags a gap — taxable alone doesn't cover 9.5 bridge years at $55K spending. With $17K/year in Other Retirement Income entered in INPUTS, the net needed from taxable drops significantly. The taxable account lasts through the bridge with a buffer remaining.
 
 **What RISK FLAGS shows:**
 
-With part-time income entered, the planner calculates the effective withdrawal rate on the portfolio alone — it drops well below 4% once the consulting income is counted. The bridge gap flag clears. ACA subsidy eligibility stays intact because total income remains below the cliff.
+With part-time income entered, the effective withdrawal rate drops well below 4%. The bridge gap flag clears. ACA subsidy eligibility stays intact because total income stays below the cliff.
 
-**The key insight the planner reveals:** Chris's $17K/year in consulting doesn't just add $17K — it extends the bridge by 2-3 years and keeps the 401(k) compounding longer. The POST-59½ balance at 90 is meaningfully higher than without the part-time income. This is the compounding effect of a partial income plan that a simple calculator won't show you.
+**The key insight the planner reveals:** Chris's $17K/year in consulting doesn't just add $17K — it extends the bridge by 2-3 years and keeps the 401(k) compounding longer. The POST-59½ balance at 90 is meaningfully higher than without the part-time income. This compounding effect is invisible in a simple calculator.
 
 ---
 
@@ -150,56 +132,50 @@ With part-time income entered, the planner calculates the effective withdrawal r
 
 <FinanceTable
   columns={[
-    { key: "field",  header: "Input",          highlight: true },
-    { key: "value",  header: "Maria's Numbers" },
+    { key: "field",  header: "Input",           highlight: true },
+    { key: "value",  header: "Marias Numbers" },
     { key: "note",   header: "Notes" },
   ]}
   rows={[
-    { field: "Taxable Brokerage",      value: "$70,000",  note: "Only ~1 year of spending", _highlight: true },
-    { field: "Traditional 401(k)/IRA", value: "$860,000", note: "Vast majority of portfolio" },
-    { field: "Roth IRA",               value: "$70,000",  note: "Small backup" },
-    { field: "Annual Spending",        value: "$68,000",  note: "High relative to portfolio" },
-    { field: "Other Retirement Income", value: "$0",      note: "No part-time income planned" },
-    { field: "SS Claiming Age",        value: "67",       note: "FRA" },
+    { field: "Taxable Brokerage",       value: "$70,000",  note: "Only ~1 year of spending", _highlight: true },
+    { field: "Traditional 401k/IRA",    value: "$860,000", note: "Vast majority of portfolio" },
+    { field: "Roth IRA",                value: "$70,000",  note: "Small backup" },
+    { field: "Annual Spending",         value: "$68,000",  note: "High relative to portfolio" },
+    { field: "Other Retirement Income", value: "$0",       note: "No part-time income planned" },
+    { field: "SS Claiming Age",         value: "67",       note: "FRA" },
   ]}
-  caption="Maria's INPUTS — total portfolio $1,000,000, same headline number"
+  caption="Marias INPUTS — total portfolio $1,000,000, same headline number"
 />
 
 **What RISK FLAGS shows immediately:**
 
 <FinanceTable
   columns={[
-    { key: "check",   header: "Risk Check",              highlight: true },
+    { key: "check",   header: "Risk Check",           highlight: true },
     { key: "status",  header: "Status" },
     { key: "detail",  header: "Detail" },
   ]}
   rows={[
-    { check: "Withdrawal Rate > 4%",     status: "⚠ HIGH RISK",       detail: "6.8% — significantly above safe threshold", _highlight: true },
-    { check: "Taxable Bridge Gap",       status: "⚠ GAP DETECTED",    detail: "Taxable covers ~1 year. 8.5-year gap unfunded" },
-    { check: "Cash Buffer < 1 Year",     status: "⚠ REVIEW",          detail: "Limited cash buffer for sequence risk" },
-    { check: "ACA Subsidy Cliff Risk",   status: "⚠ REVIEW",          detail: "May need pretax withdrawals that affect subsidies" },
-    { check: "Portfolio Survives to 90", status: "⚠ AT RISK",         detail: "Projected depletion before age 90 at current rate" },
+    { check: "Withdrawal Rate over 4%",  status: "HIGH RISK",    detail: "6.8% — significantly above safe threshold", _highlight: true },
+    { check: "Taxable Bridge Gap",        status: "GAP DETECTED", detail: "Taxable covers ~1 year. 8.5-year gap unfunded" },
+    { check: "Cash Buffer",               status: "REVIEW",       detail: "Limited buffer for sequence risk" },
+    { check: "ACA Subsidy Cliff Risk",    status: "REVIEW",       detail: "May need pretax withdrawals that affect subsidies" },
+    { check: "Portfolio Survives to 90",  status: "AT RISK",      detail: "Projected depletion before age 90 at current rate" },
   ]}
-  caption="Maria's RISK FLAGS — multiple hard stops before she even looks at the BRIDGE sheet"
+  caption="Marias RISK FLAGS — multiple hard stops before she even looks at BRIDGE"
 />
 
 **What the BRIDGE sheet shows:**
 
-The BRIDGE sheet reveals the core problem clearly. After the taxable account runs out in year 1-2, every subsequent bridge year requires drawing from the 401(k) — triggering the 10% early withdrawal penalty unless a strategy like Rule 72(t) is used. The tax on those forced early withdrawals compounds the problem further.
-
-**What the TAX ESTIMATE sheet shows:**
-
-With $68K in annual spending and forced 401(k) withdrawals, the TAX ESTIMATE sheet shows significantly higher annual tax bills during the bridge years — far more than David's scenario. The effective cost of retiring now vs. waiting 2-3 years to build taxable is substantial.
+After the taxable account runs out in year 1-2, every subsequent bridge year requires drawing from the 401(k) — triggering the 10% early withdrawal penalty unless a strategy like Rule 72(t) is used. The forced early withdrawals add significant tax cost on top of the penalty.
 
 **What Maria needs to change before retiring:**
 
-The planner makes this concrete. She has three levers:
+The planner makes this concrete. She has three levers — and can test each one instantly by changing INPUTS:
 
-1. **Reduce spending** — dropping to $50K changes the withdrawal rate from 6.8% to 5.0%. Still high but meaningfully better.
-2. **Build taxable first** — 2-3 more years of work directing savings to taxable brokerage transforms the bridge picture completely.
-3. **Add part-time income** — $15-20K/year in consulting during bridge years, entered in INPUTS, shows the gap shrinking significantly.
-
-The planner lets her test each lever and see the exact impact on RISK FLAGS and the BRIDGE sheet before making a permanent decision.
+1. **Reduce spending** — dropping to $50K shifts the withdrawal rate from 6.8% to 5.0%
+2. **Build taxable first** — 2-3 more years directing savings to taxable transforms the bridge picture
+3. **Add part-time income** — $15-20K/year entered in Other Retirement Income shows the gap closing
 
 ---
 
@@ -207,22 +183,27 @@ The planner lets her test each lever and see the exact impact on RISK FLAGS and 
 
 <FinanceTable
   columns={[
-    { key: "person",   header: "",              highlight: true },
-    { key: "taxable",  header: "Taxable",        align: "right" },
-    { key: "pretax",   header: "401(k)/IRA",     align: "right" },
-    { key: "roth",     header: "Roth",           align: "right" },
-    { key: "spend",    header: "Spending",       align: "right" },
-    { key: "verdict",  header: "RISK FLAGS Result" },
+    { key: "person",  header: "",             highlight: true },
+    { key: "taxable", header: "Taxable",       align: "right" },
+    { key: "pretax",  header: "401k/IRA",      align: "right" },
+    { key: "roth",    header: "Roth",          align: "right" },
+    { key: "spend",   header: "Spending",      align: "right" },
+    { key: "verdict", header: "RISK FLAGS Result" },
   ]}
   rows={[
     { person: "David", taxable: "$350K", pretax: "$500K", roth: "$150K", spend: "$42K", verdict: "All green — bridge funded", _highlight: true },
     { person: "Chris", taxable: "$250K", pretax: "$600K", roth: "$150K", spend: "$55K", verdict: "Green with part-time income entered" },
     { person: "Maria", taxable: "$70K",  pretax: "$860K", roth: "$70K",  spend: "$68K", verdict: "Multiple red flags — not ready" },
   ]}
-  caption="Same $1 million total — what the planner's RISK FLAGS actually shows"
+  caption="Same $1 million total — what the planners RISK FLAGS actually shows"
 />
 
 Same headline number. Completely different RISK FLAGS output. That's the whole point.
+
+> **What the planner reveals across three scenarios:**
+> David — bridge fully funded, all green
+> Chris — gap closes with part-time income entered
+> Maria — taxable exhausted in year 2, multiple red flags
 
 ## What a Calculator Won't Tell You That the Planner Will
 
@@ -230,20 +211,17 @@ A simple FIRE calculator tells you whether your withdrawal rate is above or belo
 
 The Bridge Planner shows you:
 
-- **Which year the taxable account runs out** — not just whether it "covers the bridge" in aggregate
-- **What the 401(k) balance looks like at 59½** — after 9.5 years of compounding untouched vs being tapped early
-- **The tax cost of each bridge year** — TAX ESTIMATE shows exactly what you'll owe federally in each year
-- **Whether Roth conversions are worth running during low-income bridge years** — the ROTH LADDER sheet shows remaining 12% bracket space each year
+- **Which year the taxable account runs out** — not just whether it covers the bridge in aggregate
+- **What the 401(k) balance looks like at 59½** — after years of compounding in a taxable-first plan vs being tapped early
 - **Whether your plan survives a bad early sequence** — not just average-return math
-- **The exact dollar impact of delaying Social Security** — SS DELAY flag shows the annual increase
+- **The exact dollar impact of delaying Social Security** — the SS DELAY flag shows the annual increase
+- **Which levers actually move the needle** — change spending, add income, or shift balances and watch RISK FLAGS update instantly
 
-The difference between David and Maria isn't visible in a net worth calculator. It's only visible when you run the year-by-year BRIDGE sheet and watch which one's taxable account holds and which one's breaks down in year two.
+The difference between David and Maria isn't visible in a net worth calculator. It's only visible when you run the year-by-year BRIDGE sheet and watch which one's taxable account holds and which one breaks down in year two.
 
 ## What to Do Next
 
-If you're asking whether $1 million is enough to retire at 50, the right move isn't to look for a benchmark answer. It's to enter your actual numbers and see what the planner shows.
-
-Start with the [Bridge Strategy Calculator](/tools/bridge-strategy-calculator) above — it uses the same logic as the full planner. Then [download the free Bridge Planner](/#download) to get the complete 7-sheet model with TAX ESTIMATE, ROTH LADDER, RISK FLAGS, and POST-59½ projection.
+Start with the [Bridge Strategy Calculator](/tools/bridge-strategy-calculator) above — it uses the same logic as the free planner. Then [download the free Bridge Planner](/#download) to model your bridge years in the full spreadsheet. For the complete 7-sheet system with TAX ESTIMATE, ROTH LADDER, RISK FLAGS, REBALANCE, and POST-59½ projection, upgrade to Pro.
 
 The question isn't "is $1 million enough?" The question is: **what does your BRIDGE sheet actually show?**
 
