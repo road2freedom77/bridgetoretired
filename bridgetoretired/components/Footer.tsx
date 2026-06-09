@@ -16,12 +16,22 @@ export function Footer() {
     {
       title: 'Tools',
       links: [
-        { label: 'All Calculators',           href: '/tools'                                    },
-        { label: 'Bridge Strategy Calculator', href: '/tools/bridge-strategy-calculator'         },
-        { label: '72(t) SEPP Calculator',      href: '/tools/72t-sepp-calculator'               },
-        { label: 'FIRE Number Calculator',     href: '/tools/fire-number-calculator'             },
-        { label: 'Withdrawal Order Optimizer', href: '/tools/withdrawal-order-optimizer'         },
-        { label: 'Free Bridge Planner',        href: '/#download'                               },
+        { label: 'All Calculators',           href: '/tools'                            },
+        { label: 'Bridge Strategy Calculator', href: '/tools/bridge-strategy-calculator' },
+        { label: '72(t) SEPP Calculator',      href: '/tools/72t-sepp-calculator'       },
+        { label: 'FIRE Number Calculator',     href: '/tools/fire-number-calculator'     },
+        { label: 'Withdrawal Order Optimizer', href: '/tools/withdrawal-order-optimizer' },
+        { label: 'Free Bridge Planner',        href: '/#download'                       },
+      ],
+    },
+    {
+      title: 'Guides',
+      links: [
+        { label: 'Bridge Planner Walkthrough', href: '/guides/bridge-planner-walkthrough' },
+        { label: 'Roth Ladder vs 72(t)',        href: '/blog/roth-ladder-vs-72t'          },
+        { label: 'Retire at 50 With $1M',       href: '/blog/can-i-retire-at-50-with-1-million' },
+        { label: 'Rule 72(t) SEPP Guide',       href: '/blog/rule-72t-sepp-guide'         },
+        { label: 'How Much Taxable?',           href: '/blog/how-much-taxable-brokerage-to-retire-early' },
       ],
     },
     {
@@ -38,7 +48,7 @@ export function Footer() {
   return (
     <footer className="bg-navy border-t border-white/[0.06] px-5 pt-16 pb-8">
       <div className="max-w-7xl mx-auto">
-        <div className="grid sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr] gap-12 mb-14">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr_1fr] gap-12 mb-14">
 
           {/* Brand */}
           <div>

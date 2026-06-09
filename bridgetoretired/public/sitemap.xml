@@ -109,6 +109,14 @@
     <priority>0.8</priority>
   </url>
 
+  <!-- Guides -->
+  <url>
+    <loc>https://bridgetoretired.com/guides/bridge-planner-walkthrough</loc>
+    <lastmod>2026-06-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
   <!-- Blog posts -->
   <url>
     <loc>https://bridgetoretired.com/blog/what-is-retirement-bridge-strategy</loc>
@@ -191,6 +199,18 @@
   <url>
     <loc>https://bridgetoretired.com/blog/how-much-taxable-brokerage-to-retire-early</loc>
     <lastmod>2026-05-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://bridgetoretired.com/blog/roth-ladder-vs-72t</loc>
+    <lastmod>2026-06-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://bridgetoretired.com/blog/can-i-retire-at-50-with-1-million</loc>
+    <lastmod>2026-06-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
