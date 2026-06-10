@@ -37,12 +37,12 @@ export async function POST(req: NextRequest) {
               Free Download
             </p>
             <p style="font-size: 16px; font-weight: 600; color: #ffffff; margin-bottom: 4px;">
-              Early Retirement Bridge Planner v2.xlsx
+              Early Retirement Bridge Planner v2.2.xlsx
             </p>
             <p style="font-size: 12px; color: rgba(255,255,255,0.4); margin-bottom: 16px;">
               7 sheets · Taxable → 401k → Roth modeling · Inflation-adjusted · Risk flags
             </p>
-            <a href="https://www.bridgetoretired.com/downloads/Bridge_Planner_v2_1.xlsx"
+            <a href="https://www.bridgetoretired.com/downloads/Bridge_Planner_v2_2.xlsx"
                style="display: inline-block; background: #e8b84b; color: #0a0c0f; font-weight: 700; font-size: 13px; padding: 12px 24px; border-radius: 4px; text-decoration: none;">
               Download Planner →
             </a>
