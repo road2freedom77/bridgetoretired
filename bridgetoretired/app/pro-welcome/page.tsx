@@ -70,7 +70,7 @@ export default function ProWelcomePage() {
       badge: 'Download',
       badgeColor: 'sage',
       description: 'Full planner with tax estimate tab, withdrawal tracking, Roth ladder, risk flags, and annual rebalance tracker.',
-      href: '/downloads/bridge-planner-pro-v1.xlsx',
+      href: '/downloads/bridge-planner-pro-v3.xlsx',
       cta: 'Download Pro Planner ↓',
       primary: false,
       download: true,
