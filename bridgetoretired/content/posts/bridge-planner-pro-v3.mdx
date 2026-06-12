@@ -1,0 +1,129 @@
+---
+title: "Bridge Planner Pro v3: Monte Carlo Simulator, 9-Sheet Planning System, and ACA Cross-Check"
+description: "Bridge Planner Pro v3 adds a 200-scenario Monte Carlo simulator, switchable MFJ/Single tax brackets, ACA cliff cross-check in the Roth Ladder, SS income modeling, and color-coded RISK FLAGS. Here's what changed and why it matters."
+date: 2026-06-12
+category: "Product Update"
+readTime: "6 min read"
+featured: false
+faq:
+  - question: "What is new in Bridge Planner Pro v3?"
+    answer: "Pro v3 adds a 200-scenario Monte Carlo simulator, 9-sheet Excel planning system, switchable MFJ/Single tax brackets, ACA cliff cross-check in the Roth Ladder, Social Security income modeled in POST-59½, and color-coded conditional formatting on all 9 RISK FLAGS."
+  - question: "Do existing Pro members get v3 for free?"
+    answer: "Yes. All existing Pro members get the v3 Excel download at no extra cost. Log in to your Pro dashboard and download the updated file."
+  - question: "What is a Monte Carlo simulator for retirement?"
+    answer: "Instead of assuming a fixed return every year, a Monte Carlo simulator runs hundreds of randomized return sequences — some with crashes early, some with crashes late — and tells you what percentage of those futures end with money still in the portfolio. It captures sequence of returns risk that a linear projection misses."
+  - question: "What is the ACA cliff cross-check in the Roth Ladder?"
+    answer: "The ROTH LADDER sheet now flags any bridge year where your suggested Roth conversion would push MAGI above the estimated 400% FPL threshold — which may reduce or eliminate ACA premium tax credits. Each year shows a green check or amber warning automatically."
+---
+
+We shipped Pro v3 today. Here is what changed, why each change matters, and what it means for your retirement plan.
+
+## What Was Wrong With v1 and v2
+
+The original Pro planner had three structural problems that made it less useful than it should have been:
+
+**Social Security income was not modeled.** The POST-59½ sheet projected withdrawals through life expectancy but never subtracted SS income — so the portfolio looked like it had to fund 100% of spending forever, even after SS started. That made every plan look worse than it actually was.
+
+**The Roth Ladder suggested nothing.** The conversion suggestion was $0 in every bridge year because the formula was broken. The ACA cliff cross-check existed in concept but never fired.
+
+**There was no Monte Carlo.** The planner showed one deterministic path at a fixed return rate. That looks clean but misses the most important risk in early retirement: what happens if the bad years come first.
+
+Pro v3 fixes all three — and adds several things that weren't there at all.
+
+## What's New in Pro v3
+
+### Monte Carlo Simulator — the most important addition
+
+The MONTE CARLO sheet runs 200 retirement simulations using randomized annual returns drawn from a normal distribution centered on your INPUTS return assumption, with volatility set by your portfolio standard deviation.
+
+Each simulation asks one question: does the money last to your life expectancy? The results block shows:
+
+- **Success rate** — what percentage of 200 simulations end with a positive balance
+- **Median final balance** — the middle outcome
+- **10th percentile** — the bad luck scenario
+- **90th percentile** — the good luck scenario
+
+Press F9 to re-run with a new set of 200 random sequences.
+
+**Why this matters:** A plan that shows "funded to age 90" in the deterministic POST-59½ sheet might show a 40% Monte Carlo success rate. That gap is sequence of returns risk — the risk that a crash in years 1-3 of retirement permanently damages the portfolio before it can recover. The deterministic projection assumes returns arrive in a smooth, predictable order. They never do.
+
+**Benchmarks:** 90%+ is robust. 75-90% is acceptable with spending flexibility. Below 75% means the plan needs structural changes before retiring.
+
+### 9-Sheet Planning System
+
+Pro v3 has 9 sheets, all updating automatically from a single INPUTS tab:
+
+**INPUTS** — one entry point for everything. Retirement age, account balances, spending, filing status, state, SS benefit, volatility. Change any blue cell and all 9 sheets recalculate.
+
+**BRIDGE** — year-by-year withdrawal plan from retirement to 59½. Taxable and cash first, then Roth, then 401k. Rows auto-blank past the bridge period. Works for bridge lengths from 0 to 14.5 years.
+
+**TAX ESTIMATE** — federal tax estimate for every bridge year. Switches between MFJ and Single brackets from INPUTS. Shows gross income, standard deduction, taxable income, estimated federal tax, and state tax per year.
+
+**ROTH LADDER** — suggested Roth conversion amounts per bridge year, calculated as the smaller of remaining 12% bracket space and ACA cliff headroom. The ACA cliff cross-check flags each year automatically. Overwrite any year to convert more — the cliff warning updates instantly.
+
+**POST-59½** — full projection from 59½ to life expectancy. Social Security income now correctly reduces annual withdrawals from your claiming age. The planner shows the exact year SS starts and how much it reduces portfolio draws.
+
+**MONTE CARLO** — 200-scenario simulator as described above.
+
+**RISK FLAGS** — 9 automated checks with color-coded conditional formatting. Green for passing, orange for warnings, red for hard stops. Updates in real time as INPUTS change.
+
+**REBALANCE** — annual allocation tracker. Enter target percentages by asset class. Current values link to INPUTS balances. Drift alerts and buy/sell signals update automatically.
+
+**COVER** — sheet guide with color coding reference and disclaimer.
+
+### ACA Cliff Cross-Check in the Roth Ladder
+
+The ROTH LADDER sheet now has a live ACA cliff check in column G. For each bridge year, it calculates your projected MAGI — 401k withdrawals plus the suggested Roth conversion — and compares it against the estimated 400% FPL threshold for a 2-person household ($81,760 for 2026).
+
+If the conversion keeps you under the cliff: green check.
+If the conversion pushes you over: amber warning with a note to trim the conversion amount.
+
+The suggested conversion defaults to the smaller of bracket space and cliff headroom — so the default is already ACA-safe. But if you overwrite the suggestion to convert more, the warning fires.
+
+This matters because a Roth conversion that saves $5,000 in future taxes can cost $15,000 in lost ACA subsidies in the same year. The cross-check catches that before you file.
+
+### Social Security Modeled in POST-59½
+
+The POST-59½ sheet now correctly subtracts inflated SS income from annual portfolio withdrawals once you reach your claiming age. The SS benefit grows with inflation from the first projection year.
+
+In practical terms: if you enter a $24,000 SS benefit at claiming age 67, the planner reduces annual portfolio draws by the inflation-adjusted equivalent of $24,000 starting in the year you turn 67. The RISK FLAGS sheet shows the exact dollar impact of delaying SS from your current claiming age to 70.
+
+### Color-Coded RISK FLAGS
+
+All 9 RISK FLAGS now use Excel conditional formatting that updates automatically:
+
+- Green — check passes
+- Orange — review needed (high withdrawal rate, bridge gap, thin cash buffer, ACA cliff exposure)
+- Red — hard stop (penalty risk, portfolio depletes before life expectancy)
+- Gold — advisory (SS delay opportunity)
+
+The colors react to the actual formula output in real time. Change INPUTS and the flag colors update instantly.
+
+## What the Free Planner (v2.2) Got
+
+The free planner also received several fixes in v2.2:
+
+- SS income now modeled correctly in POST-59½
+- 401k cascade formula fixed — no more phantom balance increases when accounts deplete
+- RISK FLAGS now pull from actual sheet calculations instead of static math
+- Raw BRIDGE YEARS sheet hidden — only the clean BRIDGE CLEAN view is visible
+- Pro teaser block added to DASHBOARD showing what v3 adds
+
+## How to Get v3
+
+**Existing Pro members:** Log in to your [Pro dashboard](/pro-welcome) and download the updated file. The download link now points to v3.
+
+**Free users:** The updated free planner v2.2 is available at the [homepage download](/#download). To access the full 9-sheet Pro system including Monte Carlo, TAX ESTIMATE, ROTH LADDER, and REBALANCE, [upgrade to Pro](/pricing).
+
+## What's Coming Next
+
+The DASHBOARD already shows the Pro v3 roadmap:
+
+- **Monte Carlo visualization** — a histogram of outcomes instead of just the summary stats
+- **ACA household size input** — the cliff threshold currently assumes a 2-person household; a dropdown will handle 1-4 person households
+- **State tax dropdown** — pre-populated rates for all 50 states instead of a manual entry
+- **PDF export** — one-click export of the full plan for advisor meetings
+
+---
+
+*Related: [How to Use the Bridge Planner](/guides/bridge-planner-walkthrough) · [Roth Ladder vs 72(t)](/blog/roth-ladder-vs-72t) · [Rule 72(t) SEPP Guide](/blog/rule-72t-sepp-guide) · [Can I Retire at 50 With $1M?](/blog/can-i-retire-at-50-with-1-million)*
