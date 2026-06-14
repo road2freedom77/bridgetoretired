@@ -18,6 +18,12 @@ const FREE_FEATURES = [
 
 const PRO_FEATURES = [
   {
+    icon: '🖥️',
+    title: 'Online Retirement Planner',
+    description: 'Save up to 5 named scenarios, run Monte Carlo simulation, and access your plan from anywhere. Enter your numbers and watch all results update instantly.',
+    badge: 'New',
+  },
+  {
     icon: '🛡️',
     title: 'Bridge Risk Score™',
     description: "Your retirement's structural health in a single number. Instant clarity on whether your bridge is Stable, At Risk, or Fragile — based on withdrawal rate, buffer, allocation, and years to Social Security.",
@@ -106,7 +112,7 @@ export default function PricingPage() {
             Build a bridge that<br /><span className="text-gold">actually holds.</span>
           </h1>
           <p className="text-white/50 text-[16px] leading-relaxed max-w-xl mx-auto mb-8">
-            The free tools show you the math. Pro tells you if your plan survives the real world — crashes, healthcare costs, and 40 years of inflation. Now with Monte Carlo simulation and 9-sheet Excel planning system.
+            The free tools show you the math. Pro tells you if your plan survives the real world — crashes, healthcare costs, and 40 years of inflation. Now with online scenario planner, Monte Carlo simulation, and 9-sheet Excel system.
           </p>
           <div className="inline-flex items-center bg-ink border border-white/[0.08] rounded-full p-1 mb-2">
             <button onClick={() => setBilling('monthly')} className={`px-5 py-2 rounded-full font-mono text-[10px] tracking-wider uppercase transition-all ${billing === 'monthly' ? 'bg-gold text-black font-bold' : 'text-white/40 hover:text-white/60'}`}>Monthly</button>
@@ -178,18 +184,55 @@ export default function PricingPage() {
           </div>
         </div>
 
+        {/* Online Planner callout — NEW */}
+        <div className="bg-ink border border-gold/20 rounded-2xl overflow-hidden mb-8">
+          <div className="border-b border-white/[0.06] px-8 py-5 flex items-center justify-between">
+            <div>
+              <div className="font-mono text-[9px] tracking-widest uppercase text-gold mb-1">New in Pro v3</div>
+              <h2 className="font-syne font-bold text-xl text-white">Online Retirement Planner</h2>
+            </div>
+            <div className="text-4xl">🖥️</div>
+          </div>
+          <div className="p-8">
+            <p className="text-white/50 text-[14px] leading-relaxed mb-6 max-w-2xl">
+              The online planner is the reason Pro is a subscription, not a one-time download. Save up to 5 named scenarios, run Monte Carlo simulation, and access your plan from any device. Your numbers live in the cloud — come back anytime.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              {[
+                { icon: '💾', title: 'Save 5 scenarios', desc: 'Name and save up to 5 retirement scenarios. Switch between them instantly.' },
+                { icon: '🎲', title: 'Monte Carlo', desc: '200 randomized return sequences. Success rate updates as you change inputs.' },
+                { icon: '📱', title: 'Access anywhere', desc: 'Your plan lives in the cloud. Open it from any device, any time.' },
+              ].map(({ icon, title, desc }) => (
+                <div key={title} className="bg-black/30 border border-white/[0.06] rounded-xl p-4">
+                  <div className="text-xl mb-2">{icon}</div>
+                  <div className="font-syne font-semibold text-white text-[13px] mb-1">{title}</div>
+                  <div className="text-white/40 text-[12px] leading-relaxed">{desc}</div>
+                </div>
+              ))}
+            </div>
+            <div className="flex items-center gap-4">
+              <a href={paymentLink} className="inline-block bg-gold text-black font-syne font-semibold text-[13px] tracking-wide px-6 py-3 rounded hover:opacity-85 transition-opacity">
+                Start Pro to Unlock →
+              </a>
+              <Link href="/pro/planner" className="inline-block border border-gold/30 text-gold font-mono text-[10px] tracking-widest uppercase px-6 py-3 rounded hover:border-gold/60 transition-colors">
+                Preview Planner →
+              </Link>
+            </div>
+          </div>
+        </div>
+
         {/* Pro Excel v3 callout */}
         <div className="bg-ink border border-gold/20 rounded-2xl overflow-hidden mb-12">
           <div className="border-b border-white/[0.06] px-8 py-5 flex items-center justify-between">
             <div>
-              <div className="font-mono text-[9px] tracking-widest uppercase text-gold mb-1">New in Pro v3</div>
+              <div className="font-mono text-[9px] tracking-widest uppercase text-gold mb-1">Also New in Pro v3</div>
               <h2 className="font-syne font-bold text-xl text-white">Pro Excel Planner — 9 Sheets</h2>
             </div>
             <div className="text-4xl">📋</div>
           </div>
           <div className="p-8">
             <p className="text-white/50 text-[14px] leading-relaxed mb-8 max-w-2xl">
-              The most complete early retirement planning spreadsheet available. Change one number in INPUTS and all 9 sheets update instantly — BRIDGE years, tax estimates, Roth ladder, Monte Carlo simulation, and risk flags.
+              The offline companion to the online planner. Change one number in INPUTS and all 9 sheets update instantly — BRIDGE years, tax estimates, Roth ladder, Monte Carlo simulation, and risk flags.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-8">
               {PRO_SHEETS.map(s => (
@@ -283,8 +326,8 @@ export default function PricingPage() {
             {[
               { q: 'Is this financial advice?', a: 'No — BridgeToRetired Pro is a modeling tool, not a financial advisory service. We help you run the math clearly so you can make your own decisions or bring better questions to a fee-only advisor.' },
               { q: 'Can I cancel anytime?', a: 'Yes. Cancel in one click from your account settings. No questions, no retention flows, no emails begging you to stay.' },
-              { q: "What's new in Pro v3?", a: 'Pro v3 adds a full Monte Carlo simulator (200 randomized return sequences with a success rate %), a 9-sheet Excel planning system with switchable MFJ/Single tax brackets, ACA cliff cross-check in the Roth Ladder, SS income modeled in POST-59½, and color-coded conditional formatting on all 9 RISK FLAGS. Existing Pro members get v3 at no extra cost.' },
-              { q: 'What if I already downloaded the free Excel?', a: 'The free Excel stays yours. Pro v3 adds 4 additional sheets (TAX ESTIMATE, ROTH LADDER, MONTE CARLO, REBALANCE) and deeper planning features the free version does not include.' },
+              { q: "What's new in Pro v3?", a: 'Pro v3 adds the online planner with scenario saving, a full Monte Carlo simulator, a 9-sheet Excel planning system with switchable MFJ/Single tax brackets, ACA cliff cross-check in the Roth Ladder, SS income modeled in POST-59½, and color-coded RISK FLAGS. Existing Pro members get v3 at no extra cost.' },
+              { q: 'What if I already downloaded the free Excel?', a: 'The free Excel stays yours. Pro v3 adds the online planner plus 4 additional Excel sheets (TAX ESTIMATE, ROTH LADDER, MONTE CARLO, REBALANCE) and deeper planning features the free version does not include.' },
               { q: 'How is this different from ProjectionLab or Boldin?', a: "Those tools model retirement broadly. We're built specifically for early retirees navigating the bridge years — the 59½ problem, Roth ladders, ACA subsidies, and SEPP. Narrower and deeper." },
               { q: 'Will the Premium Excel stay updated?', a: 'Yes. Whenever tax law changes affect early retirees, we update the planner and push the new version to all Pro members automatically.' },
             ].map(({ q, a }) => (
