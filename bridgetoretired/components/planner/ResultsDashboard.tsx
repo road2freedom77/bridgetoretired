@@ -6,13 +6,14 @@ import RiskFlagsTab from './tabs/RiskFlagsTab'
 import BridgeTab from './tabs/BridgeTab'
 import MonteCarloTab from './tabs/MonteCarloTab'
 import OverviewTab from './tabs/OverviewTab'
+import TaxEstimateTab from './tabs/TaxEstimateTab'
 
 interface Props {
   results: PlannerResults
   inputs: PlannerInputs
 }
 
-const TABS = ['Overview', 'Bridge', 'Monte Carlo', 'Risk Flags']
+const TABS = ['Overview', 'Bridge', 'Tax Estimate', 'Monte Carlo', 'Risk Flags']
 
 export default function ResultsDashboard({ results, inputs }: Props) {
   const [activeTab, setActiveTab] = useState('Overview')
@@ -20,12 +21,12 @@ export default function ResultsDashboard({ results, inputs }: Props) {
   return (
     <div className="bg-ink border border-white/[0.07] rounded-xl overflow-hidden h-full flex flex-col">
       {/* Tab bar */}
-      <div className="flex border-b border-white/[0.06] bg-navy/50">
+      <div className="flex border-b border-white/[0.06] bg-navy/50 overflow-x-auto">
         {TABS.map(tab => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`px-5 py-3 font-mono text-[10px] tracking-widest uppercase transition-colors border-b-2 ${
+            className={`px-5 py-3 font-mono text-[10px] tracking-widest uppercase transition-colors border-b-2 whitespace-nowrap ${
               activeTab === tab
                 ? 'text-gold border-gold'
                 : 'text-white/30 border-transparent hover:text-white/60'
@@ -43,6 +44,9 @@ export default function ResultsDashboard({ results, inputs }: Props) {
         )}
         {activeTab === 'Bridge' && (
           <BridgeTab results={results} />
+        )}
+        {activeTab === 'Tax Estimate' && (
+          <TaxEstimateTab results={results} inputs={inputs} />
         )}
         {activeTab === 'Monte Carlo' && (
           <MonteCarloTab results={results} />
