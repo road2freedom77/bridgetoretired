@@ -7,13 +7,14 @@ import BridgeTab from './tabs/BridgeTab'
 import MonteCarloTab from './tabs/MonteCarloTab'
 import OverviewTab from './tabs/OverviewTab'
 import TaxEstimateTab from './tabs/TaxEstimateTab'
+import RothLadderTab from './tabs/RothLadderTab'
 
 interface Props {
   results: PlannerResults
   inputs: PlannerInputs
 }
 
-const TABS = ['Overview', 'Bridge', 'Tax Estimate', 'Monte Carlo', 'Risk Flags']
+const TABS = ['Overview', 'Bridge', 'Tax Estimate', 'Roth Ladder', 'Monte Carlo', 'Risk Flags']
 
 export default function ResultsDashboard({ results, inputs }: Props) {
   const [activeTab, setActiveTab] = useState('Overview')
@@ -47,6 +48,9 @@ export default function ResultsDashboard({ results, inputs }: Props) {
         )}
         {activeTab === 'Tax Estimate' && (
           <TaxEstimateTab results={results} inputs={inputs} />
+        )}
+        {activeTab === 'Roth Ladder' && (
+          <RothLadderTab results={results} inputs={inputs} />
         )}
         {activeTab === 'Monte Carlo' && (
           <MonteCarloTab results={results} />
