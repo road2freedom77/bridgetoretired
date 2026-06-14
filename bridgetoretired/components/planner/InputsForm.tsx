@@ -1,6 +1,7 @@
 'use client'
 
 import { PlannerInputs } from '@/lib/planner/types'
+import { useState, useEffect } from 'react'
 
 interface Props {
   inputs: PlannerInputs
@@ -16,13 +17,13 @@ const US_STATES = [
 
 const NO_TAX_STATES = ['AK','FL','NV','NH','SD','TN','TX','WA','WY']
 
-function Field({
-  label, value, onChange, type = 'number', min, max, step, prefix, suffix, note
+// Controlled numeric field — allows clearing and typing freely
+function NumericField({
+  label, value, onChange, min, max, step, prefix, suffix, note
 }: {
   label: string
-  value: number | string
-  onChange: (v: any) => void
-  type?: string
+  value: number
+  onChange: (v: number) => void
   min?: number
   max?: number
   step?: number
@@ -30,6 +31,13 @@ function Field({
   suffix?: string
   note?: string
 }) {
+  const [raw, setRaw] = useState(String(value))
+
+  // Sync when external value changes (e.g. loading a scenario)
+  useEffect(() => {
+    setRaw(String(value))
+  }, [value])
+
   return (
     <div className="mb-3">
       <label className="font-mono text-[9px] tracking-widest uppercase text-white/35 block mb-1">
@@ -37,20 +45,36 @@ function Field({
       </label>
       <div className="relative flex items-center">
         {prefix && (
-          <span className="absolute left-3 font-mono text-[11px] text-white/40">{prefix}</span>
+          <span className="absolute left-3 font-mono text-[11px] text-white/40 pointer-events-none">{prefix}</span>
         )}
         <input
-          type={type}
-          value={value}
-          min={min}
-          max={max}
-          step={step}
-          onChange={e => onChange(type === 'number' ? Number(e.target.value) : e.target.value)}
+          type="text"
+          inputMode="decimal"
+          value={raw}
+          onChange={e => {
+            const val = e.target.value
+            // Allow empty, digits, one decimal point, one minus at start
+            if (/^-?\d*\.?\d*$/.test(val) || val === '') {
+              setRaw(val)
+              const parsed = parseFloat(val)
+              if (!isNaN(parsed)) onChange(parsed)
+            }
+          }}
+          onFocus={e => {
+            // Select all on focus for easy replacement
+            e.target.select()
+          }}
+          onBlur={e => {
+            const parsed = parseFloat(e.target.value)
+            const clean = isNaN(parsed) ? 0 : parsed
+            setRaw(String(clean))
+            onChange(clean)
+          }}
           className={`w-full bg-ink border border-white/[0.08] rounded-lg py-2 font-mono text-[12px] text-blue-400 font-bold outline-none focus:border-gold/40 transition-colors
             ${prefix ? 'pl-7' : 'pl-3'} ${suffix ? 'pr-8' : 'pr-3'}`}
         />
         {suffix && (
-          <span className="absolute right-3 font-mono text-[11px] text-white/40">{suffix}</span>
+          <span className="absolute right-3 font-mono text-[11px] text-white/40 pointer-events-none">{suffix}</span>
         )}
       </div>
       {note && (
@@ -71,25 +95,51 @@ function Section({ title }: { title: string }) {
 export default function InputsForm({ inputs, onChange }: Props) {
   const set = (key: keyof PlannerInputs) => (value: any) => {
     const updated = { ...inputs, [key]: value }
-    // Auto-set state tax rate for no-tax states
     if (key === 'state' && NO_TAX_STATES.includes(value)) {
       updated.stateTaxRate = 0
     }
     onChange(updated)
   }
 
+  const totalPortfolio = inputs.taxable + inputs.k401 + inputs.roth + inputs.cash
+
   return (
     <div className="bg-ink border border-white/[0.07] rounded-xl p-5 overflow-y-auto max-h-[calc(100vh-80px)]">
       <div className="font-syne font-bold text-[13px] text-white mb-4">Inputs</div>
 
       <Section title="Personal" />
-      <Field label="Current Age" value={inputs.currentAge} onChange={set('currentAge')} min={18} max={80} />
-      <Field label="Retirement Age" value={inputs.retireAge} onChange={set('retireAge')} min={18} max={80} />
-      <Field label="SS Claiming Age" value={inputs.ssAge} onChange={set('ssAge')} min={62} max={70} note="62 / 67 / 70" />
-      <Field label="Life Expectancy" value={inputs.lifeExpectancy} onChange={set('lifeExpectancy')} min={70} max={100} note="Conservative = 90-95" />
+
+      <NumericField
+        label="Current Age"
+        value={inputs.currentAge}
+        onChange={set('currentAge')}
+        min={18} max={80}
+      />
+      <NumericField
+        label="Retirement Age"
+        value={inputs.retireAge}
+        onChange={set('retireAge')}
+        min={18} max={80}
+      />
+      <NumericField
+        label="SS Claiming Age"
+        value={inputs.ssAge}
+        onChange={set('ssAge')}
+        min={62} max={70}
+        note="62 / 67 / 70"
+      />
+      <NumericField
+        label="Life Expectancy"
+        value={inputs.lifeExpectancy}
+        onChange={set('lifeExpectancy')}
+        min={70} max={100}
+        note="Conservative = 90–95"
+      />
 
       <div className="mb-3">
-        <label className="font-mono text-[9px] tracking-widest uppercase text-white/35 block mb-1">Filing Status</label>
+        <label className="font-mono text-[9px] tracking-widest uppercase text-white/35 block mb-1">
+          Filing Status
+        </label>
         <select
           value={inputs.filingStatus}
           onChange={e => set('filingStatus')(e.target.value)}
@@ -101,7 +151,9 @@ export default function InputsForm({ inputs, onChange }: Props) {
       </div>
 
       <div className="mb-3">
-        <label className="font-mono text-[9px] tracking-widest uppercase text-white/35 block mb-1">State</label>
+        <label className="font-mono text-[9px] tracking-widest uppercase text-white/35 block mb-1">
+          State
+        </label>
         <select
           value={inputs.state}
           onChange={e => set('state')(e.target.value)}
@@ -116,10 +168,10 @@ export default function InputsForm({ inputs, onChange }: Props) {
       </div>
 
       {!NO_TAX_STATES.includes(inputs.state) && (
-        <Field
+        <NumericField
           label="State Tax Rate"
-          value={(inputs.stateTaxRate * 100).toFixed(1)}
-          onChange={v => set('stateTaxRate')(Number(v) / 100)}
+          value={parseFloat((inputs.stateTaxRate * 100).toFixed(2))}
+          onChange={v => set('stateTaxRate')(v / 100)}
           suffix="%"
           step={0.1}
           note="Your effective state rate"
@@ -127,27 +179,46 @@ export default function InputsForm({ inputs, onChange }: Props) {
       )}
 
       <Section title="Portfolio Balances" />
-      <Field label="Taxable Brokerage" value={inputs.taxable} onChange={set('taxable')} prefix="$" step={1000} />
-      <Field label="Traditional 401k / IRA" value={inputs.k401} onChange={set('k401')} prefix="$" step={1000} />
-      <Field label="Roth IRA / Roth 401k" value={inputs.roth} onChange={set('roth')} prefix="$" step={1000} />
-      <Field label="Cash / Money Market" value={inputs.cash} onChange={set('cash')} prefix="$" step={1000} note="Bridge buffer" />
+
+      <NumericField label="Taxable Brokerage"      value={inputs.taxable}  onChange={set('taxable')}  prefix="$" step={1000} />
+      <NumericField label="Traditional 401k / IRA" value={inputs.k401}     onChange={set('k401')}     prefix="$" step={1000} />
+      <NumericField label="Roth IRA / Roth 401k"   value={inputs.roth}     onChange={set('roth')}     prefix="$" step={1000} />
+      <NumericField label="Cash / Money Market"     value={inputs.cash}     onChange={set('cash')}     prefix="$" step={1000} note="Bridge buffer" />
 
       <div className="bg-navy/50 rounded-lg px-3 py-2 mb-3">
         <div className="font-mono text-[8px] text-white/30 mb-0.5">Total Portfolio</div>
         <div className="font-syne font-bold text-[15px] text-gold">
-          ${(inputs.taxable + inputs.k401 + inputs.roth + inputs.cash).toLocaleString()}
+          ${totalPortfolio.toLocaleString()}
         </div>
       </div>
 
       <Section title="Spending & Income" />
-      <Field label="Annual Spending" value={inputs.spending} onChange={set('spending')} prefix="$" step={1000} />
-      <Field label="Inflation Rate" value={(inputs.inflation * 100).toFixed(1)} onChange={v => set('inflation')(Number(v) / 100)} suffix="%" step={0.1} />
-      <Field label="Other Income (bridge)" value={inputs.otherIncome} onChange={set('otherIncome')} prefix="$" step={1000} note="Pension, rental, part-time" />
-      <Field label="SS Benefit (today $)" value={inputs.ssBenefit} onChange={set('ssBenefit')} prefix="$" step={1000} note="At claiming age" />
+
+      <NumericField label="Annual Spending"       value={inputs.spending}     onChange={set('spending')}     prefix="$" step={1000} />
+      <NumericField
+        label="Inflation Rate"
+        value={parseFloat((inputs.inflation * 100).toFixed(2))}
+        onChange={v => set('inflation')(v / 100)}
+        suffix="%" step={0.1}
+      />
+      <NumericField label="Other Income (bridge)" value={inputs.otherIncome}  onChange={set('otherIncome')}  prefix="$" step={1000} note="Pension, rental, part-time" />
+      <NumericField label="SS Benefit (today $)"  value={inputs.ssBenefit}    onChange={set('ssBenefit')}    prefix="$" step={1000} note="At claiming age" />
 
       <Section title="Assumptions" />
-      <Field label="Portfolio Return" value={(inputs.returnRate * 100).toFixed(1)} onChange={v => set('returnRate')(Number(v) / 100)} suffix="%" step={0.1} />
-      <Field label="Volatility (std dev)" value={(inputs.volatility * 100).toFixed(1)} onChange={v => set('volatility')(Number(v) / 100)} suffix="%" step={0.1} note="60/40 ≈ 10-12%" />
+
+      <NumericField
+        label="Portfolio Return"
+        value={parseFloat((inputs.returnRate * 100).toFixed(2))}
+        onChange={v => set('returnRate')(v / 100)}
+        suffix="%" step={0.1}
+      />
+      <NumericField
+        label="Volatility (std dev)"
+        value={parseFloat((inputs.volatility * 100).toFixed(2))}
+        onChange={v => set('volatility')(v / 100)}
+        suffix="%" step={0.1}
+        note="60/40 ≈ 10–12%"
+      />
     </div>
   )
 }
