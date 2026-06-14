@@ -10,6 +10,17 @@ export default function ProWelcomePage() {
 
   const PRO_TOOLS = [
     {
+      icon: '🖥️',
+      title: 'Online Retirement Planner',
+      badge: 'New',
+      badgeColor: 'gold',
+      description: 'Save up to 5 named scenarios, run Monte Carlo simulation, and access your plan from anywhere. Enter your numbers and watch all results update instantly.',
+      href: '/pro/planner',
+      cta: 'Open Planner →',
+      primary: true,
+      download: false,
+    },
+    {
       icon: '🛡️',
       title: 'Bridge Risk Score™',
       badge: 'Signature Feature',
@@ -66,12 +77,12 @@ export default function ProWelcomePage() {
     },
     {
       icon: '📋',
-      title: 'Premium Excel Planner',
+      title: 'Pro Excel Planner v3',
       badge: 'Download',
       badgeColor: 'sage',
-      description: 'Full planner with tax estimate tab, withdrawal tracking, Roth ladder, risk flags, and annual rebalance tracker.',
+      description: '9-sheet system: BRIDGE, TAX ESTIMATE, ROTH LADDER, MONTE CARLO, RISK FLAGS, REBALANCE. The offline companion to the online planner.',
       href: '/downloads/bridge-planner-pro-v3.xlsx',
-      cta: 'Download Pro Planner ↓',
+      cta: 'Download v3 ↓',
       primary: false,
       download: true,
     },
@@ -104,10 +115,31 @@ export default function ProWelcomePage() {
           </p>
         </div>
 
+        {/* What's new banner */}
+        <div className="bg-gold/10 border border-gold/20 rounded-xl px-5 py-4 mb-6 flex items-center gap-4">
+          <div className="text-2xl shrink-0">🆕</div>
+          <div>
+            <div className="font-syne font-semibold text-white text-[13px] mb-0.5">
+              Online Planner is now live — save scenarios, run Monte Carlo, access from anywhere
+            </div>
+            <div className="text-white/40 text-[12px]">
+              Pro v3 also ships a new 9-sheet Excel system.{' '}
+              <Link href="/blog/bridge-planner-pro-v3" className="text-gold/70 hover:text-gold transition-colors underline underline-offset-2">
+                See what's new →
+              </Link>
+            </div>
+          </div>
+        </div>
+
         {/* 2-col tool grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           {PRO_TOOLS.map(tool => (
-            <div key={tool.title} className={`bg-ink rounded-xl p-5 flex items-start gap-4 border ${tool.primary ? 'border-gold/20' : 'border-white/[0.07]'}`}>
+            <div
+              key={tool.title}
+              className={`bg-ink rounded-xl p-5 flex items-start gap-4 border ${
+                tool.primary ? 'border-gold/20' : 'border-white/[0.07]'
+              }`}
+            >
               <div className="text-2xl flex-shrink-0">{tool.icon}</div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1 flex-wrap">
@@ -116,15 +148,23 @@ export default function ProWelcomePage() {
                     tool.badgeColor === 'gold'
                       ? 'bg-gold/10 text-gold border-gold/20'
                       : 'bg-sage/10 text-sage border-sage/20'
-                  }`}>{tool.badge}</span>
+                  }`}>
+                    {tool.badge}
+                  </span>
                 </div>
                 <p className="text-white/40 text-[12px] leading-relaxed mb-3">{tool.description}</p>
                 {tool.download ? (
-                  <a href={tool.href} className="inline-block border border-white/[0.12] text-white/60 font-mono text-[10px] tracking-widest uppercase px-4 py-2 rounded hover:border-white/25 hover:text-white/80 transition-all">
+                  <a
+                    href={tool.href}
+                    className="inline-block border border-white/[0.12] text-white/60 font-mono text-[10px] tracking-widest uppercase px-4 py-2 rounded hover:border-white/25 hover:text-white/80 transition-all"
+                  >
                     {tool.cta}
                   </a>
                 ) : (
-                  <Link href={tool.href} className="inline-block bg-gold text-black font-syne font-semibold text-[11px] tracking-wide px-4 py-2 rounded hover:opacity-85 transition-opacity">
+                  <Link
+                    href={tool.href}
+                    className="inline-block bg-gold text-black font-syne font-semibold text-[11px] tracking-wide px-4 py-2 rounded hover:opacity-85 transition-opacity"
+                  >
                     {tool.cta}
                   </Link>
                 )}
@@ -139,9 +179,14 @@ export default function ProWelcomePage() {
             <div className="text-2xl flex-shrink-0">🧮</div>
             <div className="flex-1">
               <div className="font-syne font-semibold text-white text-[14px] mb-1">All 10 Interactive Calculators</div>
-              <p className="text-white/40 text-[12px] leading-relaxed mb-3">Roth ladder, ACA subsidies, SEPP/72(t), Social Security break-even, and more.</p>
-              <Link href="/blog" className="inline-block border border-white/[0.12] text-white/60 font-mono text-[10px] tracking-widest uppercase px-4 py-2 rounded hover:border-white/25 hover:text-white/80 transition-all">
-                Browse All Guides →
+              <p className="text-white/40 text-[12px] leading-relaxed mb-3">
+                Roth ladder, ACA subsidies, SEPP/72(t), Social Security break-even, and more.
+              </p>
+              <Link
+                href="/tools"
+                className="inline-block border border-white/[0.12] text-white/60 font-mono text-[10px] tracking-widest uppercase px-4 py-2 rounded hover:border-white/25 hover:text-white/80 transition-all"
+              >
+                Browse All Tools →
               </Link>
             </div>
           </div>
@@ -149,8 +194,13 @@ export default function ProWelcomePage() {
             <div className="text-2xl flex-shrink-0">✉️</div>
             <div className="flex-1">
               <div className="font-syne font-semibold text-white text-[14px] mb-1">Pro Support</div>
-              <p className="text-white/40 text-[12px] leading-relaxed mb-3">Questions about your numbers? Reach out directly — we respond same day.</p>
-              <a href="mailto:support@bridgetoretired.com" className="inline-block border border-white/[0.12] text-white/60 font-mono text-[10px] tracking-widest uppercase px-4 py-2 rounded hover:border-white/25 hover:text-white/80 transition-all">
+              <p className="text-white/40 text-[12px] leading-relaxed mb-3">
+                Questions about your numbers? Reach out directly — we respond same day.
+              </p>
+              <a
+                href="mailto:support@bridgetoretired.com"
+                className="inline-block border border-white/[0.12] text-white/60 font-mono text-[10px] tracking-widest uppercase px-4 py-2 rounded hover:border-white/25 hover:text-white/80 transition-all"
+              >
                 Email Support →
               </a>
             </div>
@@ -162,7 +212,10 @@ export default function ProWelcomePage() {
           <div className="font-mono text-[9px] tracking-widest uppercase text-white/25 mb-2">Manage Subscription</div>
           <p className="text-white/35 text-[12px] leading-relaxed">
             To cancel or update billing, reply to your Stripe receipt email or contact us at{' '}
-            <a href="mailto:support@bridgetoretired.com" className="text-white/50 hover:text-white/70 transition-colors underline underline-offset-2">
+            <a
+              href="mailto:support@bridgetoretired.com"
+              className="text-white/50 hover:text-white/70 transition-colors underline underline-offset-2"
+            >
               support@bridgetoretired.com
             </a>{' '}
             — we'll handle it same day.
