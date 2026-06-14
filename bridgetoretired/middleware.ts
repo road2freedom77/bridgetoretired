@@ -7,24 +7,22 @@ const isProRoute = createRouteMatcher([
   '/sequence-tester(.*)',
   '/scenario-compare(.*)',
   '/pdf-report(.*)',
+  '/pro/planner(.*)',
 ])
 
 export default clerkMiddleware(async (auth, req) => {
   if (isProRoute(req)) {
     const { userId, sessionClaims } = await auth()
-
     if (!userId) {
       const signInUrl = new URL('/sign-in', req.url)
       signInUrl.searchParams.set('redirect_url', req.url)
       return NextResponse.redirect(signInUrl)
     }
-
     const isPro = (sessionClaims?.metadata as any)?.isPro === true
     if (!isPro) {
       return NextResponse.redirect(new URL('/pricing', req.url))
     }
   }
-
   return NextResponse.next()
 })
 
@@ -35,6 +33,8 @@ export const config = {
     '/sequence-tester(.*)',
     '/scenario-compare(.*)',
     '/pdf-report(.*)',
+    '/pro/planner(.*)',
+    '/api/planner/(.*)',
     '/sign-in(.*)',
     '/sign-up(.*)',
     '/api/webhooks/(.*)',
