@@ -37,8 +37,10 @@ export default function PlannerPage() {
   const [calculating, setCalculating] = useState(false)
   const [activeScenarioId, setActiveScenarioId] = useState<string | null>(null)
   const [scenarioName, setScenarioName] = useState('My Plan')
+  const [editingName, setEditingName] = useState(false)
   const [saving, setSaving] = useState(false)
   const [saveMsg, setSaveMsg] = useState('')
+  const [saveMsgType, setSaveMsgType] = useState<'success' | 'error'>('success')
 
   const calculate = useCallback(async (inp: PlannerInputs) => {
     setCalculating(true)
@@ -57,7 +59,6 @@ export default function PlannerPage() {
     }
   }, [])
 
-  // Auto-calculate on inputs change
   useEffect(() => {
     const timer = setTimeout(() => calculate(inputs), 600)
     return () => clearTimeout(timer)
@@ -86,12 +87,15 @@ export default function PlannerPage() {
       const data = await res.json()
       if (data.scenario) {
         setActiveScenarioId(data.scenario.id)
-        setSaveMsg('Saved!')
+        setSaveMsg('✓ Saved')
+        setSaveMsgType('success')
       } else {
         setSaveMsg(data.error || 'Failed to save')
+        setSaveMsgType('error')
       }
     } catch {
       setSaveMsg('Failed to save')
+      setSaveMsgType('error')
     } finally {
       setSaving(false)
       setTimeout(() => setSaveMsg(''), 3000)
@@ -121,6 +125,7 @@ export default function PlannerPage() {
     setInputs(inp)
     setActiveScenarioId(scenario.id)
     setScenarioName(scenario.name)
+    setEditingName(false)
   }
 
   const handleNewScenario = () => {
@@ -128,6 +133,7 @@ export default function PlannerPage() {
     setActiveScenarioId(null)
     setScenarioName('My Plan')
     setResults(null)
+    setEditingName(false)
   }
 
   if (!isLoaded) return (
@@ -138,7 +144,6 @@ export default function PlannerPage() {
     </div>
   )
 
-  // Locked preview for free users
   if (!isPro) return (
     <div className="min-h-screen bg-black flex items-center justify-center px-5">
       <div className="max-w-md text-center">
@@ -154,16 +159,10 @@ export default function PlannerPage() {
           your plan from anywhere. Upgrade to Pro to unlock the full planning system.
         </p>
         <div className="flex flex-col gap-3">
-          <Link
-            href="/pricing"
-            className="bg-gold text-black font-syne font-semibold text-[13px] tracking-wide px-8 py-3 rounded hover:opacity-85 transition-opacity"
-          >
+          <Link href="/pricing" className="bg-gold text-black font-syne font-semibold text-[13px] tracking-wide px-8 py-3 rounded hover:opacity-85 transition-opacity">
             Upgrade to Pro →
           </Link>
-          <Link
-            href="/#download"
-            className="border border-white/[0.12] text-white/50 font-mono text-[10px] tracking-widest uppercase px-8 py-3 rounded hover:border-white/25 transition-colors"
-          >
+          <Link href="/#download" className="border border-white/[0.12] text-white/50 font-mono text-[10px] tracking-widest uppercase px-8 py-3 rounded hover:border-white/25 transition-colors">
             Download Free Planner Instead
           </Link>
         </div>
@@ -176,33 +175,61 @@ export default function PlannerPage() {
       {/* Header */}
       <div className="bg-navy border-b border-white/[0.06] sticky top-0 z-40">
         <div className="max-w-[1400px] mx-auto px-5 h-14 flex items-center justify-between">
+
+          {/* Left: nav + scenario name */}
           <div className="flex items-center gap-4">
-            <Link href="/" className="font-mono text-[10px] tracking-widest uppercase text-white/30 hover:text-gold transition-colors">
+            <Link href="/" className="font-mono text-[10px] tracking-widest uppercase text-white/30 hover:text-gold transition-colors shrink-0">
               ← Home
             </Link>
             <span className="text-white/10">|</span>
-            <input
-              value={scenarioName}
-              onChange={e => setScenarioName(e.target.value)}
-              className="bg-transparent font-syne font-semibold text-[14px] text-white border-none outline-none w-48"
-              placeholder="Scenario name..."
-            />
+
+            {/* Editable scenario name */}
+            {editingName ? (
+              <input
+                autoFocus
+                value={scenarioName}
+                onChange={e => setScenarioName(e.target.value)}
+                onBlur={() => setEditingName(false)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter' || e.key === 'Escape') setEditingName(false)
+                }}
+                className="bg-white/[0.06] border border-gold/40 rounded px-3 py-1 font-syne font-semibold text-[13px] text-white outline-none w-56"
+              />
+            ) : (
+              <button
+                onClick={() => setEditingName(true)}
+                className="group flex items-center gap-2 hover:opacity-80 transition-opacity"
+                title="Click to rename"
+              >
+                <span className="font-syne font-semibold text-[14px] text-white">
+                  {scenarioName}
+                </span>
+                <span className="font-mono text-[9px] text-white/20 group-hover:text-gold/60 transition-colors">
+                  ✎ rename
+                </span>
+              </button>
+            )}
+
             {calculating && (
-              <span className="font-mono text-[9px] tracking-widest uppercase text-gold/60 animate-pulse">
+              <span className="font-mono text-[9px] tracking-widest uppercase text-gold/60 animate-pulse shrink-0">
                 Calculating...
               </span>
             )}
           </div>
+
+          {/* Right: save button */}
           <div className="flex items-center gap-3">
             {saveMsg && (
-              <span className="font-mono text-[10px] text-sage">{saveMsg}</span>
+              <span className={`font-mono text-[10px] ${saveMsgType === 'success' ? 'text-green-400' : 'text-red-400'}`}>
+                {saveMsg}
+              </span>
             )}
             <button
               onClick={handleSave}
               disabled={saving || !results}
               className="bg-gold text-black font-syne font-semibold text-[11px] tracking-wide px-4 py-2 rounded hover:opacity-85 transition-opacity disabled:opacity-40"
             >
-              {saving ? 'Saving...' : activeScenarioId ? 'Update' : 'Save Scenario'}
+              {saving ? 'Saving...' : activeScenarioId ? 'Update Scenario' : 'Save Scenario'}
             </button>
           </div>
         </div>
