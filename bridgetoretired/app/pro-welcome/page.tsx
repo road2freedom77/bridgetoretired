@@ -127,6 +127,10 @@ export default function ProWelcomePage() {
               <Link href="/blog/bridge-planner-pro-v3" className="text-gold/70 hover:text-gold transition-colors underline underline-offset-2">
                 See what's new →
               </Link>
+              {' · '}
+              <Link href="/blog/online-retirement-planner" className="text-gold/70 hover:text-gold transition-colors underline underline-offset-2">
+                Why we built the online planner →
+              </Link>
             </div>
           </div>
         </div>
