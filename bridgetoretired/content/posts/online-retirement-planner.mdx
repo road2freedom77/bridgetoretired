@@ -3,7 +3,7 @@ title: "We Built an Online Retirement Planner — Save Scenarios, Run Monte Carl
 description: "BridgeToRetired Pro now includes an online retirement planner. Save up to 5 named scenarios, run Monte Carlo simulation, and access your early retirement plan from any device."
 date: 2026-06-14
 category: "Product Update"
-readTime: "6 min read"
+readTime: "7 min read"
 featured: false
 faq:
   - question: "What is the BridgeToRetired online planner?"
@@ -20,9 +20,7 @@ faq:
 
 Most retirement planners give you a single projection at a fixed return rate. Enter your numbers, get a line chart, done.
 
-That misses two things that matter most for early retirees: what happens when returns are randomized, and what happens when you want to compare two different versions of your plan.
-
-Today we're shipping the BridgeToRetired online planner for Pro members — with scenario saving, Monte Carlo simulation, and contextual guidance on every input.
+That misses two things that matter most for early retirees: what happens when returns are randomized across hundreds of scenarios, and what happens when you want to compare two different versions of your plan. Today we're shipping the BridgeToRetired online planner for Pro members — with scenario saving, Monte Carlo simulation, and contextual guidance on every input.
 
 ## Why We Built This
 
@@ -32,65 +30,70 @@ That's a problem for two reasons.
 
 First, early retirement planning is not a one-time exercise. You revisit it when markets move, when spending assumptions change, when a partner's income situation changes, when you get a new SS estimate. A file on your desktop doesn't support that.
 
-Second, the most useful thing a retirement planner can do is let you compare two versions of your plan side by side — "Retire at 52 with $40K spending" vs "Retire at 55 with $45K spending." The Excel file can't do that without opening two copies and manually comparing.
+Second, the most useful thing a retirement planner can do is let you compare two versions of your plan — "Retire at 52 with $40K spending" vs "Retire at 55 with $45K spending." The Excel file can't do that without opening two copies and manually comparing.
 
 The online planner fixes both.
 
-## What It Does
+## Free Excel vs Pro Excel vs Online Planner
+
+<FinanceTable
+  columns={[
+    { key: "feature",  header: "Feature",              highlight: true },
+    { key: "free",     header: "Free Excel v2.2" },
+    { key: "proexcel", header: "Pro Excel v3" },
+    { key: "online",   header: "Online Planner" },
+  ]}
+  rows={[
+    { feature: "Scenario saving",        free: "No",        proexcel: "Manual (one file)", online: "Yes — 5 named scenarios", _highlight: true },
+    { feature: "Monte Carlo simulation", free: "No",        proexcel: "Yes (F9 to re-run)", online: "Yes (auto on change)" },
+    { feature: "Risk flags",             free: "5 checks",  proexcel: "9 checks + color",   online: "9 checks + color", _highlight: true },
+    { feature: "Cloud access",           free: "No",        proexcel: "No",                 online: "Yes — any device" },
+    { feature: "Auto-recalculate",       free: "Yes",       proexcel: "Yes",                online: "Yes — as you type" },
+    { feature: "TAX ESTIMATE",           free: "No",        proexcel: "Yes",                online: "Roadmap" },
+    { feature: "ROTH LADDER",            free: "No",        proexcel: "Yes",                online: "Roadmap" },
+    { feature: "REBALANCE tracker",      free: "No",        proexcel: "Yes",                online: "Roadmap" },
+    { feature: "Contextual input help",  free: "No",        proexcel: "No",                 online: "Yes — every field", _highlight: true },
+  ]}
+  caption="Both Pro Excel and Online Planner are included with Pro. They serve different purposes."
+/>
+
+## What the Online Planner Does
 
 ### Scenario saving — the core feature
 
 Every plan you build can be named and saved. Up to 5 scenarios per account. They live in the cloud and reload instantly when you click them in the sidebar.
 
-The names are yours to set — "Retire at 52 aggressive," "Retire at 55 conservative," "What if we move to Texas," "Part-time income bridge." Whatever helps you think clearly about the tradeoffs.
-
-When you load a saved scenario, every input repopulates and all results recalculate immediately. No re-entering numbers.
+The names are yours to set — "Retire at 52 aggressive," "Retire at 55 conservative," "What if we move to Texas," "Part-time income bridge." When you load a saved scenario, every input repopulates and all results recalculate immediately. No re-entering numbers.
 
 ### Auto-calculation
 
-Change any input and results update automatically after a short debounce. You do not need to press a calculate button. Change your retirement age from 55 to 52 and watch the Monte Carlo success rate drop in real time. Change your spending from $50K to $40K and watch it recover.
+Change any input and results update automatically. Change your retirement age from 55 to 52 and watch the Monte Carlo success rate drop in real time. Change your spending from $50K to $40K and watch it recover. This is the right way to build intuition about your plan — not by reading numbers, but by watching them change as you adjust assumptions.
 
-This is the right way to build intuition about your plan. Not by reading numbers — by watching them change as you adjust assumptions.
+### Why Monte Carlo matters more than a fixed-return projection
 
-### Monte Carlo simulation
+A fixed-return projection assumes you get 6.5% every single year. That never happens. Some years are +20%, some are -30%, and the order matters enormously.
 
-The Overview tab shows your success rate as a large percentage — green if robust, amber if acceptable, red if fragile. The Monte Carlo tab shows the full distribution: success rate, median final balance, 10th percentile (bad luck scenario), and 90th percentile (good luck scenario).
+If the bad years come first — right after you retire — you are selling assets at the bottom to fund spending. That damage compounds and never fully recovers. A fixed-return projection misses this entirely because it assumes returns arrive in a smooth, predictable order.
 
-200 randomized return sequences run every time inputs change. Each sequence asks: does the money last to your life expectancy? The success rate is how many of those 200 sequences end with a positive balance.
+Monte Carlo runs 200 randomized return sequences, each with a different order of good and bad years. The success rate is how many of those 200 sequences end with money still in the portfolio. For early retirees with 35-40 year horizons, this is one of the most important numbers to know — because sequence risk is highest at the start of a long retirement.
 
-This is the number that matters. A plan showing "funded to age 90" in a linear projection might show 44% Monte Carlo success. That gap is sequence of returns risk — the damage done by selling assets in a down market early in retirement. The online planner shows both numbers so you can see the difference.
+**Benchmarks:** 90%+ is robust. 75-90% is acceptable with spending flexibility. Below 75% means the plan needs structural changes before retiring.
 
 ### 9 risk flags — live
 
-The Risk Flags tab runs 9 automated checks and updates every time inputs change:
-
-- Withdrawal rate above 4%
-- Taxable bridge gap
-- 401k penalty risk during bridge years
-- Cash buffer thin
-- ACA cliff exposure
-- SS delay opportunity with dollar impact
-- IRMAA Medicare trigger
-- Portfolio survival to life expectancy
-- Monte Carlo success below 80%
-
-Each flag is color-coded — green, orange, or red — and includes a plain-English explanation of what it means and what to change.
+The Risk Flags tab runs 9 automated checks and updates every time inputs change: withdrawal rate, bridge gap, 401k penalty risk, cash buffer, ACA cliff exposure, SS delay opportunity, IRMAA trigger, portfolio survival to life expectancy, and Monte Carlo success. Each flag is color-coded and includes a plain-English explanation with what to change.
 
 ### Contextual help on every input
 
-Click any input field and a help card slides in below it. Every field has three parts: what it is, why it matters for early retirees, and a concrete example with numbers.
+Click any input field and a help card slides in below it with three parts: what the field is, why it matters for early retirees, and a concrete example. The SS benefit field warns that early retirement leaves zeros in the 35-year calculation. The taxable brokerage field explains why it's the most important number for bridge funding. The volatility field explains standard deviation in plain English.
 
-The volatility field explains standard deviation in plain English. The SS benefit field warns that early retirement leaves zeros in the 35-year calculation. The taxable brokerage field explains why it's the most important number for bridge funding and gives a simple rule of thumb.
+## A Real Example — 21% to 94% Monte Carlo
 
-This is the planner explaining itself — not requiring you to already know the concepts before using it.
-
-## A Real Example
-
-Here is what the planner showed on a scenario that looked fine until we ran Monte Carlo.
+Here is what the planner showed on a scenario that looked fine until Monte Carlo ran.
 
 **The inputs:** Age 49, retiring at 52. $515K in a 401k, $9K Roth, $150K cash. $50K annual spending. NY, MFJ, SS at 62.
 
-**The deterministic result:** Portfolio shows a positive balance at 90. Looks okay on paper.
+**The deterministic result:** Portfolio shows a positive balance at 90. Looks okay.
 
 **What the planner actually showed:**
 
@@ -110,38 +113,34 @@ The planner did not make those decisions. It showed clearly what was wrong and l
 
 Both are included with Pro. They serve different purposes.
 
-The online planner is for active planning — building scenarios, comparing options, revisiting assumptions as life changes. It is the tool you use regularly.
+The online planner is for active planning — building scenarios, comparing options, revisiting assumptions as life changes. Use it regularly.
 
-The Excel planner is the offline companion — the detailed 9-sheet system with TAX ESTIMATE, ROTH LADDER, and REBALANCE that gives you deeper modeling than the web version currently covers. It is the tool you use when you want to go deep on a specific scenario.
+The Excel planner is the offline companion — the 9-sheet system with TAX ESTIMATE and ROTH LADDER that goes deeper than the web version currently covers. Use it when you want to model the tax and Roth conversion details of a specific scenario you've already shaped online.
 
-The TAX ESTIMATE and ROTH LADDER sheets are not yet in the online planner. Those are on the roadmap. For now: use the online planner to find the right scenario structure, then use the Excel planner to model the tax and conversion details.
+TAX ESTIMATE and ROTH LADDER are on the roadmap for the online planner. Until then, the workflow is: find the right scenario structure online, then take it into the Excel planner for deeper modeling.
 
 ## What's Coming Next
 
 - **TAX ESTIMATE tab** — federal tax estimate for every bridge year, switchable MFJ/Single brackets
 - **ROTH LADDER tab** — suggested conversions with ACA cliff cross-check per year
 - **Scenario comparison view** — two scenarios side by side, key metrics compared
-- **PDF export** — one-click export of the full plan for advisor meetings
+- **PDF export** — one-click export for advisor meetings
 
 ## How to Access It
 
-The online planner is at [bridgetoretired.com/pro/planner](/pro/planner).
+The online planner is at [bridgetoretired.com/pro/planner](/pro/planner) — Pro members can access it immediately after logging in.
 
-It is Pro only. If you are already a Pro member, log in and it is available immediately — no extra steps.
-
-If you are on the free plan, the planner shows a locked preview with an upgrade prompt.
+If you are on the free plan, the planner shows a locked preview. The free [Bridge Planner v2.2](/#download) remains available for download with SS income modeling, bridge cascade, and 5 risk flags.
 
 ---
 
-## Start Planning
+**Pro — Online Planner + Excel v3 — $9/month**
+Save 5 scenarios, Monte Carlo simulation, 9 risk flags, full 9-sheet Excel system, contextual input guidance.
+[Start Pro →](/pricing)
 
 **Free — Bridge Planner v2.2**
-7-sheet Excel system with SS income modeled, bridge cascade, and 5 risk flags.
+7-sheet Excel with SS modeled, bridge cascade, 5 risk flags.
 [Download free →](/#download)
-
-**Pro — Online Planner + Excel v3**
-Save 5 scenarios, Monte Carlo simulation, 9 risk flags, full Excel system. $9/month.
-[Start Pro →](/pricing)
 
 ---
 
