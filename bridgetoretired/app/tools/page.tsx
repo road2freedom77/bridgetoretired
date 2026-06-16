@@ -134,6 +134,17 @@ const tools = [
     pro:         null,
     category:    'planning',
   },
+  {
+  slug:        '72t-vs-roth-ladder',
+  title:       '72(t) vs Roth Ladder Comparison',
+  description: 'Compare 72(t) SEPP and the Roth conversion ladder side by side. Model income, tax cost, flexibility, and gap risk to find the right strategy for your situation.',
+  tag:         null,
+  tagColor:    null,
+  icon:        '⚖️',
+  free:        'Head-to-head summary',
+  pro:         'Full year-by-year comparison + verdict',
+  category:    'access',
+},
 ]
 
 const categories = [
