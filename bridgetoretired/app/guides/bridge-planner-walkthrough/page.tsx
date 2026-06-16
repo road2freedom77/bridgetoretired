@@ -3,7 +3,7 @@ import Link from 'next/link'
 
 export const metadata: Metadata = {
   title: 'How to Use the Bridge Planner — Step-by-Step Walkthrough | BridgeToRetired',
-  description: 'Step-by-step guide to using the free Bridge Planner spreadsheet. Learn how to enter your numbers, read the DASHBOARD, interpret RISK FLAGS, and understand what each sheet tells you.',
+  description: 'Step-by-step guide to using the free Bridge Planner spreadsheet and Pro online planner. Learn how to enter your numbers, read the DASHBOARD, interpret RISK FLAGS, and understand what each sheet tells you.',
   alternates: { canonical: 'https://bridgetoretired.com/guides/bridge-planner-walkthrough' },
 }
 
@@ -207,14 +207,22 @@ export default function BridgePlannerWalkthroughPage() {
             How to Use the Bridge Planner
           </h1>
           <p className="text-white/50 text-[15px] leading-relaxed max-w-xl mb-6">
-            Step-by-step walkthrough of the free Bridge Planner spreadsheet. How to enter your numbers, what each sheet shows, how to read the RISK FLAGS, and what to do when one fires.
+            Step-by-step walkthrough of the free Bridge Planner spreadsheet and the Pro online planner. How to enter your numbers, what each sheet shows, how to read the RISK FLAGS, and what to do when one fires.
           </p>
-          <a
-            href="/#download"
-            className="inline-block bg-gold text-black font-syne font-semibold text-[13px] tracking-wide px-6 py-3 rounded hover:opacity-85 transition-opacity"
-          >
-            Download Free Bridge Planner →
-          </a>
+          <div className="flex flex-wrap gap-3">
+            <a
+              href="/#download"
+              className="inline-block bg-gold text-black font-syne font-semibold text-[13px] tracking-wide px-6 py-3 rounded hover:opacity-85 transition-opacity"
+            >
+              Download Free Planner →
+            </a>
+            <Link
+              href="/pro/planner"
+              className="inline-block border border-gold/30 text-gold font-syne font-semibold text-[13px] tracking-wide px-6 py-3 rounded hover:border-gold/60 transition-colors"
+            >
+              Try Online Planner →
+            </Link>
+          </div>
         </div>
       </div>
 
@@ -348,14 +356,15 @@ export default function BridgePlannerWalkthroughPage() {
           What the Pro Version Adds
         </h2>
         <p className="text-white/45 text-[13px] mb-6">
-          The free planner covers bridge years, post-59½ projection, full lifetime projection, and 5 RISK FLAGS. Pro adds deeper planning layers.
+          The free planner covers bridge years, post-59½ projection, full lifetime projection, and 5 RISK FLAGS. Pro adds deeper planning layers — including an online planner with cloud scenario saving.
         </p>
         <div className="space-y-3 mb-10">
           {[
+            { sheet: 'ONLINE PLANNER', what: 'Save up to 5 named scenarios in the cloud, run Monte Carlo simulation across 200 randomized return sequences, and access your plan from any device. All 8 tabs update automatically as you change inputs — no spreadsheet required. Available at bridgetoretired.com/pro/planner.' },
             { sheet: 'TAX ESTIMATE', what: 'Federal tax estimate for every bridge year using 2026 MFJ brackets. Shows taxable income and estimated tax after standard deduction so you can see the real after-tax cost of each withdrawal year.' },
-            { sheet: 'ROTH LADDER', what: '5-year Roth conversion pipeline. Shows remaining 12% bracket space each year, optimal conversion amounts, tax cost per conversion, and when each converted rung unlocks penalty-free.' },
+            { sheet: 'ROTH LADDER', what: '5-year Roth conversion pipeline. Shows remaining 12% bracket space each year, optimal conversion amounts, tax cost per conversion, ACA cliff cross-check, and when each converted rung unlocks penalty-free.' },
             { sheet: 'REBALANCE', what: 'Annual allocation tracker. Enter target percentages by asset class and see current drift with buy/sell signals — keeps your portfolio allocation on track across bridge years.' },
-            { sheet: 'Extended RISK FLAGS', what: 'Additional automated checks including SS delay opportunity with exact dollar impact, IRMAA Medicare threshold warning, and Roth conversion opportunity detection.' },
+            { sheet: 'Extended RISK FLAGS', what: '9 automated checks including SS delay opportunity with exact dollar impact, IRMAA Medicare threshold warning, ACA cliff exposure, and Monte Carlo success rate.' },
           ].map(({ sheet, what }) => (
             <div key={sheet} className="flex gap-4 bg-ink border border-gold/10 rounded-xl p-5">
               <div className="font-mono text-[9px] tracking-widest uppercase text-gold bg-gold/10 border border-gold/20 px-2 py-1 rounded shrink-0 h-fit mt-0.5 whitespace-nowrap">
@@ -373,7 +382,7 @@ export default function BridgePlannerWalkthroughPage() {
             Download the Free Bridge Planner
           </h2>
           <p className="text-white/45 text-[14px] leading-relaxed max-w-lg mx-auto mb-6">
-            Enter your balances, spending, and retirement age — and see your bridge years, RISK FLAGS, and full projection update instantly.
+            Enter your balances, spending, and retirement age — and see your bridge years, RISK FLAGS, and full projection update instantly. Pro members also get the online planner with Monte Carlo simulation and cloud scenario saving.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <a
@@ -383,8 +392,14 @@ export default function BridgePlannerWalkthroughPage() {
               Download Free Planner →
             </a>
             <Link
-              href="/pricing"
+              href="/pro/planner"
               className="inline-block border border-gold/30 text-gold font-syne font-semibold text-[13px] tracking-wide px-8 py-3 rounded hover:border-gold/60 transition-colors"
+            >
+              Try Online Planner →
+            </Link>
+            <Link
+              href="/pricing"
+              className="inline-block border border-white/[0.12] text-white/60 font-mono text-[10px] tracking-widest uppercase px-8 py-3 rounded hover:border-white/25 transition-colors"
             >
               See Pro Plans →
             </Link>
@@ -397,6 +412,7 @@ export default function BridgePlannerWalkthroughPage() {
           {[
             { href: '/tools/bridge-strategy-calculator',                label: 'Bridge Strategy Calculator' },
             { href: '/blog/what-is-retirement-bridge-strategy',         label: 'Bridge Strategy Explained' },
+            { href: '/blog/online-retirement-planner',                  label: 'Why We Built the Online Planner' },
             { href: '/blog/how-much-taxable-brokerage-to-retire-early', label: 'How Much Taxable Do I Need?' },
             { href: '/blog/can-i-retire-at-50-with-1-million',          label: 'Can I Retire at 50 With $1M?' },
             { href: '/blog/rule-72t-sepp-guide',                        label: 'Rule 72(t) SEPP Guide' },
