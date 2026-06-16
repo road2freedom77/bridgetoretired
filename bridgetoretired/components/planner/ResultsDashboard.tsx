@@ -9,6 +9,7 @@ import RothLadderTab from './tabs/RothLadderTab'
 import Post595Tab from './tabs/Post595Tab'
 import MonteCarloTab from './tabs/MonteCarloTab'
 import RiskFlagsTab from './tabs/RiskFlagsTab'
+import RebalanceTab from './tabs/RebalanceTab'
 
 interface Props {
   results: PlannerResults
@@ -23,6 +24,7 @@ const TABS = [
   'Post-59½',
   'Monte Carlo',
   'Risk Flags',
+  'Rebalance',
 ]
 
 export default function ResultsDashboard({ results, inputs }: Props) {
@@ -69,6 +71,9 @@ export default function ResultsDashboard({ results, inputs }: Props) {
         )}
         {activeTab === 'Risk Flags' && (
           <RiskFlagsTab results={results} />
+        )}
+        {activeTab === 'Rebalance' && (
+          <RebalanceTab results={results} inputs={inputs} />
         )}
       </div>
     </div>
