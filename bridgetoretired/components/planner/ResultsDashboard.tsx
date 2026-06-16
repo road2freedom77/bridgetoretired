@@ -32,8 +32,12 @@ export default function ResultsDashboard({ results, inputs }: Props) {
 
   return (
     <div className="bg-ink border border-white/[0.07] rounded-xl overflow-hidden h-full flex flex-col">
-      {/* Tab bar */}
-      <div className="flex border-b border-white/[0.06] bg-navy/50 overflow-x-auto">
+      {/* Tab bar — hidden scrollbar */}
+      <div
+        className="flex border-b border-white/[0.06] bg-navy/50 overflow-x-auto"
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+      >
+        <style>{`.tab-bar::-webkit-scrollbar { display: none; }`}</style>
         {TABS.map(tab => (
           <button
             key={tab}

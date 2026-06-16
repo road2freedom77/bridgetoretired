@@ -68,3 +68,6 @@ body::after {
 .delay-200 { animation-delay: 0.2s; }
 .delay-300 { animation-delay: 0.3s; }
 .delay-400 { animation-delay: 0.4s; }
+/* Hide scrollbar on planner tab bar */
+*::-webkit-scrollbar { display: none; }
+* { scrollbar-width: none; ms-overflow-style: none; }
