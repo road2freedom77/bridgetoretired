@@ -230,10 +230,10 @@ export function calcAnnuitization(inputs: SEPPInputs): SEPPResult | null {
     lockInEndYear: currentYear + Math.ceil(lockIn.years),
     minimumDuration: lockIn.years,
     notes: [
-      'Similar to amortization but uses IRS mortality table instead of life expectancy',
-      'Typically produces highest payment of three methods',
-      'Payment fixed for duration of SEPP',
-    ],
+  'Similar to amortization but uses IRS mortality table instead of life expectancy',
+  'Can produce higher or lower payment than amortization depending on age and rate',
+  'Payment fixed for duration of SEPP',
+  ],
   }
 }
 
