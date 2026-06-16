@@ -5,28 +5,25 @@
  */
 
 // ── Life expectancy tables (IRS Notice 2022-6, Appendix A) ──
-// Single Life Expectancy Table
+
+// Single Life Expectancy Table — §1.401(a)(9)-9(b)
 const SINGLE_LIFE_TABLE: Record<number, number> = {
-  // Ages 40-49 (added)
-  40: 43.6, 41: 42.7, 42: 41.7, 43: 40.7, 44: 39.8,
-  45: 38.8, 46: 37.9, 47: 37.0, 48: 36.0, 49: 35.1,
-  // Ages 50-85
-  50: 34.2, 51: 33.3, 52: 32.3, 53: 31.4, 54: 30.5,
-  55: 29.6, 56: 28.7, 57: 27.9, 58: 27.0, 59: 26.1,
-  60: 25.2, 61: 24.4, 62: 23.5, 63: 22.7, 64: 21.8,
-  65: 21.0, 66: 20.2, 67: 19.4, 68: 18.6, 69: 17.8,
-  70: 17.0, 71: 16.3, 72: 15.5, 73: 14.8, 74: 14.1,
-  75: 13.4, 76: 12.7, 77: 12.1, 78: 11.4, 79: 10.8,
-  80: 10.2, 81: 9.7,  82: 9.1,  83: 8.6,  84: 8.1,
-  85: 7.6,
+  40: 45.7, 41: 44.7, 42: 43.6, 43: 42.6, 44: 41.6,
+  45: 40.7, 46: 39.7, 47: 38.7, 48: 37.9, 49: 37.1,
+  50: 36.2, 51: 35.3, 52: 34.3, 53: 33.4, 54: 32.5,
+  55: 31.6, 56: 30.6, 57: 29.8, 58: 28.9, 59: 28.0,
+  60: 27.1, 61: 26.2, 62: 25.4, 63: 24.5, 64: 23.7,
+  65: 22.9, 66: 22.0, 67: 21.2, 68: 20.4, 69: 19.6,
+  70: 18.8, 71: 18.0, 72: 17.2, 73: 16.4, 74: 15.6,
+  75: 14.8, 76: 14.1, 77: 13.3, 78: 12.6, 79: 11.9,
+  80: 11.2, 81: 10.5, 82: 9.9,  83: 9.2,  84: 8.6,
+  85: 8.1,
 }
 
-// Uniform Lifetime Table
+// Uniform Lifetime Table — §1.401(a)(9)-9(c)
 const UNIFORM_LIFETIME_TABLE: Record<number, number> = {
-  // Ages 40-49 (added)
   40: 43.6, 41: 42.7, 42: 41.7, 43: 40.7, 44: 39.8,
   45: 38.8, 46: 37.9, 47: 37.0, 48: 36.0, 49: 35.1,
-  // Ages 50-85
   50: 34.2, 51: 33.3, 52: 32.3, 53: 31.4, 54: 30.5,
   55: 29.6, 56: 28.7, 57: 27.9, 58: 27.0, 59: 26.1,
   60: 25.2, 61: 24.4, 62: 23.5, 63: 22.7, 64: 21.8,
@@ -40,7 +37,6 @@ const UNIFORM_LIFETIME_TABLE: Record<number, number> = {
 // Annuity factor table (Notice 2022-6 Appendix B)
 // Key: `${age}_${ratePercent}` e.g. "50_5"
 const ANNUITY_FACTORS: Record<string, number> = {
-  // Ages 40-49 (added)
   '40_1': 40.19, '40_2': 33.25, '40_3': 27.84, '40_4': 23.59, '40_5': 20.21, '40_6': 17.49, '40_7': 15.29, '40_8': 13.49,
   '41_1': 39.61, '41_2': 32.77, '41_3': 27.44, '41_4': 23.26, '41_5': 19.93, '41_6': 17.25, '41_7': 15.09, '41_8': 13.32,
   '42_1': 39.02, '42_2': 32.28, '42_3': 27.03, '42_4': 22.92, '42_5': 19.64, '42_6': 17.00, '42_7': 14.88, '42_8': 13.14,
@@ -51,7 +47,6 @@ const ANNUITY_FACTORS: Record<string, number> = {
   '47_1': 35.92, '47_2': 29.66, '47_3': 24.83, '47_4': 21.07, '47_5': 18.09, '47_6': 15.66, '47_7': 13.75, '47_8': 12.18,
   '48_1': 35.27, '48_2': 29.10, '48_3': 24.36, '48_4': 20.67, '48_5': 17.76, '48_6': 15.38, '48_7': 13.51, '48_8': 11.97,
   '49_1': 34.61, '49_2': 28.53, '49_3': 23.88, '49_4': 20.26, '49_5': 17.42, '49_6': 15.09, '49_7': 13.26, '49_8': 11.76,
-  // Ages 50-60
   '50_1': 33.94, '50_2': 27.95, '50_3': 23.39, '50_4': 19.85, '50_5': 17.08, '50_6': 14.80, '50_7': 13.01, '50_8': 11.54,
   '51_1': 33.26, '51_2': 27.36, '51_3': 22.89, '51_4': 19.43, '51_5': 16.73, '51_6': 14.50, '51_7': 12.75, '51_8': 11.32,
   '52_1': 32.57, '52_2': 26.76, '52_3': 22.38, '52_4': 19.00, '52_5': 16.37, '52_6': 14.19, '52_7': 12.49, '52_8': 11.09,
@@ -108,18 +103,18 @@ export function getLifeExpectancyFactor(
   const clampedAge = Math.min(Math.max(roundedAge, 40), 85)
 
   if (table === 'single') {
-    return SINGLE_LIFE_TABLE[clampedAge] ?? 8.6
+    return SINGLE_LIFE_TABLE[clampedAge] ?? 8.1
   }
   if (table === 'uniform') {
     return UNIFORM_LIFETIME_TABLE[clampedAge] ?? 8.6
   }
-  // Joint
+  // Joint — use the larger of the two single life factors
   if (beneficiaryAge !== undefined) {
-    const ownerFactor = SINGLE_LIFE_TABLE[clampedAge] ?? 8.6
-    const beneFactor = SINGLE_LIFE_TABLE[Math.min(Math.max(Math.floor(beneficiaryAge), 40), 85)] ?? 8.6
+    const ownerFactor = SINGLE_LIFE_TABLE[clampedAge] ?? 8.1
+    const beneFactor = SINGLE_LIFE_TABLE[Math.min(Math.max(Math.floor(beneficiaryAge), 40), 85)] ?? 8.1
     return Math.max(ownerFactor, beneFactor)
   }
-  return SINGLE_LIFE_TABLE[clampedAge] ?? 8.6
+  return SINGLE_LIFE_TABLE[clampedAge] ?? 8.1
 }
 
 export function calcLockIn(currentAge: number): { endAge: number; years: number } {
