@@ -2,19 +2,28 @@
 
 import { PlannerInputs, PlannerResults } from '@/lib/planner/types'
 import { useState } from 'react'
-import RiskFlagsTab from './tabs/RiskFlagsTab'
-import BridgeTab from './tabs/BridgeTab'
-import MonteCarloTab from './tabs/MonteCarloTab'
 import OverviewTab from './tabs/OverviewTab'
+import BridgeTab from './tabs/BridgeTab'
 import TaxEstimateTab from './tabs/TaxEstimateTab'
 import RothLadderTab from './tabs/RothLadderTab'
+import Post595Tab from './tabs/Post595Tab'
+import MonteCarloTab from './tabs/MonteCarloTab'
+import RiskFlagsTab from './tabs/RiskFlagsTab'
 
 interface Props {
   results: PlannerResults
   inputs: PlannerInputs
 }
 
-const TABS = ['Overview', 'Bridge', 'Tax Estimate', 'Roth Ladder', 'Monte Carlo', 'Risk Flags']
+const TABS = [
+  'Overview',
+  'Bridge',
+  'Tax Estimate',
+  'Roth Ladder',
+  'Post-59½',
+  'Monte Carlo',
+  'Risk Flags',
+]
 
 export default function ResultsDashboard({ results, inputs }: Props) {
   const [activeTab, setActiveTab] = useState('Overview')
@@ -51,6 +60,9 @@ export default function ResultsDashboard({ results, inputs }: Props) {
         )}
         {activeTab === 'Roth Ladder' && (
           <RothLadderTab results={results} inputs={inputs} />
+        )}
+        {activeTab === 'Post-59½' && (
+          <Post595Tab results={results} inputs={inputs} />
         )}
         {activeTab === 'Monte Carlo' && (
           <MonteCarloTab results={results} />
