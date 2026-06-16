@@ -34,14 +34,14 @@ export default function ResultsDashboard({ results, inputs }: Props) {
     <div className="bg-ink border border-white/[0.07] rounded-xl overflow-hidden h-full flex flex-col">
       {/* Tab bar */}
       <div
-        className="flex border-b border-white/[0.06] bg-navy/50 overflow-x-auto pr-6"
+        className="flex border-b border-white/[0.06] bg-navy/50 overflow-x-auto"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
         {TABS.map(tab => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`px-5 py-3 font-mono text-[10px] tracking-widest uppercase transition-colors border-b-2 whitespace-nowrap shrink-0 ${
+            className={`px-3 py-3 font-mono text-[9px] tracking-wider uppercase transition-colors border-b-2 whitespace-nowrap shrink-0 ${
               activeTab === tab
                 ? 'text-gold border-gold'
                 : 'text-white/30 border-transparent hover:text-white/60'
