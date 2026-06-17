@@ -167,6 +167,17 @@ const tools = [
   pro:         'All risk factors + prioritized fix plan',
   category:    'bridge',
 },
+{
+  slug:        'early-retirement-age-calculator',
+  title:       'Early Retirement Age Calculator',
+  description: 'Find your earliest possible retirement age based on your current portfolio, contributions, and spending. See your FIRE number and bridge requirements instantly.',
+  tag:         'New',
+  tagColor:    'teal',
+  icon:        '🎯',
+  free:        'Retirement age + FIRE number',
+  pro:         null,
+  category:    'bridge',
+},
 ]
 
 const categories = [
