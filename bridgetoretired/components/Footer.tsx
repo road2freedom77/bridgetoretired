@@ -40,6 +40,7 @@ export function Footer() {
         { label: 'About',       href: '/about'     },
         { label: 'Blog',        href: '/blog'      },
         { label: 'Newsletter',  href: '/#download' },
+        { label: 'Contact',     href: '/contact'   },
         { label: 'X / Twitter', href: 'https://x.com/BridgeToRetired' },
       ],
     },
