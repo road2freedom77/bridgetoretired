@@ -145,6 +145,17 @@ const tools = [
   pro:         'Full year-by-year comparison + verdict',
   category:    'access',
 },
+{
+  slug:        'coast-fire-calculator',
+  title:       'CoastFIRE Calculator',
+  description: 'Find how much you need saved today so compounding alone reaches your FIRE number. See exactly when you can stop contributing and coast to retirement.',
+  tag:         'New',
+  tagColor:    'teal',
+  icon:        '🏄',
+  free:        'CoastFIRE number + growth chart',
+  pro:         null,
+  category:    'planning',
+},
 ]
 
 const categories = [
