@@ -156,6 +156,17 @@ const tools = [
   pro:         null,
   category:    'planning',
 },
+{
+  slug:        'bridge-health-check',
+  title:       'Bridge Health Check',
+  description: 'Is your early retirement bridge funded? Get an instant score — Stable, Moderate Risk, or Fragile — with your biggest weakness and how to fix it.',
+  tag:         'New',
+  tagColor:    'teal',
+  icon:        '🏥',
+  free:        'Bridge Health Score + biggest weakness',
+  pro:         'All risk factors + prioritized fix plan',
+  category:    'bridge',
+},
 ]
 
 const categories = [
