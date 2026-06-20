@@ -48,6 +48,8 @@ export default function FIRENumberCalculator() {
   const [annualSpend, setAnnualSpend] = useState(60_000)
   const [ssAge, setSsAge] = useState(67)
   const [ssMonthly, setSsMonthly] = useState(2_000)
+  const [spouseSSMonthly, setSpouseSSMonthly] = useState(0)
+  const [hasSpouse, setHasSpouse] = useState(false)
   const [healthcareBudget, setHealthcareBudget] = useState(12_000)
   const [currentSaved, setCurrentSaved] = useState(800_000)
 
@@ -56,7 +58,9 @@ export default function FIRENumberCalculator() {
   const bridgeYears = 59.5 - retireAge
   const withdrawalRate = WITHDRAWAL_RATES[Math.min(50, Math.max(30, Math.round(retirementYears / 5) * 5))] ?? 0.033
   const withdrawalRatePct = (withdrawalRate * 100).toFixed(1)
-  const ssAnnual = ssMonthly * 12
+
+  // Combined SS — both benefits kick in at ssAge
+  const ssAnnual = (ssMonthly + (hasSpouse ? spouseSSMonthly : 0)) * 12
 
   const bridgeNeeded = Math.round(annualSpend * bridgeYears * 1.15)
   const healthcareNeeded = Math.round(healthcareBudget * (65 - retireAge))
@@ -92,12 +96,12 @@ export default function FIRENumberCalculator() {
 
       <div style={{ padding: '24px' }}>
         {/* Controls */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, marginBottom: 20 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, marginBottom: 16 }}>
           {[
             { label: 'Target Retire Age', value: retireAge, set: setRetireAge, min: 40, max: 58, step: 1, fmt: (v: number) => `Age ${v}` },
             { label: 'Annual Spending', value: annualSpend, set: setAnnualSpend, min: 30000, max: 150000, step: 5000, fmt: (v: number) => formatDollars(v) },
             { label: 'SS Claiming Age', value: ssAge, set: setSsAge, min: 62, max: 70, step: 1, fmt: (v: number) => `Age ${v}` },
-            { label: 'Monthly SS Benefit (at FRA)', value: ssMonthly, set: setSsMonthly, min: 0, max: 4000, step: 100, fmt: (v: number) => `$${v.toLocaleString()}/mo` },
+            { label: 'Your Monthly SS Benefit', value: ssMonthly, set: setSsMonthly, min: 0, max: 4000, step: 100, fmt: (v: number) => `$${v.toLocaleString()}/mo` },
             { label: 'Annual Healthcare Budget', value: healthcareBudget, set: setHealthcareBudget, min: 5000, max: 30000, step: 1000, fmt: (v: number) => formatDollars(v) },
             { label: 'Currently Saved', value: currentSaved, set: setCurrentSaved, min: 0, max: 5000000, step: 50000, fmt: (v: number) => formatDollars(v) },
           ].map(({ label, value, set, min, max, step, fmt }) => (
@@ -111,13 +115,61 @@ export default function FIRENumberCalculator() {
           ))}
         </div>
 
+        {/* Spouse toggle + field */}
+        <div style={{ background: '#141C28', borderRadius: 10, padding: '14px 16px', border: '1px solid rgba(255,255,255,0.06)', marginBottom: 20 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: hasSpouse ? 14 : 0 }}>
+            <div>
+              <div style={{ fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)', marginBottom: 2 }}>Planning as a Couple?</div>
+              {hasSpouse && spouseSSMonthly > 0 && (
+                <div style={{ fontSize: 9, color: COLORS.sage }}>
+                  Combined SS: ${(ssMonthly + spouseSSMonthly).toLocaleString()}/mo = {formatDollars((ssMonthly + spouseSSMonthly) * 12)}/yr
+                </div>
+              )}
+            </div>
+            <button
+              onClick={() => setHasSpouse(!hasSpouse)}
+              style={{
+                padding: '5px 14px', borderRadius: 6, border: 'none', cursor: 'pointer',
+                fontFamily: 'monospace', fontSize: 10, fontWeight: 600,
+                background: hasSpouse ? COLORS.teal : 'rgba(255,255,255,0.08)',
+                color: hasSpouse ? COLORS.dark : 'rgba(255,255,255,0.4)',
+                transition: 'all 0.15s',
+              }}
+            >
+              {hasSpouse ? '✓ Spouse added' : '+ Add Spouse'}
+            </button>
+          </div>
+
+          {hasSpouse && (
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                <span style={{ fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)' }}>Spouse Monthly SS Benefit</span>
+                <span style={{ fontSize: 12, color: COLORS.teal, fontWeight: 600 }}>${spouseSSMonthly.toLocaleString()}/mo</span>
+              </div>
+              <input type="range" min={0} max={4000} step={100} value={spouseSSMonthly}
+                onChange={e => setSpouseSSMonthly(Number(e.target.value))}
+                style={{ width: '100%', accentColor: COLORS.teal, cursor: 'pointer' }} />
+              <div style={{ fontSize: 8, color: 'rgba(255,255,255,0.2)', marginTop: 4 }}>
+                Both SS benefits assumed to start at same claiming age · Set to $0 if spouse has no SS
+              </div>
+            </div>
+          )}
+        </div>
+
         {/* Big FIRE number */}
         <div style={{ background: 'rgba(232,184,75,0.06)', border: '1px solid rgba(232,184,75,0.2)', borderRadius: 12, padding: '20px 24px', marginBottom: 20, textAlign: 'center' as const }}>
-          <div style={{ fontSize: 9, letterSpacing: 3, textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', marginBottom: 8 }}>Your Real FIRE Number (Age {retireAge}, {retirementYears}-yr retirement)</div>
+          <div style={{ fontSize: 9, letterSpacing: 3, textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', marginBottom: 8 }}>
+            Your Real FIRE Number (Age {retireAge}, {retirementYears}-yr retirement{hasSpouse ? ' · Couple' : ''})
+          </div>
           <div style={{ fontSize: 42, fontWeight: 700, color: COLORS.gold, fontFamily: 'Georgia, serif', lineHeight: 1 }}>{formatDollars(totalFireNumber)}</div>
           <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', marginTop: 8 }}>
             vs. simple 25x rule: {formatDollars(Math.round(annualSpend * 25))} — difference: <span style={{ color: differenceFromSimple > 0 ? COLORS.red : COLORS.sage }}>{differenceFromSimple > 0 ? '+' : ''}{formatDollars(differenceFromSimple)}</span>
           </div>
+          {hasSpouse && spouseSSMonthly > 0 && (
+            <div style={{ fontSize: 10, color: COLORS.teal, marginTop: 6 }}>
+              Spouse SS reduces portfolio need by {formatDollars(Math.round(spouseSSMonthly * 12 / withdrawalRate))}
+            </div>
+          )}
           <div style={{ marginTop: 16 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
               <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.3)' }}>Current: {formatDollars(currentSaved)}</span>
@@ -167,7 +219,7 @@ export default function FIRENumberCalculator() {
           </p>
         </div>
 
-        {/* Next step — always visible */}
+        {/* Next step */}
         <div style={{ background: 'rgba(45,212,191,0.06)', border: '1px solid rgba(45,212,191,0.15)', borderLeft: `3px solid ${COLORS.teal}`, borderRadius: 8, padding: '14px 16px', marginBottom: 16 }}>
           <div style={{ fontSize: 10, color: COLORS.teal, fontWeight: 600, marginBottom: 6, letterSpacing: 1 }}>🌉 NEXT STEP</div>
           <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', margin: '0 0 10px', lineHeight: 1.7 }}>
