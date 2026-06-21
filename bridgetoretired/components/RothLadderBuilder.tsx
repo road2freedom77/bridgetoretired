@@ -6,15 +6,9 @@ import { useUser } from '@clerk/nextjs'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine, Cell } from 'recharts'
 
 const COLORS = {
-  gold: '#E8B84B',
-  teal: '#2DD4BF',
-  purple: '#A78BFA',
-  red: '#F87171',
-  sage: '#4ADE80',
-  orange: '#FB923C',
-  white: '#FFFFFF',
-  dark: '#0D1420',
-  ink: '#141C28',
+  gold: '#E8B84B', teal: '#2DD4BF', purple: '#A78BFA',
+  red: '#F87171', sage: '#4ADE80', orange: '#FB923C',
+  white: '#FFFFFF', dark: '#0D1420', ink: '#141C28',
 }
 
 function formatDollars(n: number) {
@@ -34,8 +28,7 @@ const STANDARD_DEDUCTION_MFJ = 30_000
 
 function calcFederalTax(income: number): number {
   const taxable = Math.max(0, income - STANDARD_DEDUCTION_MFJ)
-  let tax = 0
-  let prev = 0
+  let tax = 0, prev = 0
   for (const bracket of TAX_BRACKETS_MFJ_2026) {
     if (taxable <= prev) break
     const inBracket = Math.min(taxable, bracket.upTo) - prev
@@ -63,6 +56,13 @@ const CustomTooltip = ({ active, payload, label }: any) => {
     </div>
   )
 }
+
+const PRO_FEATURES = [
+  { icon: '🛡️', label: 'Bridge Risk Score™', sub: 'Grade your plan in 60 seconds' },
+  { icon: '📉', label: 'Sequence-of-Returns Stress Tester', sub: '2000, 2008, worst-case crashes' },
+  { icon: '🖥️', label: 'Online Retirement Planner', sub: 'Save up to 5 scenarios' },
+  { icon: '📄', label: 'PDF Report Export', sub: 'CPA-ready, shareable' },
+]
 
 export default function RothLadderBuilder() {
   const { user } = useUser()
@@ -254,34 +254,36 @@ export default function RothLadderBuilder() {
           </p>
         </div>
 
-        {/* Pro upsell — hidden for Pro users */}
+        {/* Next step */}
+        <div style={{ background: 'rgba(45,212,191,0.06)', border: '1px solid rgba(45,212,191,0.15)', borderLeft: `3px solid ${COLORS.teal}`, borderRadius: 8, padding: '14px 16px', marginBottom: 16 }}>
+          <div style={{ fontSize: 10, color: COLORS.teal, fontWeight: 600, marginBottom: 6, letterSpacing: 1 }}>🌉 NEXT STEP</div>
+          <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', margin: '0 0 10px', lineHeight: 1.7 }}>
+            Know if your taxable account can cover the 5-year gap — and score your overall bridge plan.
+          </p>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' as const }}>
+            <a href="/tools/taxable-brokerage-gap-calculator" style={{ fontSize: 10, color: COLORS.teal, border: `1px solid ${COLORS.teal}40`, padding: '5px 12px', borderRadius: 5, textDecoration: 'none', fontWeight: 600 }}>Taxable Gap Calculator →</a>
+            <a href="/tools/bridge-health-check" style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.1)', padding: '5px 12px', borderRadius: 5, textDecoration: 'none' }}>Bridge Health Check →</a>
+            <a href="/tools/72t-vs-roth-ladder" style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.1)', padding: '5px 12px', borderRadius: 5, textDecoration: 'none' }}>72t vs Roth Ladder →</a>
+          </div>
+        </div>
+
+        {/* Pro upsell */}
         {!isPro && (
-          <div style={{
-            background: 'linear-gradient(135deg, rgba(232,184,75,0.06) 0%, rgba(232,184,75,0.02) 100%)',
-            border: '1px solid rgba(232,184,75,0.2)',
-            borderLeft: '3px solid #E8B84B',
-            borderRadius: 12,
-            padding: '20px 24px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: 20,
-          }}>
-            <div>
-              <div style={{ fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: COLORS.gold, marginBottom: 6 }}>⚡ Take it further with Pro</div>
-              <div style={{ fontSize: 14, fontFamily: 'Georgia, serif', fontWeight: 700, color: '#fff', marginBottom: 6 }}>
-                Save this scenario and compare it against alternatives.
-              </div>
-              <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', lineHeight: 1.6, maxWidth: 420 }}>
-                Model "aggressive Roth conversion" vs "conservative" side-by-side. Save up to 5 named scenarios and never lose your numbers.
-              </div>
+          <div style={{ background: 'linear-gradient(135deg, rgba(232,184,75,0.06) 0%, rgba(232,184,75,0.02) 100%)', border: '1px solid rgba(232,184,75,0.2)', borderLeft: '3px solid #E8B84B', borderRadius: 12, padding: '20px 24px' }}>
+            <div style={{ fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: COLORS.gold, marginBottom: 10 }}>⚡ BridgeToRetired Pro — $9/mo</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8, marginBottom: 16 }}>
+              {PRO_FEATURES.map(({ icon, label, sub }) => (
+                <div key={label} style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+                  <span style={{ fontSize: 14, flexShrink: 0 }}>{icon}</span>
+                  <div>
+                    <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.7)', fontWeight: 600 }}>{label}</div>
+                    <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)' }}>{sub}</div>
+                  </div>
+                </div>
+              ))}
             </div>
-            <Link href="/pricing" style={{
-              background: COLORS.gold, color: '#0D1420', fontFamily: 'Georgia, serif',
-              fontWeight: 700, fontSize: 12, padding: '10px 20px', borderRadius: 8,
-              textDecoration: 'none', whiteSpace: 'nowrap' as const, flexShrink: 0,
-            }}>
-              Get Pro →
+            <Link href="/pricing" style={{ background: COLORS.gold, color: '#0D1420', fontFamily: 'Georgia, serif', fontWeight: 700, fontSize: 12, padding: '10px 24px', borderRadius: 8, textDecoration: 'none', display: 'inline-block' }}>
+              See Pro Plans →
             </Link>
           </div>
         )}
@@ -290,11 +292,7 @@ export default function RothLadderBuilder() {
       {/* Footer */}
       <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '12px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.15)', letterSpacing: 1 }}>Based on 2026 MFJ tax brackets · For educational purposes only</span>
-        {!isPro && (
-          <a href="/#download" style={{ fontSize: 9, color: COLORS.gold, textDecoration: 'none', letterSpacing: 2, textTransform: 'uppercase' }}>
-            Get Free Planner →
-          </a>
-        )}
+        {!isPro && <a href="/#download" style={{ fontSize: 9, color: COLORS.gold, textDecoration: 'none', letterSpacing: 2, textTransform: 'uppercase' }}>Get Free Planner →</a>}
       </div>
     </div>
   )
