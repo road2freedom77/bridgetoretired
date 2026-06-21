@@ -14,10 +14,9 @@ export default function ProWelcomePage() {
       title: 'Online Retirement Planner',
       badge: 'New',
       badgeColor: 'gold',
-      description: 'Save up to 5 named scenarios, run Monte Carlo simulation, and access your plan from anywhere. Enter your numbers and watch all results update instantly.',
+      description: 'Model retirement at 50, 52, or 55 and see which plan survives longest. Save up to 5 named scenarios with Monte Carlo simulation.',
       href: '/pro/planner',
       cta: 'Open Planner →',
-      primary: true,
       download: false,
     },
     {
@@ -25,10 +24,9 @@ export default function ProWelcomePage() {
       title: 'Bridge Risk Score™',
       badge: 'Signature Feature',
       badgeColor: 'gold',
-      description: 'Get your personalized retirement bridge score in 60 seconds. See every risk factor ranked by severity with a prioritized fix plan.',
+      description: 'Discover your biggest retirement risk and what to fix first. Every risk factor ranked by severity with a specific fix amount.',
       href: '/bridge-risk-score',
       cta: 'Calculate My Score →',
-      primary: true,
       download: false,
     },
     {
@@ -36,10 +34,19 @@ export default function ProWelcomePage() {
       title: 'Sequence-of-Returns Stress Tester',
       badge: 'Pro',
       badgeColor: 'gold',
-      description: 'See how your bridge survives the 2000 dot-com crash, 2008 financial crisis, and worst historical sequences. Know before you quit.',
+      description: 'Would your plan survive another 2008? Run your bridge through the dot-com crash, financial crisis, and worst historical sequences.',
       href: '/sequence-tester',
       cta: 'Run Stress Test →',
-      primary: true,
+      download: false,
+    },
+    {
+      icon: '💾',
+      title: 'Scenario Save + Compare',
+      badge: 'Pro',
+      badgeColor: 'gold',
+      description: '"Retire at 50 aggressive" vs "Retire at 53 conservative." See which scenario gives your plan the best chance of surviving to 90.',
+      href: '/scenario-compare',
+      cta: 'Compare Scenarios →',
       download: false,
     },
     {
@@ -50,18 +57,6 @@ export default function ProWelcomePage() {
       description: 'All variables unlocked. Three SS scenarios side-by-side. Full withdrawal order control. Dynamic spending mode.',
       href: '/advanced-calculator',
       cta: 'Open Calculator →',
-      primary: true,
-      download: false,
-    },
-    {
-      icon: '💾',
-      title: 'Scenario Save + Compare',
-      badge: 'Pro',
-      badgeColor: 'gold',
-      description: '"Retire at 50 aggressive" vs "Retire at 53 conservative." Save up to 5 scenarios and compare side-by-side.',
-      href: '/scenario-compare',
-      cta: 'Compare Scenarios →',
-      primary: true,
       download: false,
     },
     {
@@ -72,7 +67,6 @@ export default function ProWelcomePage() {
       description: 'One-click export of your complete retirement plan. Branded, shareable, and CPA-ready.',
       href: '/pdf-report',
       cta: 'Generate Report →',
-      primary: true,
       download: false,
     },
     {
@@ -83,7 +77,6 @@ export default function ProWelcomePage() {
       description: '9-sheet system: BRIDGE, TAX ESTIMATE, ROTH LADDER, MONTE CARLO, RISK FLAGS, REBALANCE. The offline companion to the online planner.',
       href: '/downloads/bridge-planner-pro-v3.xlsx',
       cta: 'Download v3 ↓',
-      primary: false,
       download: true,
     },
   ]
@@ -122,7 +115,7 @@ export default function ProWelcomePage() {
           </p>
         </div>
 
-        {/* ── Onboarding block ── */}
+        {/* Onboarding block */}
         <div className="bg-ink border border-gold/20 rounded-2xl p-6 mb-8">
           <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
             <div>
@@ -133,15 +126,17 @@ export default function ProWelcomePage() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {ONBOARDING_STEPS.map(s => (
-              <Link key={s.step} href={s.href} className="group flex items-center gap-4 bg-black/30 rounded-xl px-4 py-3 border border-white/[0.06] hover:border-gold/20 transition-all no-underline">
-                <div className="w-8 h-8 rounded-full flex items-center justify-center text-[13px] font-bold shrink-0" style={{ background: s.color, color: '#0D1420' }}>
+              <Link key={s.step} href={s.href}
+                className="group flex items-center gap-4 bg-black/30 rounded-xl px-4 py-3 border border-white/[0.06] hover:border-gold/20 transition-all no-underline">
+                <div className="w-8 h-8 rounded-full flex items-center justify-center text-[13px] font-bold shrink-0"
+                  style={{ background: s.color, color: '#0D1420' }}>
                   {s.step}
                 </div>
-                <div>
+                <div className="flex-1 min-w-0">
                   <div className="font-syne font-semibold text-white text-[13px] group-hover:text-gold transition-colors">{s.label}</div>
                   <div className="font-mono text-[10px] text-white/30">{s.sub}</div>
                 </div>
-                <div className="ml-auto font-mono text-[11px] text-white/20 group-hover:text-gold/60 transition-colors">→</div>
+                <div className="font-mono text-[11px] text-white/20 group-hover:text-gold/60 transition-colors shrink-0">→</div>
               </Link>
             ))}
           </div>
@@ -167,15 +162,10 @@ export default function ProWelcomePage() {
           </div>
         </div>
 
-        {/* 2-col tool grid */}
+        {/* Tool grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           {PRO_TOOLS.map(tool => (
-            <div
-              key={tool.title}
-              className={`bg-ink rounded-xl p-5 flex items-start gap-4 border ${
-                tool.primary ? 'border-gold/20' : 'border-white/[0.07]'
-              }`}
-            >
+            <div key={tool.title} className="bg-ink rounded-xl p-5 flex items-start gap-4 border border-gold/20">
               <div className="text-2xl flex-shrink-0">{tool.icon}</div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1 flex-wrap">
@@ -190,17 +180,13 @@ export default function ProWelcomePage() {
                 </div>
                 <p className="text-white/40 text-[12px] leading-relaxed mb-3">{tool.description}</p>
                 {tool.download ? (
-                  <a
-                    href={tool.href}
-                    className="inline-block border border-white/[0.12] text-white/60 font-mono text-[10px] tracking-widest uppercase px-4 py-2 rounded hover:border-white/25 hover:text-white/80 transition-all"
-                  >
+                  <a href={tool.href}
+                    className="inline-block border border-white/[0.12] text-white/60 font-mono text-[10px] tracking-widest uppercase px-4 py-2 rounded hover:border-white/25 hover:text-white/80 transition-all">
                     {tool.cta}
                   </a>
                 ) : (
-                  <Link
-                    href={tool.href}
-                    className="inline-block bg-gold text-black font-syne font-semibold text-[11px] tracking-wide px-4 py-2 rounded hover:opacity-85 transition-opacity"
-                  >
+                  <Link href={tool.href}
+                    className="inline-block bg-gold text-black font-syne font-semibold text-[11px] tracking-wide px-4 py-2 rounded hover:opacity-85 transition-opacity">
                     {tool.cta}
                   </Link>
                 )}
@@ -216,12 +202,10 @@ export default function ProWelcomePage() {
             <div className="flex-1">
               <div className="font-syne font-semibold text-white text-[14px] mb-1">All Free Calculators</div>
               <p className="text-white/40 text-[12px] leading-relaxed mb-3">
-                Roth ladder, ACA subsidies, SEPP/72(t), Social Security break-even, taxable gap, and more.
+                Roth ladder, ACA subsidies, SEPP/72(t), taxable gap, Social Security, and more.
               </p>
-              <Link
-                href="/tools"
-                className="inline-block border border-white/[0.12] text-white/60 font-mono text-[10px] tracking-widest uppercase px-4 py-2 rounded hover:border-white/25 hover:text-white/80 transition-all"
-              >
+              <Link href="/tools"
+                className="inline-block border border-white/[0.12] text-white/60 font-mono text-[10px] tracking-widest uppercase px-4 py-2 rounded hover:border-white/25 hover:text-white/80 transition-all">
                 Browse All Tools →
               </Link>
             </div>
@@ -233,10 +217,8 @@ export default function ProWelcomePage() {
               <p className="text-white/40 text-[12px] leading-relaxed mb-3">
                 Questions about your numbers? Reach out directly — we respond same day.
               </p>
-              <a
-                href="mailto:support@bridgetoretired.com"
-                className="inline-block border border-white/[0.12] text-white/60 font-mono text-[10px] tracking-widest uppercase px-4 py-2 rounded hover:border-white/25 hover:text-white/80 transition-all"
-              >
+              <a href="mailto:support@bridgetoretired.com"
+                className="inline-block border border-white/[0.12] text-white/60 font-mono text-[10px] tracking-widest uppercase px-4 py-2 rounded hover:border-white/25 hover:text-white/80 transition-all">
                 Email Support →
               </a>
             </div>
@@ -248,10 +230,8 @@ export default function ProWelcomePage() {
           <div className="font-mono text-[9px] tracking-widest uppercase text-white/25 mb-2">Manage Subscription</div>
           <p className="text-white/35 text-[12px] leading-relaxed">
             To cancel or update billing, reply to your Stripe receipt email or contact us at{' '}
-            <a
-              href="mailto:support@bridgetoretired.com"
-              className="text-white/50 hover:text-white/70 transition-colors underline underline-offset-2"
-            >
+            <a href="mailto:support@bridgetoretired.com"
+              className="text-white/50 hover:text-white/70 transition-colors underline underline-offset-2">
               support@bridgetoretired.com
             </a>{' '}
             — we'll handle it same day.
