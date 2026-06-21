@@ -163,16 +163,20 @@ export default function FreeHome() {
             <div style={{ fontSize: 9, letterSpacing: 3, textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)', marginBottom: 14 }}>Recently Used</div>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' as const }}>
               {recentTools.slice(0, 4).map(href => {
-                const tool = [...FEATURED_TOOLS, ...ALL_TOOLS.map(t => ({ href: t.href, title: t.label, icon: '🧮', desc: '', tag: null, tagColor: null }))].find(t => t.href === href)
+              {recentTools.slice(0, 4).map(href => {
+                const flat = [
+                  ...FEATURED_TOOLS.map(t => ({ href: t.href, label: t.title, icon: t.icon })),
+                  ...ALL_TOOLS.map(t => ({ href: t.href, label: t.label, icon: '🧮' })),
+                ]
+                const tool = flat.find(t => t.href === href)
                 if (!tool) return null
                 return (
                   <Link key={href} href={href}
                     style={{ fontSize: 10, color: COLORS.teal, border: `1px solid ${COLORS.teal}30`, padding: '6px 14px', borderRadius: 6, textDecoration: 'none', background: 'rgba(45,212,191,0.05)' }}>
-                    {'icon' in tool ? tool.icon : '🧮'} {'title' in tool ? tool.title : tool.label} →
+                    {tool.icon} {tool.label} →
                   </Link>
                 )
               })}
-            </div>
           </div>
         )}
 
