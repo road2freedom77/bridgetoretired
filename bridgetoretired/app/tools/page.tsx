@@ -189,6 +189,17 @@ const tools = [
   pro:         null,
   category:    'bridge',
 },
+{
+  slug:        'retirement-readiness-score',
+  title:       'Retirement Readiness Score',
+  description: 'Get your personalized score across 5 dimensions: portfolio funding, bridge years, SS timing, healthcare buffer, and account mix. See exactly what to fix.',
+  tag:         'New',
+  tagColor:    'teal',
+  icon:        '🎯',
+  free:        'Overall score + dimension summary',
+  pro:         'Full breakdown + fix amounts per dimension',
+  category:    'bridge',
+},
 ]
 
 const categories = [
