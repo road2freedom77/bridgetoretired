@@ -50,7 +50,7 @@ export default function AuthCallbackPage() {
 
       // Not Pro
       setStatus('No active subscription found.')
-      router.replace('/pricing')
+      router.replace('/home')
     }
 
     checkPro()
