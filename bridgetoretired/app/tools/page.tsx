@@ -178,6 +178,17 @@ const tools = [
   pro:         null,
   category:    'bridge',
 },
+{
+  slug:        'taxable-brokerage-gap-calculator',
+  title:       'Taxable Brokerage Gap Calculator',
+  description: 'Find out exactly how much you need in your taxable account to fund early retirement before 59½. See your bridge gap and the fastest ways to close it.',
+  tag:         'New',
+  tagColor:    'teal',
+  icon:        '💼',
+  free:        'Gap amount + fix options',
+  pro:         null,
+  category:    'bridge',
+},
 ]
 
 const categories = [
