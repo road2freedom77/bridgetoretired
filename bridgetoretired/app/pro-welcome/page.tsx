@@ -18,6 +18,7 @@ export default function ProWelcomePage() {
       href: '/pro/planner',
       cta: 'Open Planner →',
       download: false,
+      featured: true,
     },
     {
       icon: '🛡️',
@@ -28,6 +29,7 @@ export default function ProWelcomePage() {
       href: '/bridge-risk-score',
       cta: 'Calculate My Score →',
       download: false,
+      featured: false,
     },
     {
       icon: '📉',
@@ -38,6 +40,7 @@ export default function ProWelcomePage() {
       href: '/sequence-tester',
       cta: 'Run Stress Test →',
       download: false,
+      featured: false,
     },
     {
       icon: '💾',
@@ -48,6 +51,7 @@ export default function ProWelcomePage() {
       href: '/scenario-compare',
       cta: 'Compare Scenarios →',
       download: false,
+      featured: false,
     },
     {
       icon: '📊',
@@ -58,6 +62,7 @@ export default function ProWelcomePage() {
       href: '/advanced-calculator',
       cta: 'Open Calculator →',
       download: false,
+      featured: false,
     },
     {
       icon: '📄',
@@ -68,6 +73,7 @@ export default function ProWelcomePage() {
       href: '/pdf-report',
       cta: 'Generate Report →',
       download: false,
+      featured: false,
     },
     {
       icon: '📋',
@@ -78,6 +84,7 @@ export default function ProWelcomePage() {
       href: '/downloads/bridge-planner-pro-v3.xlsx',
       cta: 'Download v3 ↓',
       download: true,
+      featured: false,
     },
   ]
 
@@ -165,8 +172,15 @@ export default function ProWelcomePage() {
         {/* Tool grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           {PRO_TOOLS.map(tool => (
-            <div key={tool.title} className="bg-ink rounded-xl p-5 flex items-start gap-4 border border-gold/20">
-              <div className="text-2xl flex-shrink-0">{tool.icon}</div>
+            <div key={tool.title} className="bg-ink rounded-xl p-5 flex items-start gap-4 border border-gold/20" style={{ position: 'relative' }}>
+              {tool.featured && (
+                <div className="absolute top-0 left-0 right-0 flex justify-center">
+                  <div className="font-mono text-[8px] tracking-widest uppercase bg-gold text-black px-3 py-0.5 rounded-b-lg">
+                    ⭐ Most Members Start Here
+                  </div>
+                </div>
+              )}
+              <div className="text-2xl flex-shrink-0" style={{ marginTop: tool.featured ? 16 : 0 }}>{tool.icon}</div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1 flex-wrap">
                   <span className="font-syne font-semibold text-white text-[14px]">{tool.title}</span>
