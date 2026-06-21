@@ -187,7 +187,7 @@ export default function TaxableBrokerageGapCalculator() {
             <div style={{ fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)', marginBottom: 12 }}>Ways to Close the Gap</div>
             <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 10 }}>
 
-              {result.yearsToCoast !== -1 && annualContrib > 0 && (
+              {result.yearsToClose !== -1 && annualContrib > 0 && (
                 <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
                   <span style={{ color: COLORS.teal, flexShrink: 0, fontSize: 14 }}>①</span>
                   <div>
