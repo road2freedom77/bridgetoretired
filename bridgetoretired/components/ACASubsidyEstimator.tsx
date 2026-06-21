@@ -60,6 +60,13 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   )
 }
 
+const PRO_FEATURES = [
+  { icon: '🛡️', label: 'Bridge Risk Score™', sub: 'Grade your plan in 60 seconds' },
+  { icon: '📉', label: 'Sequence-of-Returns Stress Tester', sub: '2000, 2008, worst-case crashes' },
+  { icon: '🖥️', label: 'Online Retirement Planner', sub: 'Save up to 5 scenarios' },
+  { icon: '📄', label: 'PDF Report Export', sub: 'ACA costs + 30-yr plan, CPA-ready' },
+]
+
 export default function ACASubsidyEstimator() {
   const { user } = useUser()
   const isPro = (user?.publicMetadata as any)?.isPro === true
@@ -186,18 +193,36 @@ export default function ACASubsidyEstimator() {
           </p>
         </div>
 
-        {/* Pro upsell — hidden for Pro users */}
+        {/* Next step */}
+        <div style={{ background: 'rgba(45,212,191,0.06)', border: '1px solid rgba(45,212,191,0.15)', borderLeft: `3px solid ${COLORS.teal}`, borderRadius: 8, padding: '14px 16px', marginBottom: 16 }}>
+          <div style={{ fontSize: 10, color: COLORS.teal, fontWeight: 600, marginBottom: 6, letterSpacing: 1 }}>🌉 NEXT STEP</div>
+          <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', margin: '0 0 10px', lineHeight: 1.7 }}>
+            ACA costs are a major bridge year expense. Build them into your full retirement plan.
+          </p>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' as const }}>
+            <a href="/tools/bridge-health-check" style={{ fontSize: 10, color: COLORS.teal, border: `1px solid ${COLORS.teal}40`, padding: '5px 12px', borderRadius: 5, textDecoration: 'none', fontWeight: 600 }}>Check Bridge Health →</a>
+            <a href="/tools/roth-conversion-ladder-calculator" style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.1)', padding: '5px 12px', borderRadius: 5, textDecoration: 'none' }}>Manage MAGI with Roth Ladder →</a>
+            <a href="/tools/fire-number-calculator" style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.1)', padding: '5px 12px', borderRadius: 5, textDecoration: 'none' }}>FIRE Number →</a>
+          </div>
+        </div>
+
+        {/* Pro upsell */}
         {!isPro && (
-          <div style={{ background: 'linear-gradient(135deg, rgba(232,184,75,0.06) 0%, rgba(232,184,75,0.02) 100%)', border: '1px solid rgba(232,184,75,0.2)', borderLeft: '3px solid #E8B84B', borderRadius: 12, padding: '20px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 20 }}>
-            <div>
-              <div style={{ fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: COLORS.gold, marginBottom: 6 }}>⚡ Take it further with Pro</div>
-              <div style={{ fontSize: 14, fontFamily: 'Georgia, serif', fontWeight: 700, color: '#fff', marginBottom: 6 }}>Export your full retirement plan with healthcare costs included.</div>
-              <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', lineHeight: 1.6, maxWidth: 420 }}>
-                The Pro PDF Report includes your ACA cost projection, bridge funding analysis, and 30-year withdrawal plan in one shareable document.
-              </div>
+          <div style={{ background: 'linear-gradient(135deg, rgba(232,184,75,0.06) 0%, rgba(232,184,75,0.02) 100%)', border: '1px solid rgba(232,184,75,0.2)', borderLeft: '3px solid #E8B84B', borderRadius: 12, padding: '20px 24px' }}>
+            <div style={{ fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: COLORS.gold, marginBottom: 10 }}>⚡ BridgeToRetired Pro — $9/mo</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8, marginBottom: 16 }}>
+              {PRO_FEATURES.map(({ icon, label, sub }) => (
+                <div key={label} style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+                  <span style={{ fontSize: 14, flexShrink: 0 }}>{icon}</span>
+                  <div>
+                    <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.7)', fontWeight: 600 }}>{label}</div>
+                    <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)' }}>{sub}</div>
+                  </div>
+                </div>
+              ))}
             </div>
-            <Link href="/pricing" style={{ background: COLORS.gold, color: '#0D1420', fontFamily: 'Georgia, serif', fontWeight: 700, fontSize: 12, padding: '10px 20px', borderRadius: 8, textDecoration: 'none', whiteSpace: 'nowrap' as const, flexShrink: 0 }}>
-              Get Pro →
+            <Link href="/pricing" style={{ background: COLORS.gold, color: '#0D1420', fontFamily: 'Georgia, serif', fontWeight: 700, fontSize: 12, padding: '10px 24px', borderRadius: 8, textDecoration: 'none', display: 'inline-block' }}>
+              See Pro Plans →
             </Link>
           </div>
         )}
