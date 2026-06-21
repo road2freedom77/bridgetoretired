@@ -11,89 +11,19 @@ const COLORS = {
 }
 
 const JOURNEY = [
-  {
-    step: 1,
-    title: 'Find your retirement age',
-    desc: 'Start here. See when you can realistically retire based on your current savings rate.',
-    href: '/tools/early-retirement-age-calculator',
-    color: COLORS.teal,
-    icon: '🎯',
-  },
-  {
-    step: 2,
-    title: 'Check your bridge health',
-    desc: 'Score your plan 0–100. See your biggest weakness and what to fix first.',
-    href: '/tools/bridge-health-check',
-    color: COLORS.gold,
-    icon: '🌉',
-  },
-  {
-    step: 3,
-    title: 'Optimize your withdrawals',
-    desc: 'Learn the exact account order to minimize taxes and maximize lifetime wealth.',
-    href: '/tools/withdrawal-order-optimizer',
-    color: COLORS.purple,
-    icon: '📊',
-  },
-  {
-    step: 4,
-    title: 'Model your Roth ladder',
-    desc: 'Build a tax-free bridge from 401k conversions. See every rung unlock.',
-    href: '/tools/roth-conversion-ladder-calculator',
-    color: COLORS.sage,
-    icon: '🪜',
-  },
+  { step: 1, title: 'Find your retirement age', desc: 'Start here. See when you can realistically retire based on your current savings rate.', href: '/tools/early-retirement-age-calculator', color: COLORS.teal, icon: '🎯' },
+  { step: 2, title: 'Check your bridge health', desc: 'Score your plan 0–100. See your biggest weakness and what to fix first.', href: '/tools/bridge-health-check', color: COLORS.gold, icon: '🌉' },
+  { step: 3, title: 'Optimize your withdrawals', desc: 'Learn the exact account order to minimize taxes and maximize lifetime wealth.', href: '/tools/withdrawal-order-optimizer', color: COLORS.purple, icon: '📊' },
+  { step: 4, title: 'Model your Roth ladder', desc: 'Build a tax-free bridge from 401k conversions. See every rung unlock.', href: '/tools/roth-conversion-ladder-calculator', color: COLORS.sage, icon: '🪜' },
 ]
 
 const FEATURED_TOOLS = [
-  {
-    href: '/tools/early-retirement-age-calculator',
-    icon: '🎯',
-    title: 'Early Retirement Age Calculator',
-    desc: 'When could you realistically retire?',
-    tag: 'Start here',
-    tagColor: COLORS.teal,
-  },
-  {
-    href: '/tools/bridge-health-check',
-    icon: '🌉',
-    title: 'Bridge Health Check',
-    desc: 'See where your plan is strongest and weakest.',
-    tag: 'Most popular',
-    tagColor: COLORS.gold,
-  },
-  {
-    href: '/tools/withdrawal-order-optimizer',
-    icon: '📊',
-    title: 'Withdrawal Order Optimizer',
-    desc: 'Reduce taxes and make your money last longer.',
-    tag: null,
-    tagColor: null,
-  },
-  {
-    href: '/tools/fire-number-calculator',
-    icon: '🔢',
-    title: 'FIRE Number Calculator',
-    desc: 'Your real number — bridge years, healthcare, SS included.',
-    tag: null,
-    tagColor: null,
-  },
-  {
-    href: '/tools/coast-fire-calculator',
-    icon: '🏄',
-    title: 'CoastFIRE Calculator',
-    desc: 'Can you stop saving today and still retire on time?',
-    tag: null,
-    tagColor: null,
-  },
-  {
-    href: '/tools/retirement-readiness-score',
-    icon: '📋',
-    title: 'Retirement Readiness Score',
-    desc: 'One score across 5 dimensions. See exactly what to fix.',
-    tag: 'New',
-    tagColor: COLORS.purple,
-  },
+  { href: '/tools/early-retirement-age-calculator', icon: '🎯', title: 'Early Retirement Age Calculator', desc: 'When could you realistically retire?', tag: 'Start here', tagColor: COLORS.teal },
+  { href: '/tools/bridge-health-check', icon: '🌉', title: 'Bridge Health Check', desc: 'See where your plan is strongest and weakest.', tag: 'Most popular', tagColor: COLORS.gold },
+  { href: '/tools/withdrawal-order-optimizer', icon: '📊', title: 'Withdrawal Order Optimizer', desc: 'Reduce taxes and make your money last longer.', tag: null, tagColor: null },
+  { href: '/tools/fire-number-calculator', icon: '🔢', title: 'FIRE Number Calculator', desc: 'Your real number — bridge years, healthcare, SS included.', tag: null, tagColor: null },
+  { href: '/tools/coast-fire-calculator', icon: '🏄', title: 'CoastFIRE Calculator', desc: 'Can you stop saving today and still retire on time?', tag: null, tagColor: null },
+  { href: '/tools/retirement-readiness-score', icon: '📋', title: 'Retirement Readiness Score', desc: 'One score across 5 dimensions. See exactly what to fix.', tag: 'New', tagColor: COLORS.purple },
 ]
 
 const ALL_TOOLS = [
@@ -109,7 +39,7 @@ const ALL_TOOLS = [
 
 const PRO_FEATURES = [
   { icon: '🖥️', label: 'Online Retirement Planner', desc: 'Save up to 5 scenarios' },
-  { icon: '🛡️', label: 'Bridge Risk Score™', desc: 'Signature feature — grade your plan in 60s' },
+  { icon: '🛡️', label: 'Bridge Risk Score™', desc: 'Grade your plan in 60 seconds' },
   { icon: '📉', label: 'Sequence-of-Returns Stress Tester', desc: '2000, 2008, worst-case crashes' },
   { icon: '📄', label: 'PDF Report Export', desc: 'CPA-ready, shareable' },
 ]
@@ -119,7 +49,6 @@ export default function FreeHome() {
   const firstName = user?.firstName || null
   const [recentTools, setRecentTools] = useState<string[]>([])
 
-  // Read recently visited tools from localStorage
   useEffect(() => {
     try {
       const stored = localStorage.getItem('btr_recent_tools')
@@ -127,15 +56,18 @@ export default function FreeHome() {
     } catch {}
   }, [])
 
+  const recentFlat = [
+    ...FEATURED_TOOLS.map(t => ({ href: t.href, label: t.title, icon: t.icon })),
+    ...ALL_TOOLS.map(t => ({ href: t.href, label: t.label, icon: '🧮' })),
+  ]
+
   return (
     <div className="min-h-screen bg-black" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
 
       {/* Welcome hero */}
       <div style={{ background: COLORS.navy, borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '48px 24px 40px' }}>
         <div style={{ maxWidth: 900, margin: '0 auto' }}>
-          <div style={{ fontSize: 9, letterSpacing: 3, textTransform: 'uppercase', color: COLORS.gold, marginBottom: 12 }}>
-            BridgeToRetired
-          </div>
+          <div style={{ fontSize: 9, letterSpacing: 3, textTransform: 'uppercase', color: COLORS.gold, marginBottom: 12 }}>BridgeToRetired</div>
           <h1 style={{ fontFamily: 'Georgia, serif', fontSize: 'clamp(26px, 4vw, 42px)', fontWeight: 700, color: '#fff', marginBottom: 12, lineHeight: 1.2 }}>
             {firstName ? `Welcome, ${firstName}.` : 'Welcome to BridgeToRetired.'}
           </h1>
@@ -157,18 +89,13 @@ export default function FreeHome() {
 
       <div style={{ maxWidth: 900, margin: '0 auto', padding: '40px 24px' }}>
 
-        {/* Recently used — only if localStorage has data */}
+        {/* Recently used */}
         {recentTools.length > 0 && (
           <div style={{ marginBottom: 40 }}>
             <div style={{ fontSize: 9, letterSpacing: 3, textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)', marginBottom: 14 }}>Recently Used</div>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' as const }}>
               {recentTools.slice(0, 4).map(href => {
-              {recentTools.slice(0, 4).map(href => {
-                const flat = [
-                  ...FEATURED_TOOLS.map(t => ({ href: t.href, label: t.title, icon: t.icon })),
-                  ...ALL_TOOLS.map(t => ({ href: t.href, label: t.label, icon: '🧮' })),
-                ]
-                const tool = flat.find(t => t.href === href)
+                const tool = recentFlat.find(t => t.href === href)
                 if (!tool) return null
                 return (
                   <Link key={href} href={href}
@@ -177,6 +104,7 @@ export default function FreeHome() {
                   </Link>
                 )
               })}
+            </div>
           </div>
         )}
 
@@ -185,11 +113,10 @@ export default function FreeHome() {
           <div style={{ fontSize: 9, letterSpacing: 3, textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)', marginBottom: 6 }}>Recommended Path</div>
           <div style={{ fontFamily: 'Georgia, serif', fontSize: 20, fontWeight: 700, color: '#fff', marginBottom: 6 }}>New to early retirement?</div>
           <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', marginBottom: 24, lineHeight: 1.6 }}>Follow this sequence to go from zero to a complete bridge plan.</p>
-
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
-            {JOURNEY.map((j, i) => (
+            {JOURNEY.map(j => (
               <Link key={j.step} href={j.href} style={{ textDecoration: 'none' }}>
-                <div style={{ background: COLORS.ink, borderRadius: 12, padding: '16px', border: `1px solid ${j.color}20`, borderTop: `3px solid ${j.color}`, height: '100%', transition: 'border-color 0.15s', cursor: 'pointer' }}>
+                <div style={{ background: COLORS.ink, borderRadius: 12, padding: '16px', border: `1px solid ${j.color}20`, borderTop: `3px solid ${j.color}`, height: '100%', cursor: 'pointer' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
                     <div style={{ width: 22, height: 22, borderRadius: '50%', background: j.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: COLORS.dark, flexShrink: 0 }}>{j.step}</div>
                     <span style={{ fontSize: 16 }}>{j.icon}</span>
@@ -206,7 +133,6 @@ export default function FreeHome() {
         <div style={{ marginBottom: 48 }}>
           <div style={{ fontSize: 9, letterSpacing: 3, textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)', marginBottom: 6 }}>Featured Calculators</div>
           <div style={{ fontFamily: 'Georgia, serif', fontSize: 20, fontWeight: 700, color: '#fff', marginBottom: 20 }}>Free tools — no account required</div>
-
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 12 }}>
             {FEATURED_TOOLS.map(tool => (
               <Link key={tool.href} href={tool.href} style={{ textDecoration: 'none' }}>
@@ -215,8 +141,8 @@ export default function FreeHome() {
                   <div style={{ flex: 1 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' as const }}>
                       <span style={{ fontSize: 12, fontWeight: 700, color: '#fff' }}>{tool.title}</span>
-                      {tool.tag && (
-                        <span style={{ fontSize: 8, letterSpacing: 1, textTransform: 'uppercase', color: tool.tagColor!, border: `1px solid ${tool.tagColor}40`, padding: '1px 6px', borderRadius: 4 }}>{tool.tag}</span>
+                      {tool.tag && tool.tagColor && (
+                        <span style={{ fontSize: 8, letterSpacing: 1, textTransform: 'uppercase' as const, color: tool.tagColor, border: `1px solid ${tool.tagColor}40`, padding: '1px 6px', borderRadius: 4 }}>{tool.tag}</span>
                       )}
                     </div>
                     <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', lineHeight: 1.5 }}>{tool.desc}</div>
@@ -241,7 +167,7 @@ export default function FreeHome() {
         </div>
 
         {/* Pro preview */}
-        <div style={{ background: 'linear-gradient(135deg, rgba(232,184,75,0.08) 0%, rgba(232,184,75,0.02) 100%)', border: '1px solid rgba(232,184,75,0.2)', borderRadius: 16, padding: '28px 28px' }}>
+        <div style={{ background: 'linear-gradient(135deg, rgba(232,184,75,0.08) 0%, rgba(232,184,75,0.02) 100%)', border: '1px solid rgba(232,184,75,0.2)', borderRadius: 16, padding: '28px' }}>
           <div style={{ fontSize: 9, letterSpacing: 3, textTransform: 'uppercase', color: COLORS.gold, marginBottom: 8 }}>BridgeToRetired Pro — $9/mo</div>
           <div style={{ fontFamily: 'Georgia, serif', fontSize: 20, fontWeight: 700, color: '#fff', marginBottom: 6 }}>Ready to go deeper?</div>
           <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginBottom: 20, lineHeight: 1.7, maxWidth: 480 }}>
