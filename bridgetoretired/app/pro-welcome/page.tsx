@@ -25,9 +25,20 @@ export default function ProWelcomePage() {
       title: 'Bridge Risk Score™',
       badge: 'Signature Feature',
       badgeColor: 'gold',
-      description: 'Get your personalized retirement bridge score in 60 seconds.',
+      description: 'Get your personalized retirement bridge score in 60 seconds. See every risk factor ranked by severity with a prioritized fix plan.',
       href: '/bridge-risk-score',
       cta: 'Calculate My Score →',
+      primary: true,
+      download: false,
+    },
+    {
+      icon: '📉',
+      title: 'Sequence-of-Returns Stress Tester',
+      badge: 'Pro',
+      badgeColor: 'gold',
+      description: 'See how your bridge survives the 2000 dot-com crash, 2008 financial crisis, and worst historical sequences. Know before you quit.',
+      href: '/sequence-tester',
+      cta: 'Run Stress Test →',
       primary: true,
       download: false,
     },
@@ -39,17 +50,6 @@ export default function ProWelcomePage() {
       description: 'All variables unlocked. Three SS scenarios side-by-side. Full withdrawal order control. Dynamic spending mode.',
       href: '/advanced-calculator',
       cta: 'Open Calculator →',
-      primary: true,
-      download: false,
-    },
-    {
-      icon: '📉',
-      title: 'Sequence-of-Returns Stress Tester',
-      badge: 'Pro',
-      badgeColor: 'gold',
-      description: 'See how your bridge survives the 2000 dot-com crash, 2008 financial crisis, and worst historical sequences.',
-      href: '/sequence-tester',
-      cta: 'Run Stress Test →',
       primary: true,
       download: false,
     },
@@ -88,6 +88,13 @@ export default function ProWelcomePage() {
     },
   ]
 
+  const ONBOARDING_STEPS = [
+    { step: 1, label: 'Build your first scenario', sub: 'Online Planner', href: '/pro/planner', color: '#E8B84B' },
+    { step: 2, label: 'Calculate your Bridge Risk Score™', sub: 'Signature feature', href: '/bridge-risk-score', color: '#2DD4BF' },
+    { step: 3, label: 'Run the 2008 crash stress test', sub: 'Stress Tester', href: '/sequence-tester', color: '#A78BFA' },
+    { step: 4, label: 'Export your report', sub: 'PDF Export', href: '/pdf-report', color: '#4ADE80' },
+  ]
+
   return (
     <div className="min-h-screen bg-black relative overflow-hidden">
       <div className="absolute inset-0 bg-grid opacity-100" />
@@ -96,23 +103,48 @@ export default function ProWelcomePage() {
       <div className="relative z-10 max-w-4xl mx-auto px-5 py-20">
 
         {/* Header */}
-        <div className="text-center mb-14">
+        <div className="text-center mb-10">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-sage/10 border border-sage/25 mb-8">
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#4ADE80" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="20 6 9 17 4 12" />
             </svg>
           </div>
           <div className="font-mono text-[9px] tracking-widest uppercase text-gold mb-4">Pro Membership Active</div>
-          <h1 className="font-syne font-bold text-[clamp(28px,4vw,46px)] tracking-tight text-white leading-tight mb-5">
+          <h1 className="font-syne font-bold text-[clamp(28px,4vw,46px)] tracking-tight text-white leading-tight mb-4">
             {firstName ? (
               <>Welcome back, <span className="text-gold">{firstName}.</span></>
             ) : (
-              <>Welcome to<br /><span className="text-gold">BridgeToRetired Pro.</span></>
+              <>Your Retirement<br /><span className="text-gold">Command Center.</span></>
             )}
           </h1>
           <p className="text-white/50 text-[15px] leading-relaxed max-w-lg mx-auto">
-            Your membership is active. Here's everything you have access to — bookmark this page.
+            Build scenarios, score your risk, stress-test crashes, and compare retirement dates — everything updates from one plan.
           </p>
+        </div>
+
+        {/* ── Onboarding block ── */}
+        <div className="bg-ink border border-gold/20 rounded-2xl p-6 mb-8">
+          <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
+            <div>
+              <div className="font-mono text-[9px] tracking-widest uppercase text-gold mb-1">Start Here</div>
+              <div className="font-syne font-bold text-white text-[18px]">New to Pro? Follow this sequence.</div>
+            </div>
+            <div className="font-mono text-[10px] text-white/25">Estimated time: 5 minutes</div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {ONBOARDING_STEPS.map(s => (
+              <Link key={s.step} href={s.href} className="group flex items-center gap-4 bg-black/30 rounded-xl px-4 py-3 border border-white/[0.06] hover:border-gold/20 transition-all no-underline">
+                <div className="w-8 h-8 rounded-full flex items-center justify-center text-[13px] font-bold shrink-0" style={{ background: s.color, color: '#0D1420' }}>
+                  {s.step}
+                </div>
+                <div>
+                  <div className="font-syne font-semibold text-white text-[13px] group-hover:text-gold transition-colors">{s.label}</div>
+                  <div className="font-mono text-[10px] text-white/30">{s.sub}</div>
+                </div>
+                <div className="ml-auto font-mono text-[11px] text-white/20 group-hover:text-gold/60 transition-colors">→</div>
+              </Link>
+            ))}
+          </div>
         </div>
 
         {/* What's new banner */}
@@ -182,9 +214,9 @@ export default function ProWelcomePage() {
           <div className="bg-ink border border-white/[0.07] rounded-xl p-5 flex items-start gap-4">
             <div className="text-2xl flex-shrink-0">🧮</div>
             <div className="flex-1">
-              <div className="font-syne font-semibold text-white text-[14px] mb-1">All 10 Interactive Calculators</div>
+              <div className="font-syne font-semibold text-white text-[14px] mb-1">All Free Calculators</div>
               <p className="text-white/40 text-[12px] leading-relaxed mb-3">
-                Roth ladder, ACA subsidies, SEPP/72(t), Social Security break-even, and more.
+                Roth ladder, ACA subsidies, SEPP/72(t), Social Security break-even, taxable gap, and more.
               </p>
               <Link
                 href="/tools"
