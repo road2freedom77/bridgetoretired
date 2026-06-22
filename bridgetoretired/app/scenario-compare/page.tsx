@@ -424,11 +424,14 @@ export default function ScenarioComparePage() {
             <h1 className="font-syne font-bold text-[clamp(24px,3vw,40px)] text-white tracking-tight mb-2">
               Save &amp; Compare Scenarios
             </h1>
-            <p className="text-white/45 text-[14px]">
-              Up to 5 named scenarios. Saved to your account — access from any device.
+            <p className="text-white/45 text-[14px]">Up to 5 named scenarios. Your numbers are saved automatically.</p>
+          </div>
+          <div className="w-full mt-4 bg-[#E8B84B]/10 border border-[#E8B84B]/20 rounded-xl px-5 py-3 flex items-center gap-3">
+            <span className="text-[#E8B84B] text-lg flex-shrink-0">☁️</span>
+            <p className="text-white/50 text-[12px] leading-relaxed">
+              Scenarios are saved to <strong className="text-white/70">your account</strong> — available on any device, any browser. No bookmarking required.
             </p>
           </div>
-
           <div className="flex items-center gap-3">
             {scenarios.length < MAX_SCENARIOS && !showNew && (
               <button
