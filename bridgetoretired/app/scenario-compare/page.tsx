@@ -37,6 +37,7 @@ interface Scenario {
   color:     string
   inputs:    ScenarioInputs
   createdAt: string
+  isActive:  boolean
 }
 
 interface ProjectionResult {
@@ -161,10 +162,6 @@ function runProjection(inputs: ScenarioInputs): ProjectionResult {
 
 // ─── Scoring & Recommendation ─────────────────────────────────────────────────
 
-/**
- * Score each scenario 0–100. Higher = better overall retirement outcome.
- * Weights: funded(30) + portfolio-at-90(25) + withdrawal-rate(20) + bridge-years(15) + retire-age(10)
- */
 function scoreScenarios(
   scenarios: Scenario[],
   results: (ProjectionResult & { id: string })[]
@@ -172,8 +169,6 @@ function scoreScenarios(
   if (scenarios.length < 2) return scenarios.map((s, i) => ({ id: s.id, score: 100, rank: i + 1 }))
 
   const get = (id: string) => results.find(r => r.id === id)!
-
-  // Normalize helpers
   const vals = (fn: (s: Scenario) => number) => scenarios.map(fn)
   const norm = (v: number, min: number, max: number, invert = false) => {
     if (max === min) return 50
@@ -181,38 +176,26 @@ function scoreScenarios(
     return invert ? 100 - pct : pct
   }
 
-  const at90s       = vals(s => get(s.id).totalAt90)
-  const wrs         = vals(s => get(s.id).withdrawalRate)
-  const bridges     = vals(s => get(s.id).bridgeYears)
-  const retireAges  = vals(s => s.inputs.retireAge)
+  const at90s      = vals(s => get(s.id).totalAt90)
+  const wrs        = vals(s => get(s.id).withdrawalRate)
+  const bridges    = vals(s => get(s.id).bridgeYears)
+  const retireAges = vals(s => s.inputs.retireAge)
 
   const scored = scenarios.map((s, i) => {
     const r = get(s.id)
-    const fundedScore   = r.funded ? 100 : Math.max(0, ((r.depleted ?? 90) - s.inputs.retireAge) / (90 - s.inputs.retireAge) * 100)
-    const at90Score     = norm(at90s[i],      Math.min(...at90s),      Math.max(...at90s))
-    const wrScore       = norm(wrs[i],         Math.min(...wrs),         Math.max(...wrs),   true)
-    const bridgeScore   = norm(bridges[i],     Math.min(...bridges),     Math.max(...bridges), true)
-    const retireScore   = norm(retireAges[i],  Math.min(...retireAges),  Math.max(...retireAges), true)
-
-    const total = (
-      fundedScore  * 0.30 +
-      at90Score    * 0.25 +
-      wrScore      * 0.20 +
-      bridgeScore  * 0.15 +
-      retireScore  * 0.10
-    )
+    const fundedScore  = r.funded ? 100 : Math.max(0, ((r.depleted ?? 90) - s.inputs.retireAge) / (90 - s.inputs.retireAge) * 100)
+    const at90Score    = norm(at90s[i],     Math.min(...at90s),     Math.max(...at90s))
+    const wrScore      = norm(wrs[i],        Math.min(...wrs),        Math.max(...wrs),   true)
+    const bridgeScore  = norm(bridges[i],    Math.min(...bridges),    Math.max(...bridges), true)
+    const retireScore  = norm(retireAges[i], Math.min(...retireAges), Math.max(...retireAges), true)
+    const total = fundedScore * 0.30 + at90Score * 0.25 + wrScore * 0.20 + bridgeScore * 0.15 + retireScore * 0.10
     return { id: s.id, score: Math.round(total) }
   })
 
-  // Rank by score descending
   const sorted = [...scored].sort((a, b) => b.score - a.score)
-  return scored.map(s => ({
-    ...s,
-    rank: sorted.findIndex(x => x.id === s.id) + 1,
-  }))
+  return scored.map(s => ({ ...s, rank: sorted.findIndex(x => x.id === s.id) + 1 }))
 }
 
-/** Generate human-readable "why" bullets for the recommended scenario */
 function buildWhyReasons(
   winner: Scenario,
   others: Scenario[],
@@ -221,40 +204,34 @@ function buildWhyReasons(
 ): string[] {
   const reasons: string[] = []
 
-  // Funded
   if (winnerResult.funded) {
     const unfundedCount = otherResults.filter(r => !r.funded).length
     if (unfundedCount > 0)
       reasons.push(`Fully funded to age 90 — ${unfundedCount} other scenario${unfundedCount > 1 ? 's' : ''} deplete${unfundedCount === 1 ? 's' : ''} early`)
   }
 
-  // Portfolio at 90 vs best alternative
   const bestOtherAt90 = Math.max(...otherResults.map(r => r.totalAt90))
   const at90Diff = winnerResult.totalAt90 - bestOtherAt90
   if (at90Diff > 10_000)
     reasons.push(`$${Math.round(at90Diff / 1000)}k more remaining at age 90 vs. next best scenario`)
 
-  // Withdrawal rate
   const bestOtherWR = Math.min(...otherResults.map(r => r.withdrawalRate))
   const wrDiff = bestOtherWR - winnerResult.withdrawalRate
   if (wrDiff > 0.2)
     reasons.push(`Lower withdrawal rate (${winnerResult.withdrawalRate.toFixed(1)}% vs ${bestOtherWR.toFixed(1)}%) — less portfolio stress`)
 
-  // Bridge years
   const avgOtherBridge = otherResults.reduce((a, r) => a + r.bridgeYears, 0) / otherResults.length
   const bridgeDiff = avgOtherBridge - winnerResult.bridgeYears
   if (bridgeDiff > 0.5)
     reasons.push(`Shorter bridge period (${winnerResult.bridgeYears.toFixed(1)} yrs) — less reliance on taxable accounts`)
 
-  // Retire age trade-off
-  const latestOtherRetire = Math.max(...others.map(s => s.inputs.retireAge))
   const earliestOtherRetire = Math.min(...others.map(s => s.inputs.retireAge))
+  const latestOtherRetire   = Math.max(...others.map(s => s.inputs.retireAge))
   if (winner.inputs.retireAge > earliestOtherRetire && winner.inputs.retireAge <= latestOtherRetire) {
     const diff = winner.inputs.retireAge - earliestOtherRetire
     reasons.push(`Only ${diff} additional year${diff > 1 ? 's' : ''} of work vs. earliest scenario — strong longevity payoff`)
   }
 
-  // Fallback
   if (reasons.length === 0)
     reasons.push('Best overall balance of portfolio longevity, withdrawal rate, and bridge risk')
 
@@ -273,9 +250,7 @@ const MEDALS = ['🥇', '🥈', '🥉']
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
-function InputRow({
-  label, field, min, max, step, isCurrency = false, inputs, onChange,
-}: {
+function InputRow({ label, field, min, max, step, isCurrency = false, inputs, onChange }: {
   label: string; field: keyof ScenarioInputs; min: number; max: number; step: number
   isCurrency?: boolean; inputs: ScenarioInputs; onChange: (k: keyof ScenarioInputs) => (e: any) => void
 }) {
@@ -295,9 +270,7 @@ function InputRow({
   )
 }
 
-function ScenarioForm({
-  inputs, onChange,
-}: {
+function ScenarioForm({ inputs, onChange }: {
   inputs: ScenarioInputs; onChange: (k: keyof ScenarioInputs) => (e: any) => void
 }) {
   return (
@@ -327,14 +300,15 @@ export default function ScenarioComparePage() {
   const { user, isLoaded } = useUser()
   const isPro = user?.publicMetadata?.isPro === true
 
-  const [scenarios, setScenarios] = useState<Scenario[]>([])
-  const [loading,   setLoading]   = useState(true)
-  const [editing,   setEditing]   = useState<string | null>(null)
-  const [saving,    setSaving]    = useState(false)
-  const [newName,   setNewName]   = useState('')
-  const [draft,     setDraft]     = useState<ScenarioInputs>(DEFAULT_INPUTS)
-  const [showNew,   setShowNew]   = useState(false)
-  const [toast,     setToast]     = useState<{ msg: string; type: 'success' | 'error' } | null>(null)
+  const [scenarios,   setScenarios]   = useState<Scenario[]>([])
+  const [loading,     setLoading]     = useState(true)
+  const [editing,     setEditing]     = useState<string | null>(null)
+  const [saving,      setSaving]      = useState(false)
+  const [activating,  setActivating]  = useState<string | null>(null)
+  const [newName,     setNewName]     = useState('')
+  const [draft,       setDraft]       = useState<ScenarioInputs>(DEFAULT_INPUTS)
+  const [showNew,     setShowNew]     = useState(false)
+  const [toast,       setToast]       = useState<{ msg: string; type: 'success' | 'error' } | null>(null)
 
   const showToast = (msg: string, type: 'success' | 'error' = 'success') => {
     setToast({ msg, type })
@@ -355,6 +329,7 @@ export default function ScenarioComparePage() {
           color:     colorForIndex(idx),
           inputs:    fromDbRow(s),
           createdAt: new Date(s.created_at).toLocaleDateString(),
+          isActive:  s.is_active === true,
         }))
         setScenarios(mapped)
       }
@@ -442,21 +417,39 @@ export default function ScenarioComparePage() {
     }
   }
 
+  const activateScenario = async (id: string) => {
+    setActivating(id)
+    try {
+      const res  = await fetch(`/api/planner/scenarios/${id}/activate`, { method: 'PATCH' })
+      const data = await res.json()
+      if (data.error) {
+        showToast(data.error, 'error')
+      } else {
+        // Optimistic update — mark active locally
+        setScenarios(prev => prev.map(s => ({ ...s, isActive: s.id === id })))
+        showToast('✓ Active scenario set')
+      }
+    } catch {
+      showToast('Failed to set active', 'error')
+    } finally {
+      setActivating(null)
+    }
+  }
+
   const setDraftField = (key: keyof ScenarioInputs) => (e: React.ChangeEvent<HTMLInputElement>) => {
     setDraft(prev => ({ ...prev, [key]: parseFloat(e.target.value) || 0 }))
   }
 
   const results = scenarios.map(s => ({ id: s.id, ...runProjection(s.inputs) }))
 
-  // Scoring — only meaningful with 2+ scenarios
   const scores: ScoredScenario[] = scenarios.length >= 2
     ? scoreScenarios(scenarios, results)
     : []
 
-  const rankOf    = (id: string) => scores.find(s => s.id === id)?.rank ?? 99
-  const scoreOf   = (id: string) => scores.find(s => s.id === id)?.score ?? 0
-  const winnerId  = scores.find(s => s.rank === 1)?.id ?? null
-  const winner    = scenarios.find(s => s.id === winnerId) ?? null
+  const rankOf   = (id: string) => scores.find(s => s.id === id)?.rank ?? 99
+  const scoreOf  = (id: string) => scores.find(s => s.id === id)?.score ?? 0
+  const winnerId = scores.find(s => s.rank === 1)?.id ?? null
+  const winner   = scenarios.find(s => s.id === winnerId) ?? null
   const winnerRes = results.find(r => r.id === winnerId) ?? null
 
   // ── Gates ──────────────────────────────────────────────────────────────────
@@ -641,11 +634,11 @@ export default function ScenarioComparePage() {
         {/* Comparison table + recommendation + cards */}
         {scenarios.length > 0 && (
           <>
-            {/* ── Recommendation block (2+ scenarios only) ── */}
+            {/* Recommendation block */}
             {winner && winnerRes && scenarios.length >= 2 && (() => {
-              const others      = scenarios.filter(s => s.id !== winner.id)
-              const otherRes    = results.filter(r => r.id !== winner.id)
-              const reasons     = buildWhyReasons(winner, others, winnerRes, otherRes)
+              const others   = scenarios.filter(s => s.id !== winner.id)
+              const otherRes = results.filter(r => r.id !== winner.id)
+              const reasons  = buildWhyReasons(winner, others, winnerRes, otherRes)
               return (
                 <div className="bg-[#0D1420] border border-[#E8B84B]/25 rounded-2xl overflow-hidden">
                   <div className="bg-[#E8B84B]/8 px-6 py-4 flex items-center gap-3 border-b border-[#E8B84B]/15">
@@ -654,9 +647,22 @@ export default function ScenarioComparePage() {
                       <div className="font-mono text-[9px] tracking-widest uppercase text-[#E8B84B]">Recommended Scenario</div>
                       <div className="font-syne font-bold text-white text-[18px] mt-0.5">{winner.name}</div>
                     </div>
-                    <div className="ml-auto text-right">
-                      <div className="font-mono text-[9px] tracking-widest uppercase text-white/30 mb-0.5">Overall Score</div>
-                      <div className="font-mono font-bold text-[22px]" style={{ color: winner.color }}>{scoreOf(winner.id)}</div>
+                    <div className="ml-auto flex items-center gap-4">
+                      <div className="text-right">
+                        <div className="font-mono text-[9px] tracking-widest uppercase text-white/30 mb-0.5">Overall Score</div>
+                        <div className="font-mono font-bold text-[22px]" style={{ color: winner.color }}>{scoreOf(winner.id)}</div>
+                      </div>
+                      <button
+                        onClick={() => activateScenario(winner.id)}
+                        disabled={activating === winner.id || winner.isActive}
+                        className="font-mono text-[9px] tracking-widest uppercase px-3 py-2 rounded-lg border transition-all disabled:opacity-50"
+                        style={winner.isActive
+                          ? { borderColor: SAGE, color: SAGE, background: `${SAGE}10` }
+                          : { borderColor: `${GOLD}60`, color: GOLD, background: `${GOLD}10` }
+                        }
+                      >
+                        {winner.isActive ? '✓ Active' : activating === winner.id ? 'Setting...' : 'Set Active'}
+                      </button>
                     </div>
                   </div>
                   <div className="px-6 py-4">
@@ -674,7 +680,7 @@ export default function ScenarioComparePage() {
               )
             })()}
 
-            {/* ── Comparison table ── */}
+            {/* Comparison table */}
             <div className="bg-[#141C28] border border-white/[0.07] rounded-2xl overflow-hidden">
               <div className="bg-[#1E2A3A] px-6 py-4 flex items-center justify-between">
                 <span className="font-mono text-[9px] tracking-widest uppercase text-white/40">Side-by-Side Comparison</span>
@@ -690,8 +696,8 @@ export default function ScenarioComparePage() {
                     <tr className="border-b border-white/[0.07]">
                       <th className="px-5 py-3 text-left font-mono text-[9px] tracking-widest uppercase text-white/30 w-36">Metric</th>
                       {scenarios.map(s => {
-                        const rank = rankOf(s.id)
-                        const medal = rank <= 3 && scenarios.length >= 2 ? MEDALS[rank - 1] : null
+                        const rank    = rankOf(s.id)
+                        const medal   = rank <= 3 && scenarios.length >= 2 ? MEDALS[rank - 1] : null
                         const isWinner = rank === 1 && scenarios.length >= 2
                         return (
                           <th key={s.id} className="px-4 py-3 text-center">
@@ -701,16 +707,14 @@ export default function ScenarioComparePage() {
                               ) : (
                                 <div className="w-2.5 h-2.5 rounded-full" style={{ background: s.color }} />
                               )}
-                              <span
-                                className="font-syne font-semibold text-[12px] leading-tight"
-                                style={{ color: isWinner ? s.color : 'white' }}
-                              >
+                              <span className="font-syne font-semibold text-[12px] leading-tight" style={{ color: isWinner ? s.color : 'white' }}>
                                 {s.name}
                               </span>
+                              {s.isActive && (
+                                <span className="font-mono text-[7px] tracking-widest uppercase text-[#4ADE80]">⭐ active</span>
+                              )}
                               {scenarios.length >= 2 && (
-                                <span className="font-mono text-[8px] text-white/25">
-                                  score {scoreOf(s.id)}
-                                </span>
+                                <span className="font-mono text-[8px] text-white/25">score {scoreOf(s.id)}</span>
                               )}
                             </div>
                           </th>
@@ -731,17 +735,15 @@ export default function ScenarioComparePage() {
                       { label: 'Funded to 90?',   getValue: (s: Scenario) => results.find(r=>r.id===s.id)?.funded ?? false,     format: (v: any) => v ? '✓ Yes' : '✗ No', isGoodHigh: true  },
                     ].map((row, ri) => {
                       const values = scenarios.map(s => row.getValue(s))
-                      const best   = row.isGoodHigh
-                        ? Math.max(...values.map(Number))
-                        : Math.min(...values.map(Number))
+                      const best   = row.isGoodHigh ? Math.max(...values.map(Number)) : Math.min(...values.map(Number))
                       return (
                         <tr key={row.label} className={`border-b border-white/[0.04] ${ri % 2 === 0 ? '' : 'bg-white/[0.015]'}`}>
                           <td className="px-5 py-3 text-white/40 text-[11px]">{row.label}</td>
                           {scenarios.map(s => {
-                            const val    = row.getValue(s)
-                            const isBest = Number(val) === Number(best) && scenarios.length > 1
-                            const isBool = typeof val === 'boolean'
-                            const rank   = rankOf(s.id)
+                            const val      = row.getValue(s)
+                            const isBest   = Number(val) === Number(best) && scenarios.length > 1
+                            const isBool   = typeof val === 'boolean'
+                            const rank     = rankOf(s.id)
                             const cellColor = isBool
                               ? (val ? SAGE : RED)
                               : isBest
@@ -764,7 +766,7 @@ export default function ScenarioComparePage() {
               </div>
             </div>
 
-            {/* ── Scenario cards ── */}
+            {/* Scenario cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
               {scenarios.map(s => {
                 const r         = results.find(res => res.id === s.id)!
@@ -776,10 +778,7 @@ export default function ScenarioComparePage() {
                   <div
                     key={s.id}
                     className="bg-[#141C28] border border-white/[0.07] rounded-xl overflow-hidden"
-                    style={{
-                      borderTopColor: isWinner ? GOLD : s.color,
-                      borderTopWidth: isWinner ? 3 : 2,
-                    }}
+                    style={{ borderTopColor: s.isActive ? SAGE : isWinner ? GOLD : s.color, borderTopWidth: s.isActive || isWinner ? 3 : 2 }}
                   >
                     <div className="px-5 py-4 flex items-center justify-between">
                       <div className="flex items-center gap-2.5">
@@ -788,20 +787,34 @@ export default function ScenarioComparePage() {
                           : <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: s.color }} />
                         }
                         <div>
-                          <span
-                            className="font-syne font-semibold text-[14px] leading-tight"
-                            style={{ color: isWinner ? GOLD : 'white' }}
-                          >
+                          <span className="font-syne font-semibold text-[14px] leading-tight" style={{ color: isWinner ? GOLD : 'white' }}>
                             {s.name}
                           </span>
-                          {isWinner && (
+                          {s.isActive && (
+                            <div className="font-mono text-[8px] tracking-widest uppercase text-[#4ADE80] mt-0.5">
+                              ⭐ Active Scenario
+                            </div>
+                          )}
+                          {isWinner && !s.isActive && (
                             <div className="font-mono text-[8px] tracking-widest uppercase text-[#E8B84B]/60 mt-0.5">
-                              ⭐ Recommended
+                              Recommended
                             </div>
                           )}
                         </div>
                       </div>
                       <div className="flex gap-2">
+                        {/* Set Active button */}
+                        <button
+                          onClick={() => activateScenario(s.id)}
+                          disabled={activating === s.id || s.isActive}
+                          className="font-mono text-[8px] tracking-widest uppercase px-2.5 py-1 rounded border transition-colors"
+                          style={s.isActive
+                            ? { borderColor: SAGE, color: SAGE }
+                            : { borderColor: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.3)' }
+                          }
+                        >
+                          {s.isActive ? '✓ Active' : activating === s.id ? '...' : 'Set Active'}
+                        </button>
                         <button
                           onClick={() => setEditing(isEditing ? null : s.id)}
                           className="font-mono text-[8px] tracking-widest uppercase px-2.5 py-1 rounded border transition-colors"
@@ -879,14 +892,9 @@ export default function ScenarioComparePage() {
             <div className="bg-[#2DD4BF]/5 border border-[#2DD4BF]/20 rounded-xl px-6 py-4 flex items-center justify-between gap-4 flex-wrap">
               <div>
                 <div className="font-mono text-[9px] tracking-widest uppercase text-[#2DD4BF] mb-1">Recommended Next</div>
-                <p className="text-white/60 text-[13px]">
-                  Compare is complete. Now stress-test your strongest scenario.
-                </p>
+                <p className="text-white/60 text-[13px]">Compare is complete. Now stress-test your strongest scenario.</p>
               </div>
-              <Link
-                href="/sequence-tester"
-                className="shrink-0 bg-[#2DD4BF]/10 border border-[#2DD4BF]/30 text-[#2DD4BF] font-mono text-[10px] tracking-widest uppercase px-5 py-2.5 rounded-lg hover:bg-[#2DD4BF]/20 transition-colors"
-              >
+              <Link href="/sequence-tester" className="shrink-0 bg-[#2DD4BF]/10 border border-[#2DD4BF]/30 text-[#2DD4BF] font-mono text-[10px] tracking-widest uppercase px-5 py-2.5 rounded-lg hover:bg-[#2DD4BF]/20 transition-colors">
                 Run Stress Test →
               </Link>
             </div>
