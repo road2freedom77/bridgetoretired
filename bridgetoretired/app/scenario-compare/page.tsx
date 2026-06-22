@@ -357,6 +357,8 @@ export default function ScenarioComparePage() {
           email:  user.primaryEmailAddress?.emailAddress,
           inputs: toPlannerInputs(draft),
           results: {
+            withdrawalRate: runProjection(draft).withdrawalRate,
+            portfolioAt90:  runProjection(draft).totalAt90,
             riskFlags: {
               _source:        'compare',
               partTimeYears:  draft.partTimeYears,
@@ -403,6 +405,8 @@ export default function ScenarioComparePage() {
           name,
           inputs: toPlannerInputs(inputs),
           results: {
+            withdrawalRate: runProjection(inputs).withdrawalRate,
+            portfolioAt90:  runProjection(inputs).totalAt90,
             riskFlags: {
               _source:        'compare',
               partTimeYears:  inputs.partTimeYears,
