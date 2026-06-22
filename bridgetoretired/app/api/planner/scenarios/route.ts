@@ -34,18 +34,26 @@ export async function POST(req: NextRequest) {
     const body = await req.json()
     const { name, inputs, results } = body
 
+    // Detect source: compare page sets results.riskFlags._source = 'compare'
+    const source = results?.riskFlags?._source ?? 'planner'
+
     // Ensure user exists in our users table
     await supabaseAdmin
       .from('users')
       .upsert({ id: userId, email: body.email || '' }, { onConflict: 'id' })
 
-    // Check scenario limit (5 per user)
-    const { count } = await supabaseAdmin
+    // Count only scenarios from the same source (planner vs compare each get 5 slots)
+    const { data: existing } = await supabaseAdmin
       .from('scenarios')
-      .select('*', { count: 'exact', head: true })
+      .select('id, risk_flags')
       .eq('user_id', userId)
 
-    if (count && count >= 5) {
+    const sourceCount = (existing ?? []).filter((s: any) => {
+      const src = s.risk_flags?._source ?? 'planner'
+      return src === source
+    }).length
+
+    if (sourceCount >= 5) {
       return NextResponse.json(
         { error: 'Maximum 5 scenarios allowed. Delete one to save a new scenario.' },
         { status: 400 }
@@ -79,7 +87,7 @@ export async function POST(req: NextRequest) {
         monte_carlo_success: results?.monteCarlo?.successRate,
         withdrawal_rate: results?.withdrawalRate,
         portfolio_at_90: results?.portfolioAt90,
-        risk_flags: results?.riskFlags,
+        risk_flags: results?.riskFlags ?? null,
       })
       .select()
       .single()
