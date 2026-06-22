@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import type { Metadata } from 'next'
 import ContactForm from '@/components/ContactForm'
 
@@ -23,7 +24,9 @@ export default function ContactPage() {
       </div>
 
       <div className="max-w-2xl mx-auto px-5 py-12">
-        <ContactForm />
+        <Suspense fallback={null}>
+          <ContactForm />
+        </Suspense>
       </div>
     </div>
   )
