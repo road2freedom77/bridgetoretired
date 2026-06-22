@@ -216,7 +216,7 @@ export default function ProWelcomePage() {
         </div>
 
         {/* Bottom row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           <div className="bg-ink border border-white/[0.07] rounded-xl p-5 flex items-start gap-4">
             <div className="text-2xl flex-shrink-0">🧮</div>
             <div className="flex-1">
@@ -237,25 +237,24 @@ export default function ProWelcomePage() {
               <p className="text-white/40 text-[12px] leading-relaxed mb-3">
                 Questions about your numbers? Reach out directly — we respond same day.
               </p>
-              <a href="mailto:support@bridgetoretired.com"
+              <Link href="/contact?subject=Pro+Support"
                 className="inline-block border border-white/[0.12] text-white/60 font-mono text-[10px] tracking-widest uppercase px-4 py-2 rounded hover:border-white/25 hover:text-white/80 transition-all">
-                Email Support →
-              </a>
+                Contact Support →
+              </Link>
             </div>
           </div>
         </div>
 
         {/* Manage subscription */}
-        <div className="bg-ink border border-white/[0.06] rounded-xl p-5">
+        <div className="bg-ink border border-white/[0.06] rounded-xl p-5 mb-8">
           <div className="font-mono text-[9px] tracking-widest uppercase text-white/25 mb-2">Manage Subscription</div>
-          <p className="text-white/35 text-[12px] leading-relaxed">
-            To cancel or update billing, reply to your Stripe receipt email or contact us at{' '}
-            <a href="mailto:support@bridgetoretired.com"
-              className="text-white/50 hover:text-white/70 transition-colors underline underline-offset-2">
-              support@bridgetoretired.com
-            </a>{' '}
-            — we'll handle it same day.
+          <p className="text-white/35 text-[12px] leading-relaxed mb-3">
+            Need to cancel, pause, or update your billing? Send us a message and we'll handle it same day.
           </p>
+          <Link href="/contact?subject=Manage+Subscription"
+            className="inline-block border border-white/[0.12] text-white/60 font-mono text-[10px] tracking-widest uppercase px-4 py-2 rounded hover:border-white/25 hover:text-white/80 transition-all">
+            Manage Subscription →
+          </Link>
         </div>
       </div>
 

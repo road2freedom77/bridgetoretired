@@ -1,25 +1,54 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
+import { useUser } from '@clerk/nextjs'
 
 const SUBJECTS = [
   'General Question',
   'Calculator Error',
   'Feature Request',
-  'Pro Subscription',
+  'Pro Support',
+  'Manage Subscription',
   'Partnership / Media',
   'Other',
 ]
 
+// Map URL ?subject= values to dropdown options
+const SUBJECT_MAP: Record<string, string> = {
+  'Pro+Support':          'Pro Support',
+  'Pro Support':          'Pro Support',
+  'Manage+Subscription':  'Manage Subscription',
+  'Manage Subscription':  'Manage Subscription',
+}
+
 type Status = 'idle' | 'sending' | 'success' | 'error'
 
 export default function ContactForm() {
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
-  const [subject, setSubject] = useState('')
-  const [message, setMessage] = useState('')
-  const [status, setStatus] = useState<Status>('idle')
+  const { user, isLoaded } = useUser()
+  const searchParams = useSearchParams()
+
+  const [name,     setName]     = useState('')
+  const [email,    setEmail]    = useState('')
+  const [subject,  setSubject]  = useState('')
+  const [message,  setMessage]  = useState('')
+  const [status,   setStatus]   = useState<Status>('idle')
   const [errorMsg, setErrorMsg] = useState('')
+
+  // Pre-fill from Clerk once loaded
+  useEffect(() => {
+    if (!isLoaded || !user) return
+    if (!name)  setName(user.fullName || user.firstName || '')
+    if (!email) setEmail(user.primaryEmailAddress?.emailAddress || '')
+  }, [isLoaded, user])
+
+  // Pre-select subject from URL param
+  useEffect(() => {
+    const raw = searchParams.get('subject')
+    if (!raw) return
+    const mapped = SUBJECT_MAP[raw] ?? SUBJECT_MAP[decodeURIComponent(raw)] ?? null
+    if (mapped && SUBJECTS.includes(mapped)) setSubject(mapped)
+  }, [searchParams])
 
   async function handleSubmit() {
     if (!name || !email || !subject || !message) {
