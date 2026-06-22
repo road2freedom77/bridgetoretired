@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { ProNav } from '@/components/ProNav'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine, BarChart, Bar } from 'recharts'
+import ActiveScenarioBar from '@/components/ActiveScenarioBar'
 
 const GOLD = '#E8B84B'
 const SAGE = '#4ADE80'
@@ -247,6 +248,8 @@ export default function AdvancedCalculatorPage() {
           </div>
         </div>
       </div>
+
+      <ActiveScenarioBar />
 
       <div className="bg-[#0D1420] border-b border-white/[0.06] px-5 py-10">
         <div className="max-w-7xl mx-auto">

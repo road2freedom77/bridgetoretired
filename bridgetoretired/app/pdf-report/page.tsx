@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { ProNav } from '@/components/ProNav'
+import ActiveScenarioBar from '@/components/ActiveScenarioBar'
 
 interface ReportInputs {
   name:           string
@@ -379,6 +380,8 @@ export default function PDFReportPage() {
           </div>
         </div>
       </div>
+
+      <ActiveScenarioBar />
 
       <div className="bg-[#0D1420] border-b border-white/[0.06] px-5 py-10">
         <div className="max-w-6xl mx-auto">

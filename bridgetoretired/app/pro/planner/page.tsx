@@ -6,6 +6,7 @@ import { PlannerInputs, PlannerResults } from '@/lib/planner/types'
 import InputsForm from '@/components/planner/InputsForm'
 import ResultsDashboard from '@/components/planner/ResultsDashboard'
 import ScenarioSidebar from '@/components/planner/ScenarioSidebar'
+import ActiveScenarioBar from '@/components/ActiveScenarioBar'
 import Link from 'next/link'
 
 const DEFAULT_INPUTS: PlannerInputs = {
@@ -172,18 +173,16 @@ export default function PlannerPage() {
 
   return (
     <div className="min-h-screen bg-black">
-      {/* Header */}
+      {/* Sticky header */}
       <div className="bg-navy border-b border-white/[0.06] sticky top-0 z-40">
         <div className="max-w-[1400px] mx-auto px-5 h-14 flex items-center justify-between">
 
-          {/* Left: nav + scenario name */}
           <div className="flex items-center gap-4">
             <Link href="/" className="font-mono text-[10px] tracking-widest uppercase text-white/30 hover:text-gold transition-colors shrink-0">
               ← Home
             </Link>
             <span className="text-white/10">|</span>
 
-            {/* Editable scenario name */}
             {editingName ? (
               <input
                 autoFocus
@@ -217,7 +216,6 @@ export default function PlannerPage() {
             )}
           </div>
 
-          {/* Right: save button */}
           <div className="flex items-center gap-3">
             {saveMsg && (
               <span className={`font-mono text-[10px] ${saveMsgType === 'success' ? 'text-green-400' : 'text-red-400'}`}>
@@ -235,6 +233,9 @@ export default function PlannerPage() {
         </div>
       </div>
 
+      {/* Active Scenario Bar */}
+      <ActiveScenarioBar />
+
       <div className="max-w-[1400px] mx-auto flex">
         {/* Scenario sidebar */}
         <ScenarioSidebar
@@ -245,12 +246,9 @@ export default function PlannerPage() {
 
         {/* Main content */}
         <div className="flex-1 min-w-0 p-6 flex gap-6">
-          {/* Inputs */}
           <div className="w-72 shrink-0">
             <InputsForm inputs={inputs} onChange={setInputs} />
           </div>
-
-          {/* Results */}
           <div className="flex-1 min-w-0">
             {results ? (
               <ResultsDashboard results={results} inputs={inputs} />

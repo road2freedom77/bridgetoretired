@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { ProNav } from '@/components/ProNav'
+import ActiveScenarioBar from '@/components/ActiveScenarioBar'
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, ReferenceLine, Legend, BarChart, Bar
@@ -16,7 +17,6 @@ const BLUE   = '#60A5FA'
 const PURPLE = '#A78BFA'
 const ORANGE = '#FB923C'
 
-// Historical market sequences (annual real returns)
 const HISTORICAL_SEQUENCES: Record<string, { label: string; color: string; returns: number[] }> = {
   normal: {
     label: 'Average Market',
@@ -72,36 +72,30 @@ interface Inputs {
 }
 
 interface YearResult {
-  year:      number
-  portfolio: number
-  return:    number
-  spending:  number
-  income:    number
-  withdrawal:number
+  year:       number
+  portfolio:  number
+  return:     number
+  spending:   number
+  income:     number
+  withdrawal: number
 }
 
 interface ScenarioResult {
-  key:       string
-  label:     string
-  color:     string
-  data:      YearResult[]
-  depleted:  number | null
-  finalValue:number
-  lowestYear:number
-  lowestVal: number
+  key:        string
+  label:      string
+  color:      string
+  data:       YearResult[]
+  depleted:   number | null
+  finalValue: number
+  lowestYear: number
+  lowestVal:  number
 }
 
-function runScenario(
-  inputs: Inputs,
-  returns: number[],
-  label: string,
-  color: string,
-  key: string
-): ScenarioResult {
-  let portfolio = inputs.portfolio
+function runScenario(inputs: Inputs, returns: number[], label: string, color: string, key: string): ScenarioResult {
+  let portfolio  = inputs.portfolio
   let cashBuffer = inputs.cashBuffer
   let depleted: number | null = null
-  let lowestVal = Infinity
+  let lowestVal  = Infinity
   let lowestYear = 0
   const data: YearResult[] = []
 
@@ -114,16 +108,13 @@ function runScenario(
     if (year >= inputs.ssStartYear) income += inputs.ssIncome * Math.pow(1 + inputs.inflationRate / 100, i)
     const needed  = Math.max(0, spending - income)
 
-    // Use cash buffer first in bad years
-    let fromCash  = 0
     let withdrawal = 0
     if (ret < 0 && cashBuffer > 0) {
-      fromCash   = Math.min(needed, cashBuffer)
-      cashBuffer = Math.max(0, cashBuffer - fromCash)
-      withdrawal = Math.max(0, needed - fromCash)
+      const fromCash = Math.min(needed, cashBuffer)
+      cashBuffer     = Math.max(0, cashBuffer - fromCash)
+      withdrawal     = Math.max(0, needed - fromCash)
     } else {
       withdrawal = needed
-      // Refill cash buffer in good years
       if (ret > 0.10 && cashBuffer < inputs.cashBuffer) {
         const refill = Math.min(inputs.cashBuffer - cashBuffer, portfolio * 0.05)
         cashBuffer  += refill
@@ -208,18 +199,11 @@ export default function SequenceTesterPage() {
 
   const activeResults = results.filter(r => activeScenarios.includes(r.key))
 
-  // Merged chart data
   const portfolioChartData = Array.from({ length: 30 }, (_, i) => {
     const obj: Record<string, any> = { year: i + 1 }
     activeResults.forEach(r => { obj[r.label] = r.data[i]?.portfolio ?? 0 })
     return obj
   })
-
-  const returnsChartData = Object.entries(HISTORICAL_SEQUENCES)
-    .filter(([k]) => activeScenarios.includes(k))
-    .flatMap(([key, seq]) =>
-      seq.returns.slice(0, 15).map((ret, i) => ({ year: i + 1, key, label: seq.label, return: Math.round(ret * 1000) / 10 }))
-    )
 
   const returnsBarData = Array.from({ length: 15 }, (_, i) => {
     const obj: Record<string, any> = { year: i + 1 }
@@ -230,7 +214,6 @@ export default function SequenceTesterPage() {
   })
 
   const detailResult = results.find(r => r.key === selectedDetail) ?? results[0]
-
   const withdrawalRate = inputs.annualSpending / inputs.portfolio * 100
 
   return (
@@ -248,6 +231,8 @@ export default function SequenceTesterPage() {
         </div>
       </div>
 
+      <ActiveScenarioBar />
+
       <div className="bg-[#0D1420] border-b border-white/[0.06] px-5 py-10">
         <div className="max-w-7xl mx-auto">
           <div className="font-mono text-[9px] tracking-widest uppercase text-[#E8B84B] mb-3">Stress Tester</div>
@@ -262,11 +247,7 @@ export default function SequenceTesterPage() {
 
       <div className="max-w-7xl mx-auto px-5 py-8">
         <div className="grid grid-cols-1 xl:grid-cols-[320px_1fr] gap-8">
-
-          {/* LEFT — Inputs */}
           <div className="space-y-5">
-
-            {/* Key stats */}
             <div className="grid grid-cols-2 gap-3">
               {[
                 { label: 'Withdrawal Rate', value: withdrawalRate.toFixed(1) + '%', color: withdrawalRate > 4 ? RED : SAGE },
@@ -279,7 +260,6 @@ export default function SequenceTesterPage() {
               ))}
             </div>
 
-            {/* Inputs */}
             {[
               {
                 title: 'Your Portfolio',
@@ -329,7 +309,6 @@ export default function SequenceTesterPage() {
               </div>
             ))}
 
-            {/* Scenario toggles */}
             <div className="bg-[#141C28] border border-white/[0.07] rounded-xl overflow-hidden">
               <div className="bg-[#1E2A3A] px-4 py-2.5">
                 <span className="font-mono text-[9px] tracking-widest uppercase text-white/40">Scenarios to Show</span>
@@ -342,9 +321,7 @@ export default function SequenceTesterPage() {
                     <button
                       key={key}
                       onClick={() => toggleScenario(key)}
-                      className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg border transition-all ${
-                        isActive ? 'border-opacity-50' : 'border-white/[0.06] opacity-40'
-                      }`}
+                      className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg border transition-all ${isActive ? 'border-opacity-50' : 'border-white/[0.06] opacity-40'}`}
                       style={isActive ? { borderColor: seq.color + '50', background: seq.color + '10' } : {}}
                     >
                       <div className="flex items-center gap-2.5">
@@ -365,10 +342,7 @@ export default function SequenceTesterPage() {
             </div>
           </div>
 
-          {/* RIGHT — Charts */}
           <div className="space-y-6">
-
-            {/* Summary scorecards */}
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {activeResults.map(r => (
                 <div
@@ -393,7 +367,6 @@ export default function SequenceTesterPage() {
               ))}
             </div>
 
-            {/* Chart tabs */}
             <div className="bg-[#141C28] border border-white/[0.07] rounded-xl overflow-hidden">
               <div className="flex border-b border-white/[0.07]">
                 {[
@@ -414,7 +387,6 @@ export default function SequenceTesterPage() {
                   </button>
                 ))}
               </div>
-
               <div className="p-5">
                 {activeTab === 'portfolio' && (
                   <>
@@ -423,7 +395,7 @@ export default function SequenceTesterPage() {
                     <ResponsiveContainer width="100%" height={340}>
                       <LineChart data={portfolioChartData} margin={{ top: 5, right: 10, bottom: 5, left: 10 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                        <XAxis dataKey="year" stroke="#ffffff30" tick={{ fontSize: 10, fill: '#ffffff50' }} label={{ value: 'Year', position: 'insideBottom', offset: -2, fill: '#ffffff30', fontSize: 10 }} />
+                        <XAxis dataKey="year" stroke="#ffffff30" tick={{ fontSize: 10, fill: '#ffffff50' }} />
                         <YAxis stroke="#ffffff30" tick={{ fontSize: 10, fill: '#ffffff50' }} tickFormatter={v => fmt(v)} />
                         <Tooltip content={<CustomTooltip />} />
                         <Legend wrapperStyle={{ fontSize: 10, color: '#ffffff60' }} />
@@ -435,7 +407,6 @@ export default function SequenceTesterPage() {
                     </ResponsiveContainer>
                   </>
                 )}
-
                 {activeTab === 'returns' && (
                   <>
                     <div className="font-mono text-[9px] tracking-widest uppercase text-white/30 mb-1">Annual Return Sequence (First 15 Years)</div>
@@ -443,7 +414,7 @@ export default function SequenceTesterPage() {
                     <ResponsiveContainer width="100%" height={340}>
                       <BarChart data={returnsBarData} margin={{ top: 5, right: 10, bottom: 5, left: 10 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                        <XAxis dataKey="year" stroke="#ffffff30" tick={{ fontSize: 10, fill: '#ffffff50' }} label={{ value: 'Year', position: 'insideBottom', offset: -2, fill: '#ffffff30', fontSize: 10 }} />
+                        <XAxis dataKey="year" stroke="#ffffff30" tick={{ fontSize: 10, fill: '#ffffff50' }} />
                         <YAxis stroke="#ffffff30" tick={{ fontSize: 10, fill: '#ffffff50' }} tickFormatter={v => v + '%'} />
                         <Tooltip content={<CustomTooltip />} />
                         <Legend wrapperStyle={{ fontSize: 10, color: '#ffffff60' }} />
@@ -455,7 +426,6 @@ export default function SequenceTesterPage() {
                     </ResponsiveContainer>
                   </>
                 )}
-
                 {activeTab === 'table' && (
                   <>
                     <div className="flex gap-3 mb-4 flex-wrap">
@@ -501,7 +471,6 @@ export default function SequenceTesterPage() {
               </div>
             </div>
 
-            {/* Key insight box */}
             <div className="bg-[#141C28] border border-[#E8B84B]/15 rounded-xl p-6">
               <div className="font-mono text-[9px] tracking-widest uppercase text-[#E8B84B] mb-3">Why This Matters for Your Bridge</div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-[12px] text-white/50 leading-relaxed">
@@ -519,8 +488,7 @@ export default function SequenceTesterPage() {
                 </div>
               </div>
             </div>
-
-           </div>
+          </div>
         </div>
       </div>
       <ProNav />

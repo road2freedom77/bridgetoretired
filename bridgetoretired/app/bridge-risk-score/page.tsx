@@ -1,5 +1,6 @@
 import BridgeRiskScore from '@/components/BridgeRiskScore'
 import { ProNav } from '@/components/ProNav'
+import ActiveScenarioBar from '@/components/ActiveScenarioBar'
 import Link from 'next/link'
 import type { Metadata } from 'next'
 
@@ -12,6 +13,7 @@ export const metadata: Metadata = {
 export default function BridgeRiskScorePage() {
   return (
     <div className="min-h-screen bg-black">
+      <ActiveScenarioBar />
       <div className="bg-navy border-b border-white/[0.06]">
         <div className="max-w-3xl mx-auto px-5 pt-14 pb-10">
           <div className="flex items-center gap-4 mb-8">
