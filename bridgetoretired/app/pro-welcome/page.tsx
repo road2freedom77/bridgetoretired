@@ -313,4 +313,4 @@ function Stat({ label, value, color }: { label: string; value: string; color: st
       <div className="font-syne font-bold text-[18px]" style={{ color }}>{value}</div>
     </div>
   )
-}
+} 
