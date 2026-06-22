@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import Link from 'next/link'
 import { useUser } from '@clerk/nextjs'
 
@@ -34,23 +34,57 @@ interface ScoreFactor {
 }
 
 export default function BridgeRiskScore() {
-  const { user } = useUser()
+  const { user, isLoaded } = useUser()
   const isPro = (user?.publicMetadata as any)?.isPro === true
 
-  const [retireAge, setRetireAge] = useState(52)
-  const [portfolio, setPortfolio] = useState(1_100_000)
-  const [annualSpend, setAnnualSpend] = useState(55_000)
+  const [retireAge,  setRetireAge]  = useState(52)
+  const [portfolio,  setPortfolio]  = useState(1_100_000)
+  const [annualSpend,setAnnualSpend]= useState(55_000)
   const [cashBuffer, setCashBuffer] = useState(1)
   const [stockAlloc, setStockAlloc] = useState(65)
-  const [ssAge, setSsAge] = useState(67)
-  const [taxable, setTaxable] = useState(350_000)
+  const [ssAge,      setSsAge]      = useState(67)
+  const [taxable,    setTaxable]    = useState(350_000)
+  const [loadedFrom, setLoadedFrom] = useState<string | null>(null)
+
+  // ── Pre-load from active scenario ─────────────────────────────────────────
+  useEffect(() => {
+    if (!isLoaded || !isPro) return
+
+    const fetchActive = async () => {
+      try {
+        const res  = await fetch('/api/planner/scenarios')
+        const data = await res.json()
+        if (!data.scenarios) return
+
+        const active = data.scenarios.find((s: any) => s.is_active === true)
+        if (!active) return
+
+        const totalPortfolio = (active.taxable ?? 0) + (active.k401 ?? 0)
+        const spending       = active.spending ?? 55_000
+        const cashYears      = active.cash > 0 ? Math.round((active.cash / spending) * 2) / 2 : 1
+
+        setRetireAge(active.retire_age ?? 52)
+        setPortfolio(totalPortfolio > 0 ? totalPortfolio : 1_100_000)
+        setAnnualSpend(spending)
+        setTaxable(active.taxable ?? 350_000)
+        setSsAge(active.ss_age ?? 67)
+        setCashBuffer(Math.min(5, Math.max(0, cashYears)))
+        // stockAlloc — no column, keep default
+        setLoadedFrom(active.name)
+      } catch (err) {
+        console.error('Failed to load active scenario', err)
+      }
+    }
+
+    fetchActive()
+  }, [isLoaded, isPro])
 
   const score = useMemo(() => {
-    const bridgeYears = Math.max(0, 59.5 - retireAge)
+    const bridgeYears    = Math.max(0, 59.5 - retireAge)
     const withdrawalRate = (annualSpend / portfolio) * 100
-    const bridgeNeeded = annualSpend * bridgeYears
+    const bridgeNeeded   = annualSpend * bridgeYears
     const taxableCoverage = taxable / bridgeNeeded
-    const ssGap = ssAge - retireAge
+    const ssGap          = ssAge - retireAge
 
     let wdPts = 0
     if (withdrawalRate <= 3.0) wdPts = 25
@@ -163,15 +197,26 @@ export default function BridgeRiskScore() {
               Is your early retirement bridge structurally sound? Find out in 60 seconds.
             </p>
           </div>
-          {isPro && (
-            <div style={{
-              background: 'rgba(74,222,128,0.08)', border: '1px solid rgba(74,222,128,0.2)',
-              borderRadius: 8, padding: '6px 12px', textAlign: 'center' as const,
-            }}>
-              <div style={{ fontSize: 8, letterSpacing: 2, textTransform: 'uppercase', color: COLORS.sage, marginBottom: 2 }}>Pro</div>
-              <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)' }}>Full Access</div>
-            </div>
-          )}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            {loadedFrom && (
+              <div style={{
+                background: 'rgba(232,184,75,0.06)', border: '1px solid rgba(232,184,75,0.2)',
+                borderRadius: 8, padding: '6px 12px', textAlign: 'center' as const,
+              }}>
+                <div style={{ fontSize: 8, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', marginBottom: 2 }}>Loaded from</div>
+                <div style={{ fontSize: 10, color: COLORS.gold, fontWeight: 600 }}>{loadedFrom}</div>
+              </div>
+            )}
+            {isPro && (
+              <div style={{
+                background: 'rgba(74,222,128,0.08)', border: '1px solid rgba(74,222,128,0.2)',
+                borderRadius: 8, padding: '6px 12px', textAlign: 'center' as const,
+              }}>
+                <div style={{ fontSize: 8, letterSpacing: 2, textTransform: 'uppercase', color: COLORS.sage, marginBottom: 2 }}>Pro</div>
+                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)' }}>Full Access</div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -182,13 +227,13 @@ export default function BridgeRiskScore() {
             <div style={{ fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', marginBottom: 14 }}>Your Situation</div>
             <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 12 }}>
               {[
-                { label: 'Retire Age', value: retireAge, set: setRetireAge, min: 40, max: 58, step: 1, fmt: (v: number) => `Age ${v}` },
-                { label: 'Portfolio Size', value: portfolio, set: setPortfolio, min: 200000, max: 5000000, step: 50000, fmt: formatDollars },
-                { label: 'Annual Spending', value: annualSpend, set: setAnnualSpend, min: 25000, max: 150000, step: 5000, fmt: formatDollars },
-                { label: 'Taxable Account', value: taxable, set: setTaxable, min: 0, max: 2000000, step: 25000, fmt: formatDollars },
-                { label: 'Cash Buffer (yrs)', value: cashBuffer, set: setCashBuffer, min: 0, max: 5, step: 0.5, fmt: (v: number) => `${v} yr${v !== 1 ? 's' : ''}` },
-                { label: 'Stock Allocation', value: stockAlloc, set: setStockAlloc, min: 20, max: 100, step: 5, fmt: (v: number) => `${v}%` },
-                { label: 'SS Claiming Age', value: ssAge, set: setSsAge, min: 62, max: 70, step: 1, fmt: (v: number) => `Age ${v}` },
+                { label: 'Retire Age',        value: retireAge,   set: setRetireAge,   min: 40, max: 58,      step: 1,     fmt: (v: number) => `Age ${v}` },
+                { label: 'Portfolio Size',    value: portfolio,   set: setPortfolio,   min: 200000, max: 5000000, step: 50000, fmt: formatDollars },
+                { label: 'Annual Spending',   value: annualSpend, set: setAnnualSpend, min: 25000, max: 150000, step: 5000,  fmt: formatDollars },
+                { label: 'Taxable Account',   value: taxable,     set: setTaxable,     min: 0, max: 2000000,   step: 25000, fmt: formatDollars },
+                { label: 'Cash Buffer (yrs)', value: cashBuffer,  set: setCashBuffer,  min: 0, max: 5,         step: 0.5,   fmt: (v: number) => `${v} yr${v !== 1 ? 's' : ''}` },
+                { label: 'Stock Allocation',  value: stockAlloc,  set: setStockAlloc,  min: 20, max: 100,      step: 5,     fmt: (v: number) => `${v}%` },
+                { label: 'SS Claiming Age',   value: ssAge,       set: setSsAge,       min: 62, max: 70,       step: 1,     fmt: (v: number) => `Age ${v}` },
               ].map(({ label, value, set, min, max, step, fmt }) => (
                 <div key={label} style={{ background: '#141C28', borderRadius: 8, padding: '10px 12px', border: '1px solid rgba(255,255,255,0.06)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
@@ -266,7 +311,7 @@ export default function BridgeRiskScore() {
           </div>
         )}
 
-        {/* Pro upsell — only show for non-Pro users */}
+        {/* Pro upsell */}
         {!isPro && (
           <div style={{
             marginTop: 16,
