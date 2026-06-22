@@ -5,8 +5,12 @@ import { useUser } from '@clerk/nextjs'
 import { ProNav } from '@/components/ProNav'
 
 export default function ProWelcomePage() {
-  const { user } = useUser()
-  const firstName = user?.firstName || null
+  const { user, isLoaded } = useUser()
+
+  const displayName = user?.firstName
+    || user?.username
+    || user?.primaryEmailAddress?.emailAddress?.split('@')[0]
+    || null
 
   const PRO_TOOLS = [
     {
@@ -111,8 +115,10 @@ export default function ProWelcomePage() {
           </div>
           <div className="font-mono text-[9px] tracking-widest uppercase text-gold mb-4">Pro Membership Active</div>
           <h1 className="font-syne font-bold text-[clamp(28px,4vw,46px)] tracking-tight text-white leading-tight mb-4">
-            {firstName ? (
-              <>Welcome back, <span className="text-gold">{firstName}.</span></>
+            {!isLoaded ? (
+              <>Your Retirement<br /><span className="text-gold">Command Center.</span></>
+            ) : displayName ? (
+              <>Welcome back, <span className="text-gold">{displayName}.</span></>
             ) : (
               <>Your Retirement<br /><span className="text-gold">Command Center.</span></>
             )}
