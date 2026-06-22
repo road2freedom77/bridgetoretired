@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useUser } from '@clerk/nextjs'
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 
 const COLORS = {
   gold: '#E8B84B', teal: '#2DD4BF', sage: '#4ADE80',
@@ -45,9 +46,18 @@ const PRO_FEATURES = [
 ]
 
 export default function FreeHome() {
-  const { user } = useUser()
+  const { user, isLoaded } = useUser()
+  const router = useRouter()
   const firstName = user?.firstName || null
+  const isPro = user?.publicMetadata?.isPro === true
   const [recentTools, setRecentTools] = useState<string[]>([])
+
+  // Redirect Pro users to their dashboard
+  useEffect(() => {
+    if (isLoaded && isPro) {
+      router.replace('/pro-welcome')
+    }
+  }, [isLoaded, isPro, router])
 
   useEffect(() => {
     try {
@@ -55,6 +65,15 @@ export default function FreeHome() {
       if (stored) setRecentTools(JSON.parse(stored))
     } catch {}
   }, [])
+
+  // Don't flash free content to Pro users while redirecting
+  if (isLoaded && isPro) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="font-mono text-[11px] tracking-widest uppercase text-white/30">Loading your dashboard...</div>
+      </div>
+    )
+  }
 
   const recentFlat = [
     ...FEATURED_TOOLS.map(t => ({ href: t.href, label: t.title, icon: t.icon })),
