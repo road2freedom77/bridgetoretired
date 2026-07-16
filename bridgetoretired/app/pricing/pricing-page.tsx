@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useState } from 'react'
 import { notFound } from 'next/navigation'
 import { FLAGS } from '@/lib/feature-flags'
+import { trackProCtaClick, trackBeginCheckout } from '@/lib/analytics'
 
 const FREE_FEATURES = [
   'All 10 interactive retirement calculators',
@@ -89,6 +90,11 @@ export default function PricingPage() {
   const ANNUAL_LINK  = 'https://buy.stripe.com/aFa6oH9abeu5dz69jwfYY02'
   const paymentLink  = billing === 'monthly' ? MONTHLY_LINK : ANNUAL_LINK
 
+  function handleCheckout(location: string) {
+    trackProCtaClick(location)
+    trackBeginCheckout(billing, billing === 'monthly' ? monthlyPrice : annualPrice)
+  }
+
   return (
     <div className="min-h-screen bg-black">
       <div className="border-b border-white/[0.06] bg-navy">
@@ -109,10 +115,10 @@ export default function PricingPage() {
             <span className="font-mono text-[9px] tracking-widest uppercase text-gold">Pro v3 Now Available</span>
           </div>
           <h1 className="font-syne font-bold text-[clamp(32px,5vw,56px)] tracking-tight text-white leading-tight mb-5">
-            Build a bridge that<br /><span className="text-gold">actually holds.</span>
+            Stress-Test Your Early Retirement<br /><span className="text-gold">Before You Quit.</span>
           </h1>
           <p className="text-white/50 text-[16px] leading-relaxed max-w-xl mx-auto mb-8">
-            The free tools show you the math. Pro tells you if your plan survives the real world — crashes, healthcare costs, and 40 years of inflation. Now with online scenario planner, Monte Carlo simulation, and 9-sheet Excel system.
+            Free tools show the math. Pro tells you whether your plan survives market crashes, inflation, and decades of withdrawals.
           </p>
           <div className="inline-flex items-center bg-ink border border-white/[0.08] rounded-full p-1 mb-2">
             <button onClick={() => setBilling('monthly')} className={`px-5 py-2 rounded-full font-mono text-[10px] tracking-wider uppercase transition-all ${billing === 'monthly' ? 'bg-gold text-black font-bold' : 'text-white/40 hover:text-white/60'}`}>Monthly</button>
@@ -161,7 +167,12 @@ export default function PricingPage() {
                 <div className="text-sage text-[11px] font-mono mb-1">${annualPrice} billed annually — save ${(monthlyPrice * 12) - annualPrice}/yr</div>
               )}
               <div className="text-white/25 text-[11px] font-mono mb-6">cancel anytime</div>
-              <a href={paymentLink} className="block text-center bg-gold text-black font-syne font-semibold text-[13px] tracking-wide py-3.5 rounded-lg hover:opacity-90 transition-opacity mb-7">
+              {/* ── TRACKED CHECKOUT BUTTON ── */}
+              <a
+                href={paymentLink}
+                onClick={() => handleCheckout('pricing-hero')}
+                className="block text-center bg-gold text-black font-syne font-semibold text-[13px] tracking-wide py-3.5 rounded-lg hover:opacity-90 transition-opacity mb-7"
+              >
                 Start Pro — ${billing === 'monthly' ? `${monthlyPrice}/mo` : `${annualPrice}/yr`} →
               </a>
               <div className="space-y-3">
@@ -184,7 +195,7 @@ export default function PricingPage() {
           </div>
         </div>
 
-        {/* Online Planner callout — NEW */}
+        {/* Online Planner callout */}
         <div className="bg-ink border border-gold/20 rounded-2xl overflow-hidden mb-8">
           <div className="border-b border-white/[0.06] px-8 py-5 flex items-center justify-between">
             <div>
@@ -211,7 +222,12 @@ export default function PricingPage() {
               ))}
             </div>
             <div className="flex items-center gap-4">
-              <a href={paymentLink} className="inline-block bg-gold text-black font-syne font-semibold text-[13px] tracking-wide px-6 py-3 rounded hover:opacity-85 transition-opacity">
+              {/* ── TRACKED CHECKOUT BUTTON ── */}
+              <a
+                href={paymentLink}
+                onClick={() => handleCheckout('pricing-planner-callout')}
+                className="inline-block bg-gold text-black font-syne font-semibold text-[13px] tracking-wide px-6 py-3 rounded hover:opacity-85 transition-opacity"
+              >
                 Start Pro to Unlock →
               </a>
               <Link href="/pro/planner" className="inline-block border border-gold/30 text-gold font-mono text-[10px] tracking-widest uppercase px-6 py-3 rounded hover:border-gold/60 transition-colors">
@@ -350,7 +366,12 @@ export default function PricingPage() {
             <p className="text-white/40 text-[14px] mb-8 max-w-md mx-auto leading-relaxed">
               Less than a coffee a month. Cancel anytime. Your retirement plan deserves more than a spreadsheet and a prayer.
             </p>
-            <a href={paymentLink} className="inline-block bg-gold text-black font-syne font-semibold text-[14px] tracking-wide px-10 py-4 rounded-xl hover:opacity-90 transition-opacity mb-4">
+            {/* ── TRACKED CHECKOUT BUTTON ── */}
+            <a
+              href={paymentLink}
+              onClick={() => handleCheckout('pricing-final-cta')}
+              className="inline-block bg-gold text-black font-syne font-semibold text-[14px] tracking-wide px-10 py-4 rounded-xl hover:opacity-90 transition-opacity mb-4"
+            >
               Start Pro — ${billing === 'monthly' ? `${monthlyPrice}/mo` : `${annualPrice}/yr`} →
             </a>
             <div className="font-mono text-[9px] text-white/20 tracking-wider">30-day money back guarantee · Cancel anytime</div>
