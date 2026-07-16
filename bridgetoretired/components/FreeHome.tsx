@@ -52,6 +52,12 @@ export default function FreeHome() {
   const isPro = user?.publicMetadata?.isPro === true
   const [recentTools, setRecentTools] = useState<string[]>([])
 
+  // Redirect unauthenticated users to sign-in
+  useEffect(() => {
+    if (!isLoaded) return
+    if (!user) router.replace('/sign-in')
+  }, [isLoaded, user, router])
+
   // Redirect Pro users to their dashboard
   useEffect(() => {
     if (isLoaded && isPro) {
@@ -66,8 +72,17 @@ export default function FreeHome() {
     } catch {}
   }, [])
 
+  // Loading / redirecting states
+  if (!isLoaded || !user) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="font-mono text-[11px] tracking-widest uppercase text-white/30">Loading...</div>
+      </div>
+    )
+  }
+
   // Don't flash free content to Pro users while redirecting
-  if (isLoaded && isPro) {
+  if (isPro) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="font-mono text-[11px] tracking-widest uppercase text-white/30">Loading your dashboard...</div>
