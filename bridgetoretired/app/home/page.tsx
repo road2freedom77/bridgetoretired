@@ -1,9 +1,24 @@
-import { currentUser } from '@clerk/nextjs/server'
-import { redirect } from 'next/navigation'
-import FreeHome from '@/components/FreeHome'
+'use client'
 
-export default async function HomePage() {
-  const user = await currentUser()
-  if (!user) redirect('/sign-in')
-  return <FreeHome />
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { useUser } from '@clerk/nextjs'
+
+export default function AuthCallbackPage() {
+  const { user, isLoaded } = useUser()
+  const router = useRouter()
+
+  useEffect(() => {
+    if (!isLoaded) return
+    if (!user) return
+
+    const isPro = user.publicMetadata?.isPro === true
+    if (isPro) {
+      router.replace('/pro-welcome')
+    } else {
+      router.replace('/home')
+    }
+  }, [user, isLoaded, router])
+
+  return null
 }
