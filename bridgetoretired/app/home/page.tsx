@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 import FreeHome from '@/components/FreeHome'
 
 export default async function HomePage() {
-  const { userId } = await auth()
+  const { userId } = (await auth())
   if (!userId) redirect('/sign-in')
   return <FreeHome />
 }
