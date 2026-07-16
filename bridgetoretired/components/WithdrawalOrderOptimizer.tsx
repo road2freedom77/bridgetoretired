@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import Link from 'next/link'
 import { useUser } from '@clerk/nextjs'
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts'
+import { trackCalculatorUsed, trackProCtaClick } from '@/lib/analytics'
 
 const COLORS = {
   gold: '#E8B84B', teal: '#2DD4BF', purple: '#A78BFA',
@@ -109,6 +110,11 @@ export default function WithdrawalOrderOptimizer() {
   const [returnRate, setReturnRate] = useState(6)
   const [activeTab, setActiveTab] = useState<'optimal' | 'wrong'>('optimal')
 
+  const track = useCallback(() => trackCalculatorUsed('withdrawal-optimizer'), [])
+  function tracked(setter: (v: number) => void) {
+    return (v: number) => { track(); setter(v) }
+  }
+
   const optimal = useMemo(() => runOptimalStrategy(retireAge, taxable, k401k, roth, annualSpend, returnRate), [retireAge, taxable, k401k, roth, annualSpend, returnRate])
   const wrong = useMemo(() => runWrongStrategy(retireAge, taxable, k401k, roth, annualSpend, returnRate), [retireAge, taxable, k401k, roth, annualSpend, returnRate])
 
@@ -131,7 +137,6 @@ export default function WithdrawalOrderOptimizer() {
 
   return (
     <div style={{ background: '#0D1420', borderRadius: 16, border: '1px solid rgba(232,184,75,0.15)', overflow: 'hidden', fontFamily: "'IBM Plex Mono', monospace", margin: '2rem 0' }}>
-      {/* Header */}
       <div style={{ background: '#141C28', borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '20px 24px' }}>
         <div style={{ fontSize: 9, letterSpacing: 3, textTransform: 'uppercase', color: COLORS.gold, marginBottom: 6 }}>Interactive Optimizer</div>
         <h3 style={{ color: COLORS.white, fontSize: 18, fontFamily: 'Georgia, serif', fontWeight: 700, margin: 0, marginBottom: 4 }}>Withdrawal Order Optimizer</h3>
@@ -139,15 +144,14 @@ export default function WithdrawalOrderOptimizer() {
       </div>
 
       <div style={{ padding: '24px' }}>
-        {/* Controls */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, marginBottom: 20 }}>
           {[
-            { label: 'Retirement Age', value: retireAge, set: setRetireAge, min: 40, max: 58, step: 1, fmt: (v: number) => `Age ${v}` },
-            { label: 'Annual Spending', value: annualSpend, set: setAnnualSpend, min: 30000, max: 120000, step: 5000, fmt: (v: number) => formatDollars(v) },
-            { label: 'Taxable Account', value: taxable, set: setTaxable, min: 50000, max: 2000000, step: 50000, fmt: (v: number) => formatDollars(v) },
-            { label: '401k / IRA', value: k401k, set: setK401k, min: 100000, max: 3000000, step: 50000, fmt: (v: number) => formatDollars(v) },
-            { label: 'Roth IRA', value: roth, set: setRoth, min: 0, max: 500000, step: 25000, fmt: (v: number) => formatDollars(v) },
-            { label: 'Annual Return', value: returnRate, set: setReturnRate, min: 3, max: 10, step: 0.5, fmt: (v: number) => `${v}%` },
+            { label: 'Retirement Age', value: retireAge, set: tracked(setRetireAge), min: 40, max: 58, step: 1, fmt: (v: number) => `Age ${v}` },
+            { label: 'Annual Spending', value: annualSpend, set: tracked(setAnnualSpend), min: 30000, max: 120000, step: 5000, fmt: (v: number) => formatDollars(v) },
+            { label: 'Taxable Account', value: taxable, set: tracked(setTaxable), min: 50000, max: 2000000, step: 50000, fmt: (v: number) => formatDollars(v) },
+            { label: '401k / IRA', value: k401k, set: tracked(setK401k), min: 100000, max: 3000000, step: 50000, fmt: (v: number) => formatDollars(v) },
+            { label: 'Roth IRA', value: roth, set: tracked(setRoth), min: 0, max: 500000, step: 25000, fmt: (v: number) => formatDollars(v) },
+            { label: 'Annual Return', value: returnRate, set: tracked(setReturnRate), min: 3, max: 10, step: 0.5, fmt: (v: number) => `${v}%` },
           ].map(({ label, value, set, min, max, step, fmt }) => (
             <div key={label} style={{ background: '#141C28', borderRadius: 10, padding: '12px 14px', border: '1px solid rgba(255,255,255,0.06)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
@@ -159,7 +163,6 @@ export default function WithdrawalOrderOptimizer() {
           ))}
         </div>
 
-        {/* ── CHANGE 1: Hero wealth difference number ── */}
         <div style={{ background: '#141C28', borderRadius: 12, padding: '24px', marginBottom: 20, textAlign: 'center' as const, border: '1px solid rgba(232,184,75,0.2)' }}>
           <div style={{ fontSize: 9, letterSpacing: 3, textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', marginBottom: 8 }}>Potential Lifetime Difference</div>
           <div style={{ fontSize: 52, fontWeight: 700, color: COLORS.gold, fontFamily: 'Georgia, serif', lineHeight: 1, marginBottom: 8 }}>
@@ -180,7 +183,6 @@ export default function WithdrawalOrderOptimizer() {
           </div>
         </div>
 
-        {/* Chart tabs */}
         <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
           {(['optimal', 'wrong'] as const).map(tab => (
             <button key={tab} onClick={() => setActiveTab(tab)} style={{
@@ -220,7 +222,6 @@ export default function WithdrawalOrderOptimizer() {
           </ResponsiveContainer>
         </div>
 
-        {/* Phase decision guides */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
           <div style={{ background: '#141C28', borderRadius: 12, padding: '16px', border: '1px solid rgba(232,184,75,0.15)' }}>
             <div style={{ fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: COLORS.gold, marginBottom: 12 }}>Phase 1: Bridge Years (Retire → Age 59½)</div>
@@ -248,7 +249,6 @@ export default function WithdrawalOrderOptimizer() {
           </div>
         </div>
 
-        {/* Insight */}
         <div style={{ background: 'rgba(232,184,75,0.06)', border: '1px solid rgba(232,184,75,0.15)', borderLeft: `3px solid ${COLORS.gold}`, borderRadius: 8, padding: '14px 16px', marginBottom: 16 }}>
           <div style={{ fontSize: 10, color: COLORS.gold, fontWeight: 600, marginBottom: 6, letterSpacing: 1 }}>💡 WHY ORDER MATTERS THIS MUCH</div>
           <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', margin: 0, lineHeight: 1.7 }}>
@@ -260,7 +260,6 @@ export default function WithdrawalOrderOptimizer() {
           </p>
         </div>
 
-        {/* ── CHANGE 2: Next step with Taxable Brokerage Gap added ── */}
         <div style={{ background: 'rgba(45,212,191,0.06)', border: '1px solid rgba(45,212,191,0.15)', borderLeft: `3px solid ${COLORS.teal}`, borderRadius: 8, padding: '14px 16px', marginBottom: 16 }}>
           <div style={{ fontSize: 10, color: COLORS.teal, fontWeight: 600, marginBottom: 6, letterSpacing: 1 }}>🌉 NEXT STEP</div>
           <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', margin: '0 0 10px', lineHeight: 1.7 }}>
@@ -274,7 +273,6 @@ export default function WithdrawalOrderOptimizer() {
           </div>
         </div>
 
-        {/* ── CHANGE 3: Stress test hook before Pro box ── */}
         {!isPro && (
           <>
             <div style={{ background: 'rgba(248,113,113,0.06)', border: '1px solid rgba(248,113,113,0.2)', borderLeft: `3px solid ${COLORS.red}`, borderRadius: 10, padding: '16px 20px', marginBottom: 12 }}>
@@ -287,7 +285,11 @@ export default function WithdrawalOrderOptimizer() {
                   <div key={item} style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)' }}>{item}</div>
                 ))}
               </div>
-              <Link href="/pricing" style={{ background: COLORS.red, color: '#fff', fontFamily: 'Georgia, serif', fontWeight: 700, fontSize: 12, padding: '8px 20px', borderRadius: 7, textDecoration: 'none', display: 'inline-block' }}>
+              <Link
+                href="/pricing"
+                onClick={() => trackProCtaClick('withdrawal-optimizer-stress-hook')}
+                style={{ background: COLORS.red, color: '#fff', fontFamily: 'Georgia, serif', fontWeight: 700, fontSize: 12, padding: '8px 20px', borderRadius: 7, textDecoration: 'none', display: 'inline-block' }}
+              >
                 Run Stress Test → (Pro)
               </Link>
             </div>
@@ -305,7 +307,11 @@ export default function WithdrawalOrderOptimizer() {
                   </div>
                 ))}
               </div>
-              <Link href="/pricing" style={{ background: COLORS.gold, color: '#0D1420', fontFamily: 'Georgia, serif', fontWeight: 700, fontSize: 12, padding: '10px 24px', borderRadius: 8, textDecoration: 'none', display: 'inline-block' }}>
+              <Link
+                href="/pricing"
+                onClick={() => trackProCtaClick('withdrawal-optimizer-upsell')}
+                style={{ background: COLORS.gold, color: '#0D1420', fontFamily: 'Georgia, serif', fontWeight: 700, fontSize: 12, padding: '10px 24px', borderRadius: 8, textDecoration: 'none', display: 'inline-block' }}
+              >
                 See Pro Plans →
               </Link>
             </div>
@@ -313,7 +319,6 @@ export default function WithdrawalOrderOptimizer() {
         )}
       </div>
 
-      {/* Footer */}
       <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '12px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.15)', letterSpacing: 1 }}>Simplified model · For educational purposes only</span>
         {!isPro && <a href="/#download" style={{ fontSize: 9, color: COLORS.gold, textDecoration: 'none', letterSpacing: 2, textTransform: 'uppercase' }}>Get Free Planner →</a>}

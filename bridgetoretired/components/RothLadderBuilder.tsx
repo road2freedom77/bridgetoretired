@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import Link from 'next/link'
 import { useUser } from '@clerk/nextjs'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine, Cell } from 'recharts'
+import { trackCalculatorUsed, trackProCtaClick } from '@/lib/analytics'
 
 const COLORS = {
   gold: '#E8B84B', teal: '#2DD4BF', purple: '#A78BFA',
@@ -75,6 +76,11 @@ export default function RothLadderBuilder() {
   const [taxableIncome, setTaxableIncome] = useState(5_000)
   const [ladderYears, setLadderYears] = useState(10)
 
+  const track = useCallback(() => trackCalculatorUsed('roth-ladder'), [])
+  function tracked(setter: (v: number) => void) {
+    return (v: number) => { track(); setter(v) }
+  }
+
   const currentYear = new Date().getFullYear()
 
   const ladderData = useMemo(() => {
@@ -120,7 +126,6 @@ export default function RothLadderBuilder() {
 
   return (
     <div style={{ background: '#0D1420', borderRadius: 16, border: '1px solid rgba(232,184,75,0.15)', overflow: 'hidden', fontFamily: "'IBM Plex Mono', monospace", margin: '2rem 0' }}>
-      {/* Header */}
       <div style={{ background: '#141C28', borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '20px 24px' }}>
         <div style={{ fontSize: 9, letterSpacing: 3, textTransform: 'uppercase', color: COLORS.gold, marginBottom: 6 }}>Interactive Builder</div>
         <h3 style={{ color: COLORS.white, fontSize: 18, fontFamily: 'Georgia, serif', fontWeight: 700, margin: 0, marginBottom: 4 }}>Roth Conversion Ladder</h3>
@@ -128,15 +133,14 @@ export default function RothLadderBuilder() {
       </div>
 
       <div style={{ padding: '24px' }}>
-        {/* Controls */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, marginBottom: 20 }}>
           {[
-            { label: 'Retirement Age', value: retireAge, set: setRetireAge, min: 40, max: 57, step: 1, fmt: (v: number) => `Age ${v}` },
-            { label: 'Annual Conversion', value: annualConversion, set: setAnnualConversion, min: 10000, max: 150000, step: 5000, fmt: (v: number) => formatDollars(v) },
-            { label: '401k / IRA Balance', value: traditional401k, set: setTraditional401k, min: 100000, max: 3000000, step: 50000, fmt: (v: number) => formatDollars(v) },
-            { label: 'Other Annual Income', value: taxableIncome, set: setTaxableIncome, min: 0, max: 60000, step: 1000, fmt: (v: number) => formatDollars(v) },
-            { label: 'Annual Spending', value: annualSpend, set: setAnnualSpend, min: 20000, max: 120000, step: 5000, fmt: (v: number) => formatDollars(v) },
-            { label: 'Ladder Years', value: ladderYears, set: setLadderYears, min: 5, max: 20, step: 1, fmt: (v: number) => `${v} yrs` },
+            { label: 'Retirement Age', value: retireAge, set: tracked(setRetireAge), min: 40, max: 57, step: 1, fmt: (v: number) => `Age ${v}` },
+            { label: 'Annual Conversion', value: annualConversion, set: tracked(setAnnualConversion), min: 10000, max: 150000, step: 5000, fmt: (v: number) => formatDollars(v) },
+            { label: '401k / IRA Balance', value: traditional401k, set: tracked(setTraditional401k), min: 100000, max: 3000000, step: 50000, fmt: (v: number) => formatDollars(v) },
+            { label: 'Other Annual Income', value: taxableIncome, set: tracked(setTaxableIncome), min: 0, max: 60000, step: 1000, fmt: (v: number) => formatDollars(v) },
+            { label: 'Annual Spending', value: annualSpend, set: tracked(setAnnualSpend), min: 20000, max: 120000, step: 5000, fmt: (v: number) => formatDollars(v) },
+            { label: 'Ladder Years', value: ladderYears, set: tracked(setLadderYears), min: 5, max: 20, step: 1, fmt: (v: number) => `${v} yrs` },
           ].map(({ label, value, set, min, max, step, fmt }) => (
             <div key={label} style={{ background: '#141C28', borderRadius: 10, padding: '12px 14px', border: '1px solid rgba(255,255,255,0.06)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
@@ -150,7 +154,6 @@ export default function RothLadderBuilder() {
           ))}
         </div>
 
-        {/* Tax bracket indicator */}
         <div style={{ background: '#141C28', borderRadius: 10, padding: '14px 16px', border: `1px solid ${currentBracket.color}40`, borderLeft: `3px solid ${currentBracket.color}`, marginBottom: 16, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <div style={{ fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', marginBottom: 4 }}>Your Conversion Tax Bracket (MFJ 2026)</div>
@@ -161,7 +164,6 @@ export default function RothLadderBuilder() {
           <div style={{ fontSize: 22, fontWeight: 700, color: currentBracket.color, fontFamily: 'Georgia, serif' }}>{formatDollars(calcFederalTax(totalIncome))}/yr</div>
         </div>
 
-        {/* KPI cards */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 20 }}>
           <div style={{ background: '#141C28', borderRadius: 10, padding: '12px 14px', border: '1px solid rgba(232,184,75,0.15)', borderTop: `3px solid ${COLORS.gold}` }}>
             <div style={{ fontSize: 8, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', marginBottom: 4 }}>Total Converted</div>
@@ -180,7 +182,6 @@ export default function RothLadderBuilder() {
           </div>
         </div>
 
-        {/* Chart */}
         <div style={{ background: '#141C28', borderRadius: 12, padding: '20px 16px 12px', border: '1px solid rgba(255,255,255,0.06)', marginBottom: 16 }}>
           <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginBottom: 4, fontFamily: 'Georgia, serif' }}>Conversion Amount vs Tax Cost Per Year</div>
           <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.25)', marginBottom: 16 }}>Gold bars unlock penalty-free 5 years after conversion</div>
@@ -203,7 +204,6 @@ export default function RothLadderBuilder() {
           </ResponsiveContainer>
         </div>
 
-        {/* Ladder table */}
         <div style={{ background: '#141C28', borderRadius: 12, padding: '16px', border: '1px solid rgba(255,255,255,0.06)', marginBottom: 16, overflowX: 'auto' as const }}>
           <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginBottom: 12, fontFamily: 'Georgia, serif' }}>Ladder Unlock Schedule</div>
           <table style={{ width: '100%', borderCollapse: 'collapse' as const, fontSize: 10 }}>
@@ -233,7 +233,6 @@ export default function RothLadderBuilder() {
           </table>
         </div>
 
-        {/* Bridge gap warning */}
         {annualSpend * 5 > 200000 && (
           <div style={{ background: 'rgba(232,184,75,0.06)', border: '1px solid rgba(232,184,75,0.15)', borderLeft: `3px solid ${COLORS.gold}`, borderRadius: 8, padding: '12px 14px', marginBottom: 16 }}>
             <div style={{ fontSize: 10, color: COLORS.gold, fontWeight: 600, marginBottom: 4 }}>⏳ 5-YEAR BRIDGE NEEDED</div>
@@ -244,7 +243,6 @@ export default function RothLadderBuilder() {
           </div>
         )}
 
-        {/* Key insight */}
         <div style={{ background: 'rgba(167,139,250,0.06)', border: '1px solid rgba(167,139,250,0.15)', borderLeft: `3px solid ${COLORS.purple}`, borderRadius: 8, padding: '14px 16px', marginBottom: 16 }}>
           <div style={{ fontSize: 10, color: COLORS.purple, fontWeight: 600, marginBottom: 6, letterSpacing: 1 }}>💡 THE LADDER ADVANTAGE</div>
           <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', margin: 0, lineHeight: 1.7 }}>
@@ -254,7 +252,6 @@ export default function RothLadderBuilder() {
           </p>
         </div>
 
-        {/* Next step */}
         <div style={{ background: 'rgba(45,212,191,0.06)', border: '1px solid rgba(45,212,191,0.15)', borderLeft: `3px solid ${COLORS.teal}`, borderRadius: 8, padding: '14px 16px', marginBottom: 16 }}>
           <div style={{ fontSize: 10, color: COLORS.teal, fontWeight: 600, marginBottom: 6, letterSpacing: 1 }}>🌉 NEXT STEP</div>
           <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', margin: '0 0 10px', lineHeight: 1.7 }}>
@@ -267,7 +264,6 @@ export default function RothLadderBuilder() {
           </div>
         </div>
 
-        {/* Pro upsell */}
         {!isPro && (
           <div style={{ background: 'linear-gradient(135deg, rgba(232,184,75,0.06) 0%, rgba(232,184,75,0.02) 100%)', border: '1px solid rgba(232,184,75,0.2)', borderLeft: '3px solid #E8B84B', borderRadius: 12, padding: '20px 24px' }}>
             <div style={{ fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: COLORS.gold, marginBottom: 10 }}>⚡ BridgeToRetired Pro — $9/mo</div>
@@ -282,14 +278,17 @@ export default function RothLadderBuilder() {
                 </div>
               ))}
             </div>
-            <Link href="/pricing" style={{ background: COLORS.gold, color: '#0D1420', fontFamily: 'Georgia, serif', fontWeight: 700, fontSize: 12, padding: '10px 24px', borderRadius: 8, textDecoration: 'none', display: 'inline-block' }}>
+            <Link
+              href="/pricing"
+              onClick={() => trackProCtaClick('roth-ladder-upsell')}
+              style={{ background: COLORS.gold, color: '#0D1420', fontFamily: 'Georgia, serif', fontWeight: 700, fontSize: 12, padding: '10px 24px', borderRadius: 8, textDecoration: 'none', display: 'inline-block' }}
+            >
               See Pro Plans →
             </Link>
           </div>
         )}
       </div>
 
-      {/* Footer */}
       <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '12px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.15)', letterSpacing: 1 }}>Based on 2026 MFJ tax brackets · For educational purposes only</span>
         {!isPro && <a href="/#download" style={{ fontSize: 9, color: COLORS.gold, textDecoration: 'none', letterSpacing: 2, textTransform: 'uppercase' }}>Get Free Planner →</a>}

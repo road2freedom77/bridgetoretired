@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import Link from 'next/link'
 import { useUser } from '@clerk/nextjs'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, ReferenceLine } from 'recharts'
+import { trackCalculatorUsed, trackProCtaClick } from '@/lib/analytics'
 
 const COLORS = {
   gold: '#E8B84B', teal: '#2DD4BF', purple: '#A78BFA',
@@ -75,6 +76,11 @@ export default function ACASubsidyEstimator() {
   const [age, setAge] = useState(52)
   const [householdSize, setHouseholdSize] = useState(2)
 
+  const track = useCallback(() => trackCalculatorUsed('aca-subsidy'), [])
+  function tracked(setter: (v: number) => void) {
+    return (v: number) => { track(); setter(v) }
+  }
+
   const result = useMemo(() => calcSubsidy(magi, householdSize, age), [magi, age, householdSize])
 
   const chartData = useMemo(() => {
@@ -104,17 +110,15 @@ export default function ACASubsidyEstimator() {
       </div>
 
       <div style={{ padding: '24px' }}>
-        {/* Warning */}
         <div style={{ background: 'rgba(251,146,60,0.08)', border: '1px solid rgba(251,146,60,0.25)', borderLeft: `3px solid ${COLORS.orange}`, borderRadius: 8, padding: '12px 14px', marginBottom: 20 }}>
           <div style={{ fontSize: 10, color: COLORS.orange, fontWeight: 600, marginBottom: 4 }}>⚠ 2026 ACA UPDATE</div>
           <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', margin: 0, lineHeight: 1.6 }}>Enhanced ACA subsidies (ARPA) expired January 2026. Average premiums for subsidized enrollees increased ~114%. Congress may extend subsidies — monitor healthcare.gov during open enrollment.</p>
         </div>
 
-        {/* Controls */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, marginBottom: 20 }}>
           {[
-            { label: 'Annual MAGI', value: magi, set: setMagi, min: 15000, max: 200000, step: 1000, fmt: (v: number) => `$${v.toLocaleString()}` },
-            { label: 'Your Age', value: age, set: setAge, min: 40, max: 64, step: 1, fmt: (v: number) => `Age ${v}` },
+            { label: 'Annual MAGI', value: magi, set: tracked(setMagi), min: 15000, max: 200000, step: 1000, fmt: (v: number) => `$${v.toLocaleString()}` },
+            { label: 'Your Age', value: age, set: tracked(setAge), min: 40, max: 64, step: 1, fmt: (v: number) => `Age ${v}` },
           ].map(({ label, value, set, min, max, step, fmt }) => (
             <div key={label} style={{ background: '#141C28', borderRadius: 10, padding: '12px 14px', border: '1px solid rgba(255,255,255,0.06)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
@@ -128,7 +132,7 @@ export default function ACASubsidyEstimator() {
             <div style={{ fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)', marginBottom: 10 }}>Household Size</div>
             <div style={{ display: 'flex', gap: 8 }}>
               {[1, 2, 3, 4].map(n => (
-                <button key={n} onClick={() => setHouseholdSize(n)} style={{ flex: 1, padding: '8px', borderRadius: 6, border: 'none', cursor: 'pointer', fontFamily: 'monospace', fontSize: 12, fontWeight: 600, background: householdSize === n ? COLORS.gold : 'rgba(255,255,255,0.06)', color: householdSize === n ? COLORS.dark : 'rgba(255,255,255,0.4)', transition: 'all 0.15s' }}>
+                <button key={n} onClick={() => { track(); setHouseholdSize(n) }} style={{ flex: 1, padding: '8px', borderRadius: 6, border: 'none', cursor: 'pointer', fontFamily: 'monospace', fontSize: 12, fontWeight: 600, background: householdSize === n ? COLORS.gold : 'rgba(255,255,255,0.06)', color: householdSize === n ? COLORS.dark : 'rgba(255,255,255,0.4)', transition: 'all 0.15s' }}>
                   {n === 4 ? '4+' : n} {n === 1 ? 'person' : 'people'}
                 </button>
               ))}
@@ -136,7 +140,6 @@ export default function ACASubsidyEstimator() {
           </div>
         </div>
 
-        {/* Status */}
         <div style={{ background: '#141C28', borderRadius: 10, padding: '14px 16px', border: `1px solid ${statusColor}40`, borderLeft: `3px solid ${statusColor}`, marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
             <div style={{ fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', marginBottom: 4 }}>Subsidy Status</div>
@@ -149,7 +152,6 @@ export default function ACASubsidyEstimator() {
           </div>
         </div>
 
-        {/* KPI cards */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 20 }}>
           {[
             { label: 'Your Monthly Cost', value: formatDollars(result.yourMonthlyCost), sub: 'Silver benchmark plan', color: COLORS.sage },
@@ -164,7 +166,6 @@ export default function ACASubsidyEstimator() {
           ))}
         </div>
 
-        {/* Chart */}
         <div style={{ background: '#141C28', borderRadius: 12, padding: '20px 16px 12px', border: '1px solid rgba(255,255,255,0.06)', marginBottom: 16 }}>
           <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginBottom: 4, fontFamily: 'Georgia, serif' }}>Monthly Premium Cost vs Income Level</div>
           <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.25)', marginBottom: 16 }}>Green = your cost after subsidy · Teal = subsidy amount · Drop at 400% FPL = subsidy cliff</div>
@@ -183,7 +184,6 @@ export default function ACASubsidyEstimator() {
           </ResponsiveContainer>
         </div>
 
-        {/* Insight */}
         <div style={{ background: 'rgba(232,184,75,0.06)', border: '1px solid rgba(232,184,75,0.15)', borderLeft: `3px solid ${COLORS.gold}`, borderRadius: 8, padding: '14px 16px', marginBottom: 16 }}>
           <div style={{ fontSize: 10, color: COLORS.gold, fontWeight: 600, marginBottom: 6, letterSpacing: 1 }}>💡 INCOME MANAGEMENT MATTERS</div>
           <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', margin: 0, lineHeight: 1.7 }}>
@@ -193,7 +193,6 @@ export default function ACASubsidyEstimator() {
           </p>
         </div>
 
-        {/* Next step */}
         <div style={{ background: 'rgba(45,212,191,0.06)', border: '1px solid rgba(45,212,191,0.15)', borderLeft: `3px solid ${COLORS.teal}`, borderRadius: 8, padding: '14px 16px', marginBottom: 16 }}>
           <div style={{ fontSize: 10, color: COLORS.teal, fontWeight: 600, marginBottom: 6, letterSpacing: 1 }}>🌉 NEXT STEP</div>
           <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', margin: '0 0 10px', lineHeight: 1.7 }}>
@@ -206,7 +205,6 @@ export default function ACASubsidyEstimator() {
           </div>
         </div>
 
-        {/* Pro upsell */}
         {!isPro && (
           <div style={{ background: 'linear-gradient(135deg, rgba(232,184,75,0.06) 0%, rgba(232,184,75,0.02) 100%)', border: '1px solid rgba(232,184,75,0.2)', borderLeft: '3px solid #E8B84B', borderRadius: 12, padding: '20px 24px' }}>
             <div style={{ fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: COLORS.gold, marginBottom: 10 }}>⚡ BridgeToRetired Pro — $9/mo</div>
@@ -221,7 +219,11 @@ export default function ACASubsidyEstimator() {
                 </div>
               ))}
             </div>
-            <Link href="/pricing" style={{ background: COLORS.gold, color: '#0D1420', fontFamily: 'Georgia, serif', fontWeight: 700, fontSize: 12, padding: '10px 24px', borderRadius: 8, textDecoration: 'none', display: 'inline-block' }}>
+            <Link
+              href="/pricing"
+              onClick={() => trackProCtaClick('aca-estimator-upsell')}
+              style={{ background: COLORS.gold, color: '#0D1420', fontFamily: 'Georgia, serif', fontWeight: 700, fontSize: 12, padding: '10px 24px', borderRadius: 8, textDecoration: 'none', display: 'inline-block' }}
+            >
               See Pro Plans →
             </Link>
           </div>
