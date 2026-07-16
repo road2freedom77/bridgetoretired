@@ -1,63 +1,64 @@
-import { allPosts } from 'contentlayer/generated'
-import { notFound }           from 'next/navigation'
-import { format }             from 'date-fns'
-import { useMDXComponent }    from 'next-contentlayer2/hooks'
-import type { Metadata }      from 'next'
-import Link                   from 'next/link'
-import Script                 from 'next/script'
-import SequenceOfReturnsSimulator from '@/components/SequenceOfReturnsSimulator'
-import BridgeStrategyVisualizer   from '@/components/BridgeStrategyVisualizer'
-import RothLadderBuilder          from '@/components/RothLadderBuilder'
-import ACASubsidyEstimator        from '@/components/ACASubsidyEstimator'
-import SocialSecurityCalculator   from '@/components/SocialSecurityCalculator'
-import FIRENumberCalculator       from '@/components/FIRENumberCalculator'
-import WithdrawalOrderOptimizer   from '@/components/WithdrawalOrderOptimizer'
-import TaxBracketVisualizer       from '@/components/TaxBracketVisualizer'
-import TaxableBrokerageAnalyzer   from '@/components/TaxableBrokerageAnalyzer'
-import SEPPCalculator             from '@/components/SEPPCalculator'
-import FinanceTable               from '@/components/FinanceTable'
+import { createClient }  from '@supabase/supabase-js'
+import { notFound }       from 'next/navigation'
+import { format }         from 'date-fns'
+import type { Metadata }  from 'next'
+import Link               from 'next/link'
+import Script             from 'next/script'
+import BlogRenderer       from '@/components/blog/BlogRenderer'
+
+export const revalidate = 3600 // 1hr ISR — keeps Vercel ISR writes low
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
 
 interface Props { params: { slug: string } }
 
-interface FAQItem {
-  question: string
-  answer: string
-}
-
-function getMDX(code: string) {
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  return useMDXComponent(code)
-}
-
 export async function generateStaticParams() {
-  return allPosts.map(p => ({ slug: p.slug }))
+  const { data } = await supabase
+    .from('blog_posts')
+    .select('slug')
+    .eq('published', true)
+  return (data ?? []).map(p => ({ slug: p.slug }))
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const post = allPosts.find(p => p.slug === params.slug)
+  const { data: post } = await supabase
+    .from('blog_posts')
+    .select('title, description, published_at')
+    .eq('slug', params.slug)
+    .eq('published', true)
+    .single()
+
   if (!post) return {}
+
   const url = `https://bridgetoretired.com/blog/${params.slug}`
   return {
     title:       post.title,
     description: post.description,
-    alternates: {
-      canonical: url,
-    },
+    alternates: { canonical: url },
     openGraph: {
-      title:       post.title,
-      description: post.description,
-      type:        'article',
-      publishedTime: post.date,
+      title:         post.title,
+      description:   post.description,
+      type:          'article',
+      publishedTime: post.published_at,
       url,
     },
   }
 }
 
-export default function PostPage({ params }: Props) {
-  const post = allPosts.find(p => p.slug === params.slug)
+export default async function PostPage({ params }: Props) {
+  const { data: post } = await supabase
+    .from('blog_posts')
+    .select('*')
+    .eq('slug', params.slug)
+    .eq('published', true)
+    .lte('published_at', new Date().toISOString())
+    .single()
+
   if (!post) notFound()
 
-  const MDXContent = getMDX(post.body.code)
   const url = `https://bridgetoretired.com/blog/${params.slug}`
 
   const articleSchema = {
@@ -81,7 +82,7 @@ export default function PostPage({ params }: Props) {
       '@type': 'WebPage',
       '@id': url,
     },
-    datePublished: post.date,
+    datePublished: post.published_at,
   }
 
   const breadcrumbSchema = {
@@ -94,20 +95,6 @@ export default function PostPage({ params }: Props) {
     ],
   }
 
-  const faqItems = (post as any).faq as FAQItem[] | undefined
-  const faqSchema = faqItems?.length ? {
-    '@context': 'https://schema.org',
-    '@type': 'FAQPage',
-    mainEntity: faqItems.map(item => ({
-      '@type': 'Question',
-      name: item.question,
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: item.answer,
-      },
-    })),
-  } : null
-
   return (
     <div className="min-h-screen bg-black">
       <Script id="schema-article" type="application/ld+json" strategy="beforeInteractive"
@@ -116,11 +103,6 @@ export default function PostPage({ params }: Props) {
       <Script id="schema-breadcrumb" type="application/ld+json" strategy="beforeInteractive"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
-      {faqSchema && (
-        <Script id="schema-faq" type="application/ld+json" strategy="beforeInteractive"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
-        />
-      )}
 
       <div className="bg-navy border-b border-white/[0.06]">
         <div className="max-w-3xl mx-auto px-5 pt-14 pb-12">
@@ -137,28 +119,16 @@ export default function PostPage({ params }: Props) {
             {post.description}
           </p>
           <div className="flex items-center gap-4 font-mono text-[10px] text-white/30">
-            <span>{format(new Date(post.date), 'MMMM d, yyyy')}</span>
+            <span>{format(new Date(post.published_at), 'MMMM d, yyyy')}</span>
             <span>·</span>
-            <span>{post.readTime}</span>
+            <span>{post.read_time}</span>
           </div>
         </div>
       </div>
 
       <div className="max-w-3xl mx-auto px-5 py-14">
-        <article className="prose-dark">
-          <MDXContent components={{
-            SequenceOfReturnsSimulator,
-            BridgeStrategyVisualizer,
-            RothLadderBuilder,
-            ACASubsidyEstimator,
-            SocialSecurityCalculator,
-            FIRENumberCalculator,
-            WithdrawalOrderOptimizer,
-            TaxBracketVisualizer,
-            TaxableBrokerageAnalyzer,
-            SEPPCalculator,
-            FinanceTable,
-          }} />
+        <article>
+          <BlogRenderer content={post.content} />
         </article>
 
         <div className="mt-16 bg-ink border border-white/[0.07] rounded-xl p-7 text-center">
