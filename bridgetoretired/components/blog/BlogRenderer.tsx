@@ -13,25 +13,35 @@ import WithdrawalOrderOptimizer   from '@/components/WithdrawalOrderOptimizer'
 import TaxBracketVisualizer       from '@/components/TaxBracketVisualizer'
 import TaxableBrokerageAnalyzer   from '@/components/TaxableBrokerageAnalyzer'
 import SEPPCalculator             from '@/components/SEPPCalculator'
+import FinanceTable               from '@/components/FinanceTable'
+
+// ── Zero-prop tool embeds ─────────────────────────────────────────────────────
 const EMBED_MAP: Record<string, React.ComponentType> = {
-  'roth-ladder-builder':      RothLadderBuilder,
-  'sepp-calculator':          SEPPCalculator,
-  'sequence-of-returns':      SequenceOfReturnsSimulator,
-  'social-security':          SocialSecurityCalculator,
-  'tax-bracket':              TaxBracketVisualizer,
-  'taxable-bridge':           TaxableBrokerageAnalyzer,
-  'withdrawal-optimizer':     WithdrawalOrderOptimizer,
-  'bridge-strategy':          BridgeStrategyVisualizer,
-  'fire-number':              FIRENumberCalculator,
-  'aca-estimator':            ACASubsidyEstimator,
+  'roth-ladder-builder':  RothLadderBuilder,
+  'sepp-calculator':      SEPPCalculator,
+  'sequence-of-returns':  SequenceOfReturnsSimulator,
+  'social-security':      SocialSecurityCalculator,
+  'tax-bracket':          TaxBracketVisualizer,
+  'taxable-bridge':       TaxableBrokerageAnalyzer,
+  'withdrawal-optimizer': WithdrawalOrderOptimizer,
+  'bridge-strategy':      BridgeStrategyVisualizer,
+  'fire-number':          FIRENumberCalculator,
+  'aca-estimator':        ACASubsidyEstimator,
 }
 
-// Regex to match [[tool:component-name]] tokens on their own line
-const EMBED_REGEX = /\[\[tool:([a-z0-9-]+)\]\]/g
+// ── Token regexes ─────────────────────────────────────────────────────────────
+// [[tool:component-name]]
+const TOOL_REGEX  = /\[\[tool:([a-z0-9-]+)\]\]/
+// [[table:{...json...}]]  — greedy match for multiline JSON
+const TABLE_REGEX = /\[\[table:(\{[\s\S]*?\})\]\]/
 
+// Combined splitter — matches either token type
+const TOKEN_REGEX = /(\[\[tool:[a-z0-9-]+\]\]|\[\[table:\{[\s\S]*?\}\]\])/g
+
+// ── Segment types ─────────────────────────────────────────────────────────────
 interface Segment {
-  type: 'markdown' | 'embed'
-  content: string
+  type: 'markdown' | 'tool' | 'table'
+  content: string        // markdown text OR tool name OR raw JSON string
 }
 
 function parseSegments(content: string): Segment[] {
@@ -39,17 +49,24 @@ function parseSegments(content: string): Segment[] {
   let lastIndex = 0
   let match: RegExpExecArray | null
 
-  EMBED_REGEX.lastIndex = 0
-  while ((match = EMBED_REGEX.exec(content)) !== null) {
-    // Markdown before this embed
+  TOKEN_REGEX.lastIndex = 0
+  while ((match = TOKEN_REGEX.exec(content)) !== null) {
+    // Markdown before this token
     if (match.index > lastIndex) {
       segments.push({ type: 'markdown', content: content.slice(lastIndex, match.index) })
     }
-    segments.push({ type: 'embed', content: match[1] })
+
+    const token = match[1]
+    const toolMatch  = token.match(TOOL_REGEX)
+    const tableMatch = token.match(TABLE_REGEX)
+
+    if (toolMatch)  segments.push({ type: 'tool',  content: toolMatch[1] })
+    if (tableMatch) segments.push({ type: 'table', content: tableMatch[1] })
+
     lastIndex = match.index + match[0].length
   }
 
-  // Remaining markdown after last embed
+  // Remaining markdown
   if (lastIndex < content.length) {
     segments.push({ type: 'markdown', content: content.slice(lastIndex) })
   }
@@ -57,7 +74,7 @@ function parseSegments(content: string): Segment[] {
   return segments
 }
 
-// react-markdown component overrides to apply prose-dark styles
+// ── react-markdown component overrides ───────────────────────────────────────
 const mdComponents = {
   h2: ({ children }: any) => (
     <h2 className="font-syne text-2xl font-bold text-white mt-10 mb-4 tracking-tight">{children}</h2>
@@ -84,7 +101,6 @@ const mdComponents = {
     <blockquote className="border-l-2 border-gold pl-5 italic text-white/60 my-6">{children}</blockquote>
   ),
   code: ({ children, className }: any) => {
-    // Block code (has language class) vs inline code
     const isBlock = className?.startsWith('language-')
     if (isBlock) {
       return (
@@ -103,8 +119,26 @@ const mdComponents = {
   hr: () => (
     <hr className="border-white/10 my-8" />
   ),
+  table: ({ children }: any) => (
+    <div className="overflow-x-auto my-6 rounded-lg border border-white/10">
+      <table className="w-full text-left border-collapse">{children}</table>
+    </div>
+  ),
+  thead: ({ children }: any) => (
+    <thead className="bg-white/[0.04]">{children}</thead>
+  ),
+  th: ({ children }: any) => (
+    <th className="px-4 py-3 font-syne text-[13px] font-semibold text-white border-b border-white/10 whitespace-nowrap">{children}</th>
+  ),
+  td: ({ children }: any) => (
+    <td className="px-4 py-3 text-[13px] text-white/70 border-b border-white/[0.05] align-top">{children}</td>
+  ),
+  tr: ({ children }: any) => (
+    <tr className="hover:bg-white/[0.02] transition-colors">{children}</tr>
+  ),
 }
 
+// ── Main renderer ─────────────────────────────────────────────────────────────
 interface BlogRendererProps {
   content: string
 }
@@ -115,15 +149,36 @@ export default function BlogRenderer({ content }: BlogRendererProps) {
   return (
     <div className="prose-dark">
       {segments.map((segment, i) => {
-        if (segment.type === 'embed') {
+
+        // Zero-prop tool embed
+        if (segment.type === 'tool') {
           const Component = EMBED_MAP[segment.content]
           if (!Component) {
-            console.warn(`BlogRenderer: unknown embed token "${segment.content}"`)
+            console.warn(`BlogRenderer: unknown tool token "${segment.content}"`)
             return null
           }
           return <Component key={i} />
         }
 
+        // FinanceTable embed with inline JSON props
+        if (segment.type === 'table') {
+          try {
+            const props = JSON.parse(segment.content)
+            return (
+              <FinanceTable
+                key={i}
+                columns={props.columns}
+                rows={props.rows}
+                caption={props.caption}
+              />
+            )
+          } catch (e) {
+            console.warn(`BlogRenderer: invalid table JSON at segment ${i}`, e)
+            return null
+          }
+        }
+
+        // Markdown
         return (
           <ReactMarkdown
             key={i}
