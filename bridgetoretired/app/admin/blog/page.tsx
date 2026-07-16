@@ -311,7 +311,7 @@ export default function AdminBlogPage() {
     </div>
   )
 
-  // ── EDIT VIEW ───────────────────────────────────────────────────────────────
+  // ── EDIT VIEW GO ───────────────────────────────────────────────────────────────
   return (
     <div style={S.page}>
       {toast && (
