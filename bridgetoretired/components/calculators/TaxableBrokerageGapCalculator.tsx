@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import Link from 'next/link'
 import { useUser } from '@clerk/nextjs'
+import { trackCalculatorUsed, trackProCtaClick } from '@/lib/analytics'
 
 const COLORS = {
   gold: '#E8B84B', teal: '#2DD4BF', sage: '#4ADE80',
@@ -31,22 +32,12 @@ interface Result {
   fundedPct: number
   rothContribNeeded: number
   sepp72tAnnual: number
-  yearsToClose: number  // at current contribution rate
+  yearsToClose: number
 }
 
-function calc(
-  retireAge: number,
-  annualSpend: number,
-  taxableBalance: number,
-  rothBalance: number,
-  annualContrib: number,
-  growthRate: number,
-  otherBridgeIncome: number,
-): Result {
+function calc(retireAge: number, annualSpend: number, taxableBalance: number, rothBalance: number, annualContrib: number, growthRate: number, otherBridgeIncome: number): Result {
   const bridgeYears = Math.max(0, 59.5 - retireAge)
   const netSpend = Math.max(0, annualSpend - otherBridgeIncome)
-
-  // Required: net spend × bridge years × 1.15 buffer, minus Roth contributions (70% assumed basis)
   const rothAccessible = rothBalance * 0.7
   const grossRequired = Math.round(netSpend * bridgeYears * 1.15)
   const required = Math.max(0, grossRequired - rothAccessible)
@@ -54,28 +45,21 @@ function calc(
   const funded = shortfall === 0
   const fundedPct = required > 0 ? Math.min(100, Math.round((taxableBalance / required) * 100)) : 100
 
-  // How many years to close gap at current contribution + growth
   let yearsToClose = 0
   if (!funded && annualContrib > 0) {
     let bal = taxableBalance
     const r = growthRate / 100
-    while (bal < required && yearsToClose < 30) {
-      bal = bal * (1 + r) + annualContrib
-      yearsToClose++
-    }
+    while (bal < required && yearsToClose < 30) { bal = bal * (1 + r) + annualContrib; yearsToClose++ }
     if (bal < required) yearsToClose = -1
   }
 
-  // Rough 72t SEPP as alternative — amortization at 5%
-  // Based on 401k needed: approximate as shortfall / 5% amortization factor
   const sepp72tAnnual = shortfall > 0 ? Math.round(shortfall * 0.05 / (1 - Math.pow(1.05, -bridgeYears))) : 0
-
   return { bridgeYears, required, shortfall, funded, fundedPct, rothContribNeeded: shortfall, sepp72tAnnual, yearsToClose }
 }
 
-function SliderField({ label, value, set, min, max, step, display, note, color = COLORS.gold }: {
+function SliderField({ label, value, set, min, max, step, display, note, color = COLORS.gold, onTrack }: {
   label: string; value: number; set: (v: number) => void
-  min: number; max: number; step: number; display: string; note?: string; color?: string
+  min: number; max: number; step: number; display: string; note?: string; color?: string; onTrack: () => void
 }) {
   return (
     <div style={{ background: COLORS.ink, borderRadius: 10, padding: '12px 14px', border: '1px solid rgba(255,255,255,0.06)' }}>
@@ -84,7 +68,7 @@ function SliderField({ label, value, set, min, max, step, display, note, color =
         <span style={{ fontSize: 12, color, fontWeight: 600 }}>{display}</span>
       </div>
       <input type="range" min={min} max={max} step={step} value={value}
-        onChange={e => set(Number(e.target.value))}
+        onChange={e => { onTrack(); set(Number(e.target.value)) }}
         style={{ width: '100%', accentColor: color, cursor: 'pointer' }} />
       {note && <div style={{ fontSize: 8, color: 'rgba(255,255,255,0.2)', marginTop: 4 }}>{note}</div>}
     </div>
@@ -103,6 +87,8 @@ export default function TaxableBrokerageGapCalculator() {
   const [growthRate, setGrowthRate] = useState(7)
   const [otherBridgeIncome, setOtherBridgeIncome] = useState(0)
 
+  const track = useCallback(() => trackCalculatorUsed('taxable-gap'), [])
+
   const result = useMemo(() =>
     calc(retireAge, annualSpend, taxableBalance, rothBalance, annualContrib, growthRate, otherBridgeIncome),
     [retireAge, annualSpend, taxableBalance, rothBalance, annualContrib, growthRate, otherBridgeIncome]
@@ -114,7 +100,6 @@ export default function TaxableBrokerageGapCalculator() {
   return (
     <div style={{ background: '#0D1420', borderRadius: 16, border: '1px solid rgba(232,184,75,0.15)', overflow: 'hidden', fontFamily: "'IBM Plex Mono', monospace", margin: '2rem 0' }}>
 
-      {/* Header */}
       <div style={{ background: '#141C28', borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '20px 24px' }}>
         <div style={{ fontSize: 9, letterSpacing: 3, textTransform: 'uppercase', color: COLORS.gold, marginBottom: 6 }}>Free Calculator</div>
         <h3 style={{ color: COLORS.white, fontSize: 18, fontFamily: 'Georgia, serif', fontWeight: 700, margin: 0, marginBottom: 4 }}>Taxable Brokerage Gap Calculator</h3>
@@ -123,17 +108,15 @@ export default function TaxableBrokerageGapCalculator() {
 
       <div style={{ padding: '24px' }}>
 
-        {/* Inputs */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, marginBottom: 24 }}>
-          <SliderField label="Retirement Age" value={retireAge} set={setRetireAge} min={40} max={58} step={1} display={`Age ${retireAge}`} />
-          <SliderField label="Annual Spending" value={annualSpend} set={setAnnualSpend} min={30_000} max={150_000} step={5_000} display={fmt(annualSpend)} />
-          <SliderField label="Taxable / Brokerage Balance" value={taxableBalance} set={setTaxableBalance} min={0} max={2_000_000} step={10_000} display={fmt(taxableBalance)} note="No withdrawal restrictions" />
-          <SliderField label="Roth IRA Balance" value={rothBalance} set={setRothBalance} min={0} max={1_000_000} step={10_000} display={fmt(rothBalance)} note="Contributions (not earnings) accessible anytime" color={COLORS.purple} />
-          <SliderField label="Annual Contribution to Taxable" value={annualContrib} set={setAnnualContrib} min={0} max={100_000} step={1_000} display={fmt(annualContrib)} note="How much you're adding each year before retirement" />
-          <SliderField label="Expected Growth Rate" value={growthRate} set={setGrowthRate} min={4} max={10} step={0.5} display={`${growthRate}%`} />
+          <SliderField label="Retirement Age" value={retireAge} set={setRetireAge} min={40} max={58} step={1} display={`Age ${retireAge}`} onTrack={track} />
+          <SliderField label="Annual Spending" value={annualSpend} set={setAnnualSpend} min={30_000} max={150_000} step={5_000} display={fmt(annualSpend)} onTrack={track} />
+          <SliderField label="Taxable / Brokerage Balance" value={taxableBalance} set={setTaxableBalance} min={0} max={2_000_000} step={10_000} display={fmt(taxableBalance)} note="No withdrawal restrictions" onTrack={track} />
+          <SliderField label="Roth IRA Balance" value={rothBalance} set={setRothBalance} min={0} max={1_000_000} step={10_000} display={fmt(rothBalance)} note="Contributions (not earnings) accessible anytime" color={COLORS.purple} onTrack={track} />
+          <SliderField label="Annual Contribution to Taxable" value={annualContrib} set={setAnnualContrib} min={0} max={100_000} step={1_000} display={fmt(annualContrib)} note="How much you're adding each year before retirement" onTrack={track} />
+          <SliderField label="Expected Growth Rate" value={growthRate} set={setGrowthRate} min={4} max={10} step={0.5} display={`${growthRate}%`} onTrack={track} />
         </div>
 
-        {/* Optional: other bridge income */}
         <div style={{ background: COLORS.ink, borderRadius: 10, padding: '12px 14px', border: '1px solid rgba(255,255,255,0.06)', marginBottom: 20 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
             <div>
@@ -143,15 +126,13 @@ export default function TaxableBrokerageGapCalculator() {
             <span style={{ fontSize: 12, color: COLORS.teal, fontWeight: 600 }}>{fmt(otherBridgeIncome)}</span>
           </div>
           <input type="range" min={0} max={60_000} step={1_000} value={otherBridgeIncome}
-            onChange={e => setOtherBridgeIncome(Number(e.target.value))}
+            onChange={e => { track(); setOtherBridgeIncome(Number(e.target.value)) }}
             style={{ width: '100%', accentColor: COLORS.teal, cursor: 'pointer' }} />
         </div>
 
-        {/* Big result */}
         <div style={{ background: result.funded ? 'rgba(74,222,128,0.06)' : 'rgba(248,113,113,0.06)', border: `1px solid ${statusColor}30`, borderRadius: 12, padding: '24px', marginBottom: 20, textAlign: 'center' as const }}>
           <div style={{ fontSize: 9, letterSpacing: 3, textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', marginBottom: 6 }}>Bridge Gap Status</div>
           <div style={{ fontSize: 20, fontWeight: 700, color: statusColor, fontFamily: 'Georgia, serif', marginBottom: 16 }}>{statusLabel}</div>
-
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 16, maxWidth: 500, margin: '0 auto 16px' }}>
             <div>
               <div style={{ fontSize: 8, letterSpacing: 1, textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)', marginBottom: 4 }}>Bridge Years</div>
@@ -168,8 +149,6 @@ export default function TaxableBrokerageGapCalculator() {
               </div>
             </div>
           </div>
-
-          {/* Progress bar */}
           <div style={{ maxWidth: 400, margin: '0 auto' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
               <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.3)' }}>Have: {fmt(taxableBalance + rothBalance * 0.7)}</span>
@@ -181,12 +160,10 @@ export default function TaxableBrokerageGapCalculator() {
           </div>
         </div>
 
-        {/* Fix options — only if gap exists */}
         {!result.funded && (
           <div style={{ background: '#141C28', borderRadius: 12, padding: '16px 20px', marginBottom: 16, border: '1px solid rgba(255,255,255,0.07)' }}>
             <div style={{ fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)', marginBottom: 12 }}>Ways to Close the Gap</div>
             <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 10 }}>
-
               {result.yearsToClose !== -1 && annualContrib > 0 && (
                 <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
                   <span style={{ color: COLORS.teal, flexShrink: 0, fontSize: 14 }}>①</span>
@@ -200,7 +177,6 @@ export default function TaxableBrokerageGapCalculator() {
                   </div>
                 </div>
               )}
-
               <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
                 <span style={{ color: COLORS.purple, flexShrink: 0, fontSize: 14 }}>②</span>
                 <div>
@@ -208,7 +184,6 @@ export default function TaxableBrokerageGapCalculator() {
                   <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)' }}>Roth contributions (not earnings) are always accessible penalty-free — they count toward your bridge even before 59½</div>
                 </div>
               </div>
-
               <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
                 <span style={{ color: COLORS.gold, flexShrink: 0, fontSize: 14 }}>③</span>
                 <div>
@@ -216,7 +191,6 @@ export default function TaxableBrokerageGapCalculator() {
                   <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)' }}>Convert IRA funds to Roth starting 5 years before retirement — each conversion unlocks penalty-free 5 years later</div>
                 </div>
               </div>
-
               <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
                 <span style={{ color: COLORS.orange, flexShrink: 0, fontSize: 14 }}>④</span>
                 <div>
@@ -228,13 +202,10 @@ export default function TaxableBrokerageGapCalculator() {
           </div>
         )}
 
-        {/* Next step */}
         <div style={{ background: 'rgba(45,212,191,0.06)', border: '1px solid rgba(45,212,191,0.15)', borderLeft: `3px solid ${COLORS.teal}`, borderRadius: 8, padding: '14px 16px', marginBottom: 16 }}>
           <div style={{ fontSize: 10, color: COLORS.teal, fontWeight: 600, marginBottom: 6, letterSpacing: 1 }}>🌉 NEXT STEP</div>
           <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', margin: '0 0 10px', lineHeight: 1.7 }}>
-            {result.funded
-              ? 'Your taxable bridge looks funded. Now score your overall retirement plan.'
-              : 'Close this gap before retiring. These tools can help.'}
+            {result.funded ? 'Your taxable bridge looks funded. Now score your overall retirement plan.' : 'Close this gap before retiring. These tools can help.'}
           </p>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' as const }}>
             <a href="/tools/bridge-health-check" style={{ fontSize: 10, color: COLORS.teal, border: `1px solid ${COLORS.teal}40`, padding: '5px 12px', borderRadius: 5, textDecoration: 'none', fontWeight: 600 }}>Full Bridge Health Check →</a>
@@ -244,7 +215,6 @@ export default function TaxableBrokerageGapCalculator() {
           </div>
         </div>
 
-        {/* Pro upsell */}
         {!isPro && (
           <div style={{ background: 'linear-gradient(135deg, rgba(232,184,75,0.06) 0%, rgba(232,184,75,0.02) 100%)', border: '1px solid rgba(232,184,75,0.2)', borderLeft: '3px solid #E8B84B', borderRadius: 12, padding: '20px 24px' }}>
             <div style={{ fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: COLORS.gold, marginBottom: 10 }}>⚡ BridgeToRetired Pro — $9/mo</div>
@@ -259,7 +229,11 @@ export default function TaxableBrokerageGapCalculator() {
                 </div>
               ))}
             </div>
-            <Link href="/pricing" style={{ background: COLORS.gold, color: '#0D1420', fontFamily: 'Georgia, serif', fontWeight: 700, fontSize: 12, padding: '10px 24px', borderRadius: 8, textDecoration: 'none', display: 'inline-block' }}>
+            <Link
+              href="/pricing"
+              onClick={() => trackProCtaClick('taxable-gap-upsell')}
+              style={{ background: COLORS.gold, color: '#0D1420', fontFamily: 'Georgia, serif', fontWeight: 700, fontSize: 12, padding: '10px 24px', borderRadius: 8, textDecoration: 'none', display: 'inline-block' }}
+            >
               See Pro Plans →
             </Link>
           </div>

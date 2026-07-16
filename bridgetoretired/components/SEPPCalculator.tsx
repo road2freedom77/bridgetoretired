@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import Link from 'next/link'
 import { useUser } from '@clerk/nextjs'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, LineChart, Line, ReferenceLine } from 'recharts'
+import { trackCalculatorUsed, trackProCtaClick } from '@/lib/analytics'
 
 const COLORS = {
   gold: '#E8B84B', teal: '#2DD4BF', purple: '#A78BFA',
@@ -71,6 +72,11 @@ export default function SEPPCalculator() {
   const [portfolioReturn, setPortfolioReturn] = useState(6)
   const [annualSpend, setAnnualSpend] = useState(55_000)
 
+  const track = useCallback(() => trackCalculatorUsed('sepp-calculator'), [])
+  function tracked(setter: (v: number) => void) {
+    return (v: number) => { track(); setter(v) }
+  }
+
   const freeAge = Math.max(59.5, startAge + 5)
   const sepp59 = freeAge === 59.5
   const durationYears = freeAge - startAge
@@ -79,7 +85,6 @@ export default function SEPPCalculator() {
   const annuitization = calcSEPP(accountBalance, startAge, interestRate, 'annuitization')
   const rmd = calcSEPP(accountBalance, startAge, interestRate, 'rmd')
 
-  // FIX 2: Changed "Highest" label on Fixed Annuitization to accurate description
   const methods = [
     { name: 'Fixed Amortization', value: amortization, color: COLORS.gold, recommended: true, description: 'Fixed payments, most popular. Best for predictable income planning.' },
     { name: 'Fixed Annuitization', value: annuitization, color: COLORS.teal, recommended: false, description: 'Often similar to amortization. Slightly different annuity-factor formula.' },
@@ -121,11 +126,11 @@ export default function SEPPCalculator() {
         {/* Controls */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, marginBottom: 20 }}>
           {[
-            { label: 'IRA / 401k Balance', value: accountBalance, set: setAccountBalance, min: 100000, max: 3000000, step: 25000, fmt: (v: number) => formatDollars(v) },
-            { label: 'Age at SEPP Start', value: startAge, set: setStartAge, min: 40, max: 58, step: 1, fmt: (v: number) => `Age ${v}` },
-            { label: 'IRS Interest Rate', value: interestRate, set: setInterestRate, min: 1, max: 7, step: 0.25, fmt: (v: number) => `${v}%` },
-            { label: 'Portfolio Return', value: portfolioReturn, set: setPortfolioReturn, min: 3, max: 10, step: 0.5, fmt: (v: number) => `${v}%` },
-            { label: 'Annual Spending Need', value: annualSpend, set: setAnnualSpend, min: 20000, max: 150000, step: 5000, fmt: (v: number) => formatDollars(v) },
+            { label: 'IRA / 401k Balance', value: accountBalance, set: tracked(setAccountBalance), min: 100000, max: 3000000, step: 25000, fmt: (v: number) => formatDollars(v) },
+            { label: 'Age at SEPP Start', value: startAge, set: tracked(setStartAge), min: 40, max: 58, step: 1, fmt: (v: number) => `Age ${v}` },
+            { label: 'IRS Interest Rate', value: interestRate, set: tracked(setInterestRate), min: 1, max: 7, step: 0.25, fmt: (v: number) => `${v}%` },
+            { label: 'Portfolio Return', value: portfolioReturn, set: tracked(setPortfolioReturn), min: 3, max: 10, step: 0.5, fmt: (v: number) => `${v}%` },
+            { label: 'Annual Spending Need', value: annualSpend, set: tracked(setAnnualSpend), min: 20000, max: 150000, step: 5000, fmt: (v: number) => formatDollars(v) },
           ].map(({ label, value, set, min, max, step, fmt }) => (
             <div key={label} style={{ background: '#141C28', borderRadius: 10, padding: '12px 14px', border: '1px solid rgba(255,255,255,0.06)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
@@ -144,7 +149,6 @@ export default function SEPPCalculator() {
                 { label: 'Start age', value: `Age ${startAge}` },
                 { label: 'Free at', value: `Age ${freeAge.toFixed(1)} (${sepp59 ? '59½ reached' : '5-yr rule'})` },
                 { label: 'Duration', value: `${durationYears.toFixed(1)} years` },
-                // FIX 1: Changed "if broken at 3yr" to "~X before interest / if broken at year 3"
                 { label: 'Modification penalty', value: `~${formatDollars(retroactivePenalty)} before interest` },
                 { label: '', value: 'if broken at year 3' },
               ].map(({ label, value }, i) => (
@@ -183,20 +187,19 @@ export default function SEPPCalculator() {
             {
               label: 'Penalty Avoided',
               value: formatDollars(Math.round(amortization * taxComparison.years * 0.10)),
-              // unchanged
               sub: `over ${taxComparison.years} years`,
               color: COLORS.sage,
             },
             {
-              label: 'Estimated Income Tax',          // FIX 3: was "Tax Still Owed"
+              label: 'Estimated Income Tax',
               value: formatDollars(taxComparison.sepp_tax),
-              sub: 'Assumes 18% ordinary-income tax rate',  // FIX 3: was "~18% ordinary income"
+              sub: 'Assumes 18% ordinary-income tax rate',
               color: COLORS.orange,
             },
             {
               label: 'Modification Risk',
               value: `~${formatDollars(retroactivePenalty)}`,
-              sub: 'before interest · if broken at year 3',  // FIX 1 reflected in KPI sub too
+              sub: 'before interest · if broken at year 3',
               color: COLORS.red,
             },
           ].map(({ label, value, sub, color }) => (
@@ -274,7 +277,11 @@ export default function SEPPCalculator() {
                 Generate a branded, CPA-ready report with your SEPP schedule, bridge strategy, and 30-year projection — shareable in one click.
               </div>
             </div>
-            <Link href="/pricing" style={{ background: COLORS.gold, color: '#0D1420', fontFamily: 'Georgia, serif', fontWeight: 700, fontSize: 12, padding: '10px 20px', borderRadius: 8, textDecoration: 'none', whiteSpace: 'nowrap' as const, flexShrink: 0 }}>
+            <Link
+              href="/pricing"
+              onClick={() => trackProCtaClick('sepp-calculator-upsell')}
+              style={{ background: COLORS.gold, color: '#0D1420', fontFamily: 'Georgia, serif', fontWeight: 700, fontSize: 12, padding: '10px 20px', borderRadius: 8, textDecoration: 'none', whiteSpace: 'nowrap' as const, flexShrink: 0 }}
+            >
               Get Pro →
             </Link>
           </div>
@@ -283,7 +290,13 @@ export default function SEPPCalculator() {
 
       <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '12px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.15)', letterSpacing: 1 }}>Work with a CPA before starting 72(t) · For educational purposes only</span>
-        {!isPro && <a href="/#download" style={{ fontSize: 9, color: COLORS.gold, textDecoration: 'none', letterSpacing: 2, textTransform: 'uppercase' }}>Get Free Planner →</a>}
+        {!isPro && (
+          <a href="/#download"
+            onClick={() => trackProCtaClick('sepp-calculator-footer-planner')}
+            style={{ fontSize: 9, color: COLORS.gold, textDecoration: 'none', letterSpacing: 2, textTransform: 'uppercase' }}>
+            Get Free Planner →
+          </a>
+        )}
       </div>
     </div>
   )

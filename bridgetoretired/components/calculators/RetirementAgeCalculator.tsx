@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import Link from 'next/link'
 import { useUser } from '@clerk/nextjs'
+import { trackCalculatorUsed, trackProCtaClick } from '@/lib/analytics'
 
 const COLORS = {
   gold: '#E8B84B', teal: '#2DD4BF', sage: '#4ADE80',
@@ -25,52 +26,28 @@ function getRate(retirementYears: number): number {
   return WITHDRAWAL_RATES[Math.min(50, Math.max(25, key))] ?? 0.033
 }
 
-function calcRetirementAge(
-  currentAge: number,
-  portfolio: number,
-  annualContrib: number,
-  growthRate: number,
-  annualSpend: number,
-): { retireAge: number; portfolioAtRetire: number; fireNumber: number; yearsRemaining: number; withdrawalRate: number } {
+function calcRetirementAge(currentAge: number, portfolio: number, annualContrib: number, growthRate: number, annualSpend: number) {
   const r = growthRate / 100
   let bal = portfolio
-  let age = currentAge
 
-  // Iterate year by year until portfolio >= FIRE number
-  // FIRE number depends on retirement length, which depends on retire age — iterate
   for (let y = 0; y <= 40; y++) {
     const retirementYears = 90 - (currentAge + y)
     const rate = getRate(retirementYears)
     const fireNumber = annualSpend / rate
-
     if (bal >= fireNumber) {
-      return {
-        retireAge: currentAge + y,
-        portfolioAtRetire: Math.round(bal),
-        fireNumber: Math.round(fireNumber),
-        yearsRemaining: y,
-        withdrawalRate: rate,
-      }
+      return { retireAge: currentAge + y, portfolioAtRetire: Math.round(bal), fireNumber: Math.round(fireNumber), yearsRemaining: y, withdrawalRate: rate }
     }
     bal = bal * (1 + r) + annualContrib
-    age++
   }
 
-  // Won't hit it in 40 years
   const retirementYears = 90 - (currentAge + 40)
   const rate = getRate(retirementYears)
-  return {
-    retireAge: currentAge + 40,
-    portfolioAtRetire: Math.round(bal),
-    fireNumber: Math.round(annualSpend / rate),
-    yearsRemaining: 40,
-    withdrawalRate: rate,
-  }
+  return { retireAge: currentAge + 40, portfolioAtRetire: Math.round(bal), fireNumber: Math.round(annualSpend / rate), yearsRemaining: 40, withdrawalRate: rate }
 }
 
-function SliderField({ label, value, set, min, max, step, display, note }: {
+function SliderField({ label, value, set, min, max, step, display, note, onTrack }: {
   label: string; value: number; set: (v: number) => void
-  min: number; max: number; step: number; display: string; note?: string
+  min: number; max: number; step: number; display: string; note?: string; onTrack: () => void
 }) {
   return (
     <div style={{ background: COLORS.ink, borderRadius: 10, padding: '12px 14px', border: '1px solid rgba(255,255,255,0.06)' }}>
@@ -79,7 +56,7 @@ function SliderField({ label, value, set, min, max, step, display, note }: {
         <span style={{ fontSize: 12, color: COLORS.gold, fontWeight: 600 }}>{display}</span>
       </div>
       <input type="range" min={min} max={max} step={step} value={value}
-        onChange={e => set(Number(e.target.value))}
+        onChange={e => { onTrack(); set(Number(e.target.value)) }}
         style={{ width: '100%', accentColor: COLORS.gold, cursor: 'pointer' }} />
       {note && <div style={{ fontSize: 8, color: 'rgba(255,255,255,0.2)', marginTop: 4 }}>{note}</div>}
     </div>
@@ -96,6 +73,8 @@ export default function RetirementAgeCalculator() {
   const [growthRate, setGrowthRate] = useState(7)
   const [annualSpend, setAnnualSpend] = useState(65_000)
 
+  const track = useCallback(() => trackCalculatorUsed('retirement-age'), [])
+
   const result = useMemo(() =>
     calcRetirementAge(currentAge, portfolio, annualContrib, growthRate, annualSpend),
     [currentAge, portfolio, annualContrib, growthRate, annualSpend]
@@ -109,7 +88,6 @@ export default function RetirementAgeCalculator() {
   return (
     <div style={{ background: '#0D1420', borderRadius: 16, border: '1px solid rgba(232,184,75,0.15)', overflow: 'hidden', fontFamily: "'IBM Plex Mono', monospace", margin: '2rem 0' }}>
 
-      {/* Header */}
       <div style={{ background: '#141C28', borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '20px 24px' }}>
         <div style={{ fontSize: 9, letterSpacing: 3, textTransform: 'uppercase', color: COLORS.gold, marginBottom: 6 }}>Free Calculator</div>
         <h3 style={{ color: COLORS.white, fontSize: 18, fontFamily: 'Georgia, serif', fontWeight: 700, margin: 0, marginBottom: 4 }}>When Can I Retire?</h3>
@@ -118,16 +96,14 @@ export default function RetirementAgeCalculator() {
 
       <div style={{ padding: '24px' }}>
 
-        {/* Inputs */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, marginBottom: 24 }}>
-          <SliderField label="Current Age" value={currentAge} set={setCurrentAge} min={25} max={57} step={1} display={`Age ${currentAge}`} />
-          <SliderField label="Current Portfolio" value={portfolio} set={setPortfolio} min={0} max={3_000_000} step={10_000} display={fmt(portfolio)} note="Total across all accounts" />
-          <SliderField label="Annual Contributions" value={annualContrib} set={setAnnualContrib} min={0} max={100_000} step={1_000} display={fmt(annualContrib)} note="401k + IRA + taxable combined" />
-          <SliderField label="Annual Spending in Retirement" value={annualSpend} set={setAnnualSpend} min={30_000} max={150_000} step={5_000} display={fmt(annualSpend)} />
-          <SliderField label="Expected Growth Rate" value={growthRate} set={setGrowthRate} min={4} max={10} step={0.5} display={`${growthRate}%`} note="Real (inflation-adjusted)" />
+          <SliderField label="Current Age" value={currentAge} set={setCurrentAge} min={25} max={57} step={1} display={`Age ${currentAge}`} onTrack={track} />
+          <SliderField label="Current Portfolio" value={portfolio} set={setPortfolio} min={0} max={3_000_000} step={10_000} display={fmt(portfolio)} note="Total across all accounts" onTrack={track} />
+          <SliderField label="Annual Contributions" value={annualContrib} set={setAnnualContrib} min={0} max={100_000} step={1_000} display={fmt(annualContrib)} note="401k + IRA + taxable combined" onTrack={track} />
+          <SliderField label="Annual Spending in Retirement" value={annualSpend} set={setAnnualSpend} min={30_000} max={150_000} step={5_000} display={fmt(annualSpend)} onTrack={track} />
+          <SliderField label="Expected Growth Rate" value={growthRate} set={setGrowthRate} min={4} max={10} step={0.5} display={`${growthRate}%`} note="Real (inflation-adjusted)" onTrack={track} />
         </div>
 
-        {/* Big answer */}
         <div style={{ background: 'rgba(232,184,75,0.06)', border: '1px solid rgba(232,184,75,0.25)', borderRadius: 12, padding: '24px', marginBottom: 20, textAlign: 'center' as const }}>
           <div style={{ fontSize: 9, letterSpacing: 3, textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', marginBottom: 8 }}>Estimated Retirement Age</div>
           <div style={{ fontSize: 56, fontWeight: 700, color: COLORS.gold, fontFamily: 'Georgia, serif', lineHeight: 1 }}>
@@ -136,8 +112,6 @@ export default function RetirementAgeCalculator() {
           <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginTop: 8 }}>
             {result.yearsRemaining === 0 ? "You've already hit your FIRE number!" : `${result.yearsRemaining} year${result.yearsRemaining === 1 ? '' : 's'} from now`}
           </div>
-
-          {/* Progress */}
           <div style={{ marginTop: 16, maxWidth: 360, margin: '16px auto 0' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
               <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.3)' }}>{fmt(portfolio)} saved</span>
@@ -149,7 +123,6 @@ export default function RetirementAgeCalculator() {
           </div>
         </div>
 
-        {/* KPI cards */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 20 }}>
           <div style={{ background: '#141C28', borderRadius: 10, padding: '12px 14px', border: `1px solid ${COLORS.teal}20`, borderTop: `3px solid ${COLORS.teal}` }}>
             <div style={{ fontSize: 8, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', marginBottom: 4 }}>FIRE Number</div>
@@ -168,7 +141,6 @@ export default function RetirementAgeCalculator() {
           </div>
         </div>
 
-        {/* Bridge callout — only if retiring before 59½ */}
         {needsBridge && (
           <div style={{ background: 'rgba(251,146,60,0.06)', border: '1px solid rgba(251,146,60,0.2)', borderLeft: `3px solid ${COLORS.orange}`, borderRadius: 8, padding: '14px 16px', marginBottom: 16 }}>
             <div style={{ fontSize: 10, color: COLORS.orange, fontWeight: 600, marginBottom: 6, letterSpacing: 1 }}>🌉 BRIDGE YEARS REQUIRED</div>
@@ -183,7 +155,6 @@ export default function RetirementAgeCalculator() {
           </div>
         )}
 
-        {/* Pro upsell */}
         {!isPro && (
           <div style={{ background: 'linear-gradient(135deg, rgba(232,184,75,0.06) 0%, rgba(232,184,75,0.02) 100%)', border: '1px solid rgba(232,184,75,0.2)', borderLeft: '3px solid #E8B84B', borderRadius: 12, padding: '20px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 20 }}>
             <div>
@@ -195,7 +166,11 @@ export default function RetirementAgeCalculator() {
                 Pro models every year from {result.retireAge} to 90 — which account to draw from, when 401k access kicks in, and whether your bridge survives a market downturn.
               </div>
             </div>
-            <a href="/pricing" style={{ background: COLORS.gold, color: '#0D1420', fontFamily: 'Georgia, serif', fontWeight: 700, fontSize: 12, padding: '10px 20px', borderRadius: 8, textDecoration: 'none', whiteSpace: 'nowrap' as const, flexShrink: 0 }}>
+            <a
+              href="/pricing"
+              onClick={() => trackProCtaClick('retirement-age-upsell')}
+              style={{ background: COLORS.gold, color: '#0D1420', fontFamily: 'Georgia, serif', fontWeight: 700, fontSize: 12, padding: '10px 20px', borderRadius: 8, textDecoration: 'none', whiteSpace: 'nowrap' as const, flexShrink: 0 }}
+            >
               Get Pro →
             </a>
           </div>

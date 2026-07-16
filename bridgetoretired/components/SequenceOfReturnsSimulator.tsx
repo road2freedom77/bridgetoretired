@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts'
+import { trackCalculatorUsed, trackProCtaClick } from '@/lib/analytics'
 
 const COLORS = {
   gold: '#E8B84B',
@@ -73,6 +74,11 @@ export default function SequenceOfReturnsSimulator() {
   const [crashMagnitude, setCrashMagnitude] = useState(30)
   const [years, setYears] = useState(30)
 
+  const track = useCallback(() => trackCalculatorUsed('sequence-of-returns'), [])
+  function tracked(setter: (v: number) => void) {
+    return (v: number) => { track(); setter(v) }
+  }
+
   const goodReturns = useMemo(() => {
     const baseReturn = 7
     const arr = Array(years).fill(baseReturn)
@@ -107,7 +113,6 @@ export default function SequenceOfReturnsSimulator() {
   const luckyFinal = luckyData[luckyData.length - 1]?.balance ?? 0
   const unluckyFinal = unluckyData[unluckyData.length - 1]?.balance ?? 0
 
-  // Timing difference card: meaningful regardless of depletion state
   const bothSurvive = !luckyDepletion && !unluckyDepletion
   const onlyUnluckyDepletes = !luckyDepletion && unluckyDepletion
   const bothDeplete = !!luckyDepletion && !!unluckyDepletion
@@ -155,10 +160,10 @@ export default function SequenceOfReturnsSimulator() {
         {/* Controls */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16, marginBottom: 24 }}>
           {[
-            { label: 'Starting Portfolio', value: startBalance, set: setStartBalance, min: 250000, max: 3000000, step: 50000, fmt: (v: number) => formatDollars(v) },
-            { label: 'Annual Withdrawal', value: withdrawal, set: setWithdrawal, min: 10000, max: 150000, step: 5000, fmt: (v: number) => formatDollars(v) },
-            { label: 'Market Crash Size', value: crashMagnitude, set: setCrashMagnitude, min: 10, max: 50, step: 5, fmt: (v: number) => `-${v}%` },
-            { label: 'Years to Simulate', value: years, set: setYears, min: 15, max: 50, step: 5, fmt: (v: number) => `${v} yrs` },
+            { label: 'Starting Portfolio', value: startBalance, set: tracked(setStartBalance), min: 250000, max: 3000000, step: 50000, fmt: (v: number) => formatDollars(v) },
+            { label: 'Annual Withdrawal', value: withdrawal, set: tracked(setWithdrawal), min: 10000, max: 150000, step: 5000, fmt: (v: number) => formatDollars(v) },
+            { label: 'Market Crash Size', value: crashMagnitude, set: tracked(setCrashMagnitude), min: 10, max: 50, step: 5, fmt: (v: number) => `-${v}%` },
+            { label: 'Years to Simulate', value: years, set: tracked(setYears), min: 15, max: 50, step: 5, fmt: (v: number) => `${v} yrs` },
           ].map(({ label, value, set, min, max, step, fmt }) => (
             <div key={label} style={{ background: '#141C28', borderRadius: 10, padding: '14px 16px', border: '1px solid rgba(255,255,255,0.06)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
@@ -266,7 +271,11 @@ export default function SequenceOfReturnsSimulator() {
       {/* Footer */}
       <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '12px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.15)', letterSpacing: 1 }}>For educational purposes only · Not financial advice</span>
-        <a href="/#download" style={{ fontSize: 9, color: COLORS.gold, textDecoration: 'none', letterSpacing: 2, textTransform: 'uppercase' }}>Get Free Planner →</a>
+        <a href="/#download"
+          onClick={() => trackProCtaClick('sequence-of-returns-footer-planner')}
+          style={{ fontSize: 9, color: COLORS.gold, textDecoration: 'none', letterSpacing: 2, textTransform: 'uppercase' }}>
+          Get Free Planner →
+        </a>
       </div>
     </div>
   )

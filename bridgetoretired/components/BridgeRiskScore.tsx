@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { useUser } from '@clerk/nextjs'
+import { trackCalculatorUsed, trackProCtaClick } from '@/lib/analytics'
 
 const COLORS = {
   gold: '#E8B84B',
@@ -45,6 +46,8 @@ export default function BridgeRiskScore() {
   const [ssAge,      setSsAge]      = useState(67)
   const [taxable,    setTaxable]    = useState(350_000)
   const [loadedFrom, setLoadedFrom] = useState<string | null>(null)
+
+  const track = useCallback(() => trackCalculatorUsed('bridge-risk-score'), [])
 
   // ── Pre-load from active scenario ─────────────────────────────────────────
   useEffect(() => {
@@ -241,7 +244,7 @@ export default function BridgeRiskScore() {
                     <span style={{ fontSize: 11, color: COLORS.gold, fontWeight: 600 }}>{fmt(value)}</span>
                   </div>
                   <input type="range" min={min} max={max} step={step} value={value}
-                    onChange={e => set(Number(e.target.value))}
+                    onChange={e => { track(); set(Number(e.target.value)) }}
                     style={{ width: '100%', accentColor: COLORS.gold, cursor: 'pointer' }} />
                 </div>
               ))}
@@ -329,6 +332,7 @@ export default function BridgeRiskScore() {
             </div>
             <Link
               href="/pricing"
+              onClick={() => trackProCtaClick('bridge-risk-score-upsell')}
               style={{
                 background: COLORS.gold, color: '#0D1420', fontFamily: 'Georgia, serif',
                 fontWeight: 700, fontSize: 12, padding: '10px 18px', borderRadius: 8,

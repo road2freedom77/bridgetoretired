@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import Link from 'next/link'
 import { useUser } from '@clerk/nextjs'
+import { trackCalculatorUsed, trackProCtaClick } from '@/lib/analytics'
 
 const COLORS = {
   gold: '#E8B84B', teal: '#2DD4BF', sage: '#4ADE80',
@@ -15,8 +16,6 @@ function fmt(n: number) {
   if (n >= 1_000) return `$${Math.round(n / 1_000)}k`
   return `$${Math.round(n).toLocaleString()}`
 }
-
-// ── Scoring engine ────────────────────────────────────────────────────────────
 
 interface BridgeInputs {
   currentAge: number
@@ -36,14 +35,14 @@ interface WeaknessItem {
 
 interface BridgeResult {
   bridgeYears: number
-  bridgeRequired: number        // taxable needed to cover bridge
-  bridgeFunded: number          // pct funded (taxable + roth contributions)
+  bridgeRequired: number
+  bridgeFunded: number
   taxableGap: number
   totalPortfolio: number
   fireNumber: number
-  portfolioFunded: number       // pct of FIRE number
+  portfolioFunded: number
   withdrawalRate: number
-  score: number                 // 0-100
+  score: number
   grade: 'Stable' | 'Moderate Risk' | 'Fragile' | 'Critical'
   gradeColor: string
   biggestWeakness: WeaknessItem
@@ -56,7 +55,6 @@ function calcBridgeHealth(inp: BridgeInputs): BridgeResult {
   const bridgeYears = Math.max(0, 59.5 - retireAge)
   const retirementYears = 90 - retireAge
 
-  // Withdrawal rate based on retirement length
   const withdrawalRate = retirementYears >= 45 ? 0.030
     : retirementYears >= 40 ? 0.031
     : retirementYears >= 35 ? 0.033
@@ -65,34 +63,21 @@ function calcBridgeHealth(inp: BridgeInputs): BridgeResult {
 
   const fireNumber = Math.round(annualSpend / withdrawalRate)
   const totalPortfolio = taxableBalance + k401kBalance + rothBalance
-
-  // Bridge required: taxable + Roth contributions needed for bridge years
-  // Roth contributions (not earnings) are always accessible
-  const bridgeRequired = Math.round(annualSpend * bridgeYears * 1.15) // 15% buffer
-  const bridgeAvailable = taxableBalance + rothBalance * 0.7 // conservative: 70% of Roth is basis
+  const bridgeRequired = Math.round(annualSpend * bridgeYears * 1.15)
+  const bridgeAvailable = taxableBalance + rothBalance * 0.7
   const bridgeFunded = bridgeRequired > 0 ? Math.min(100, Math.round((bridgeAvailable / bridgeRequired) * 100)) : 100
   const taxableGap = Math.max(0, bridgeRequired - bridgeAvailable)
   const portfolioFunded = Math.min(100, Math.round((totalPortfolio / fireNumber) * 100))
 
-  // ── Scoring ──
   let score = 0
-
-  // Bridge funding (40 pts)
   score += Math.min(40, Math.round(bridgeFunded * 0.40))
-
-  // Portfolio vs FIRE number (35 pts)
   score += Math.min(35, Math.round(portfolioFunded * 0.35))
-
-  // Diversification — having both taxable and tax-deferred (15 pts)
   const hasTaxable = taxableBalance > annualSpend
   const hasRoth = rothBalance > annualSpend
   const hasTaxDeferred = k401kBalance > 0
   score += (hasTaxable ? 5 : 0) + (hasRoth ? 5 : 0) + (hasTaxDeferred ? 5 : 0)
-
-  // Time to retirement buffer (10 pts)
   const yearsToRetire = retireAge - currentAge
   score += yearsToRetire >= 10 ? 10 : yearsToRetire >= 5 ? 6 : 3
-
   score = Math.min(100, Math.max(0, score))
 
   const grade: BridgeResult['grade'] = score >= 75 ? 'Stable'
@@ -105,7 +90,6 @@ function calcBridgeHealth(inp: BridgeInputs): BridgeResult {
     : grade === 'Fragile' ? COLORS.orange
     : COLORS.red
 
-  // ── Weaknesses ──
   const weaknesses: WeaknessItem[] = []
 
   if (bridgeFunded < 100) {
@@ -153,7 +137,6 @@ function calcBridgeHealth(inp: BridgeInputs): BridgeResult {
     })
   }
 
-  // Sort by severity
   const severityOrder = { high: 0, medium: 1, low: 2 }
   weaknesses.sort((a, b) => severityOrder[a.severity] - severityOrder[b.severity])
 
@@ -178,11 +161,9 @@ function calcBridgeHealth(inp: BridgeInputs): BridgeResult {
   }
 }
 
-// ── Slider input ──────────────────────────────────────────────────────────────
-
-function SliderField({ label, value, set, min, max, step, display }: {
+function SliderField({ label, value, set, min, max, step, display, onTrack }: {
   label: string; value: number; set: (v: number) => void
-  min: number; max: number; step: number; display: string
+  min: number; max: number; step: number; display: string; onTrack: () => void
 }) {
   return (
     <div style={{ background: COLORS.ink, borderRadius: 10, padding: '12px 14px', border: '1px solid rgba(255,255,255,0.06)' }}>
@@ -191,19 +172,16 @@ function SliderField({ label, value, set, min, max, step, display }: {
         <span style={{ fontSize: 12, color: COLORS.gold, fontWeight: 600 }}>{display}</span>
       </div>
       <input type="range" min={min} max={max} step={step} value={value}
-        onChange={e => set(Number(e.target.value))}
+        onChange={e => { onTrack(); set(Number(e.target.value)) }}
         style={{ width: '100%', accentColor: COLORS.gold, cursor: 'pointer' }} />
     </div>
   )
 }
 
-// ── Score ring ────────────────────────────────────────────────────────────────
-
 function ScoreRing({ score, grade, color }: { score: number; grade: string; color: string }) {
   const r = 54
   const circ = 2 * Math.PI * r
   const dash = (score / 100) * circ
-
   return (
     <div style={{ position: 'relative', width: 140, height: 140, margin: '0 auto' }}>
       <svg width={140} height={140} style={{ transform: 'rotate(-90deg)' }}>
@@ -220,8 +198,6 @@ function ScoreRing({ score, grade, color }: { score: number; grade: string; colo
   )
 }
 
-// ── Main component ────────────────────────────────────────────────────────────
-
 export default function BridgeHealthCheck() {
   const { user } = useUser()
   const isPro = (user?.publicMetadata as any)?.isPro === true
@@ -233,6 +209,8 @@ export default function BridgeHealthCheck() {
   const [rothBalance, setRothBalance] = useState(80_000)
   const [annualSpend, setAnnualSpend] = useState(65_000)
 
+  const track = useCallback(() => trackCalculatorUsed('bridge-health-check'), [])
+
   const result = useMemo(() => calcBridgeHealth({
     currentAge, retireAge, taxableBalance, k401kBalance, rothBalance, annualSpend,
   }), [currentAge, retireAge, taxableBalance, k401kBalance, rothBalance, annualSpend])
@@ -240,7 +218,6 @@ export default function BridgeHealthCheck() {
   return (
     <div style={{ background: '#0D1420', borderRadius: 16, border: '1px solid rgba(232,184,75,0.15)', overflow: 'hidden', fontFamily: "'IBM Plex Mono', monospace", margin: '2rem 0' }}>
 
-      {/* Header */}
       <div style={{ background: '#141C28', borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '20px 24px' }}>
         <div style={{ fontSize: 9, letterSpacing: 3, textTransform: 'uppercase', color: COLORS.gold, marginBottom: 6 }}>Free Assessment</div>
         <h3 style={{ color: COLORS.white, fontSize: 18, fontFamily: 'Georgia, serif', fontWeight: 700, margin: 0, marginBottom: 4 }}>Bridge Health Check</h3>
@@ -249,17 +226,15 @@ export default function BridgeHealthCheck() {
 
       <div style={{ padding: '24px' }}>
 
-        {/* Inputs */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, marginBottom: 24 }}>
-          <SliderField label="Current Age" value={currentAge} set={setCurrentAge} min={30} max={57} step={1} display={`Age ${currentAge}`} />
-          <SliderField label="Target Retire Age" value={retireAge} set={v => setRetireAge(Math.max(currentAge + 1, v))} min={35} max={65} step={1} display={`Age ${retireAge}`} />
-          <SliderField label="Taxable / Brokerage" value={taxableBalance} set={setTaxableBalance} min={0} max={2_000_000} step={10_000} display={fmt(taxableBalance)} />
-          <SliderField label="401k / IRA Balance" value={k401kBalance} set={setK401kBalance} min={0} max={3_000_000} step={25_000} display={fmt(k401kBalance)} />
-          <SliderField label="Roth IRA Balance" value={rothBalance} set={setRothBalance} min={0} max={1_000_000} step={10_000} display={fmt(rothBalance)} />
-          <SliderField label="Annual Spending" value={annualSpend} set={setAnnualSpend} min={30_000} max={150_000} step={5_000} display={fmt(annualSpend)} />
+          <SliderField label="Current Age" value={currentAge} set={setCurrentAge} min={30} max={57} step={1} display={`Age ${currentAge}`} onTrack={track} />
+          <SliderField label="Target Retire Age" value={retireAge} set={v => { track(); setRetireAge(Math.max(currentAge + 1, v)) }} min={35} max={65} step={1} display={`Age ${retireAge}`} onTrack={track} />
+          <SliderField label="Taxable / Brokerage" value={taxableBalance} set={setTaxableBalance} min={0} max={2_000_000} step={10_000} display={fmt(taxableBalance)} onTrack={track} />
+          <SliderField label="401k / IRA Balance" value={k401kBalance} set={setK401kBalance} min={0} max={3_000_000} step={25_000} display={fmt(k401kBalance)} onTrack={track} />
+          <SliderField label="Roth IRA Balance" value={rothBalance} set={setRothBalance} min={0} max={1_000_000} step={10_000} display={fmt(rothBalance)} onTrack={track} />
+          <SliderField label="Annual Spending" value={annualSpend} set={setAnnualSpend} min={30_000} max={150_000} step={5_000} display={fmt(annualSpend)} onTrack={track} />
         </div>
 
-        {/* Score + grade */}
         <div style={{ background: '#141C28', borderRadius: 12, padding: '24px', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 24, flexWrap: 'wrap' as const }}>
           <ScoreRing score={result.score} grade={result.grade} color={result.gradeColor} />
           <div style={{ flex: 1, minWidth: 200 }}>
@@ -276,20 +251,14 @@ export default function BridgeHealthCheck() {
           </div>
         </div>
 
-        {/* Biggest weakness — always visible */}
         <div style={{ background: `rgba(${result.biggestWeakness.severity === 'high' ? '248,113,113' : result.biggestWeakness.severity === 'medium' ? '251,146,60' : '74,222,128'},0.06)`, border: `1px solid rgba(${result.biggestWeakness.severity === 'high' ? '248,113,113' : result.biggestWeakness.severity === 'medium' ? '251,146,60' : '74,222,128'},0.2)`, borderLeft: `3px solid ${result.biggestWeakness.severity === 'high' ? COLORS.red : result.biggestWeakness.severity === 'medium' ? COLORS.orange : COLORS.sage}`, borderRadius: 8, padding: '14px 16px', marginBottom: 16 }}>
           <div style={{ fontSize: 10, color: result.biggestWeakness.severity === 'high' ? COLORS.red : result.biggestWeakness.severity === 'medium' ? COLORS.orange : COLORS.sage, fontWeight: 600, marginBottom: 6, letterSpacing: 1 }}>
             {result.biggestWeakness.severity === 'high' ? '🔴' : result.biggestWeakness.severity === 'medium' ? '🟡' : '🟢'} BIGGEST WEAKNESS: {result.biggestWeakness.label.toUpperCase()}
           </div>
-          <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.55)', margin: '0 0 8px', lineHeight: 1.7 }}>
-            {result.biggestWeakness.detail}
-          </p>
-          <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', fontStyle: 'italic' }}>
-            Fix: {result.biggestWeakness.fix}
-          </div>
+          <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.55)', margin: '0 0 8px', lineHeight: 1.7 }}>{result.biggestWeakness.detail}</p>
+          <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', fontStyle: 'italic' }}>Fix: {result.biggestWeakness.fix}</div>
         </div>
 
-        {/* Bridge funding bar */}
         <div style={{ background: '#141C28', borderRadius: 10, padding: '14px 16px', marginBottom: 16 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
             <span style={{ fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)' }}>Bridge Funding</span>
@@ -304,10 +273,8 @@ export default function BridgeHealthCheck() {
           </div>
         </div>
 
-        {/* Pro gate — full weakness list + recommendations */}
         {isPro ? (
           <>
-            {/* All weaknesses */}
             {result.weaknesses.length > 1 && (
               <div style={{ background: '#141C28', borderRadius: 10, padding: '14px 16px', marginBottom: 16 }}>
                 <div style={{ fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)', marginBottom: 12 }}>All Risk Factors</div>
@@ -326,8 +293,6 @@ export default function BridgeHealthCheck() {
                 </div>
               </div>
             )}
-
-            {/* Recommendations */}
             <div style={{ background: 'rgba(232,184,75,0.06)', border: '1px solid rgba(232,184,75,0.15)', borderLeft: `3px solid ${COLORS.gold}`, borderRadius: 8, padding: '14px 16px', marginBottom: 16 }}>
               <div style={{ fontSize: 10, color: COLORS.gold, fontWeight: 600, marginBottom: 8, letterSpacing: 1 }}>📋 RECOMMENDED ACTIONS</div>
               <ol style={{ margin: 0, paddingLeft: 16, display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -336,8 +301,6 @@ export default function BridgeHealthCheck() {
                 ))}
               </ol>
             </div>
-
-            {/* Next steps */}
             <div style={{ background: '#141C28', borderRadius: 10, padding: '14px 16px', marginBottom: 16 }}>
               <div style={{ fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)', marginBottom: 10 }}>Model Your Plan</div>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' as const }}>
@@ -353,9 +316,7 @@ export default function BridgeHealthCheck() {
             </div>
           </>
         ) : (
-          /* Pro gate */
           <div style={{ background: '#141C28', borderRadius: 12, padding: '20px', marginBottom: 16, position: 'relative', overflow: 'hidden' }}>
-            {/* Blurred preview */}
             <div style={{ filter: 'blur(4px)', userSelect: 'none', pointerEvents: 'none', marginBottom: 16, opacity: 0.5 }}>
               <div style={{ fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)', marginBottom: 10 }}>All Risk Factors</div>
               {['Bridge account too small — $190k shortfall', 'No Roth balance for penalty-free access', 'Portfolio 67% of FIRE target'].map((item, i) => (
@@ -369,8 +330,6 @@ export default function BridgeHealthCheck() {
                 <div key={i} style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', marginBottom: 6 }}>• {r}</div>
               ))}
             </div>
-
-            {/* Overlay */}
             <div style={{ position: 'absolute', inset: 0, background: 'rgba(13,20,32,0.7)', backdropFilter: 'blur(2px)', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 12 }}>
               <div style={{ textAlign: 'center', padding: '0 24px' }}>
                 <div style={{ fontSize: 24, marginBottom: 8 }}>🔒</div>
@@ -380,7 +339,11 @@ export default function BridgeHealthCheck() {
                 <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', marginBottom: 16, lineHeight: 1.6, maxWidth: 320 }}>
                   Pro unlocks all risk factors ranked by severity, specific fix amounts, and a prioritized action plan for your bridge.
                 </div>
-                <a href="/pricing" style={{ background: COLORS.gold, color: '#0D1420', fontFamily: 'Georgia, serif', fontWeight: 700, fontSize: 12, padding: '10px 24px', borderRadius: 8, textDecoration: 'none', display: 'inline-block' }}>
+                <a
+                  href="/pricing"
+                  onClick={() => trackProCtaClick('bridge-health-gate')}
+                  style={{ background: COLORS.gold, color: '#0D1420', fontFamily: 'Georgia, serif', fontWeight: 700, fontSize: 12, padding: '10px 24px', borderRadius: 8, textDecoration: 'none', display: 'inline-block' }}
+                >
                   Unlock Bridge Risk Score — $9/mo
                 </a>
               </div>
@@ -388,7 +351,6 @@ export default function BridgeHealthCheck() {
           </div>
         )}
 
-        {/* Footer note */}
         <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.2)', textAlign: 'center', margin: 0 }}>
           Estimates only · For educational purposes · Not financial advice
         </p>

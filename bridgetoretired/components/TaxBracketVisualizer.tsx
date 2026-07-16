@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, ReferenceLine } from 'recharts'
+import { trackCalculatorUsed, trackProCtaClick } from '@/lib/analytics'
 
 const COLORS = {
   gold: '#E8B84B',
@@ -32,7 +33,7 @@ const BRACKETS_MFJ = [
   { rate: 0.24, upTo: STANDARD_DEDUCTION + 394_600, label: '24%', color: COLORS.red },
 ]
 
-const LTCG_THRESHOLD_MFJ = 94_050 // 0% LTCG threshold
+const LTCG_THRESHOLD_MFJ = 94_050
 
 function calcTax(ordinaryIncome: number, capitalGains: number): {
   ordinaryTax: number
@@ -44,7 +45,6 @@ function calcTax(ordinaryIncome: number, capitalGains: number): {
   const totalIncome = ordinaryIncome + capitalGains
   const taxableOrdinary = Math.max(0, ordinaryIncome - STANDARD_DEDUCTION)
 
-  // Ordinary income tax
   let ordTax = 0
   let prev = 0
   for (const b of BRACKETS_MFJ.slice(1)) {
@@ -54,7 +54,6 @@ function calcTax(ordinaryIncome: number, capitalGains: number): {
     prev = b.upTo - STANDARD_DEDUCTION
   }
 
-  // Capital gains tax (0% if total income under LTCG threshold)
   const ltcgRate = totalIncome <= LTCG_THRESHOLD_MFJ ? 0 : 0.15
   const cgTax = capitalGains * ltcgRate
 
@@ -86,21 +85,22 @@ export default function TaxBracketVisualizer() {
   const [rothConversion, setRothConversion] = useState(30_000)
   const [capitalGains, setCapitalGains] = useState(45_000)
   const [otherIncome, setOtherIncome] = useState(0)
-  const [filingStatus] = useState<'mfj'>('mfj')
+
+  const track = useCallback(() => trackCalculatorUsed('tax-bracket-visualizer'), [])
+  function tracked(setter: (v: number) => void) {
+    return (v: number) => { track(); setter(v) }
+  }
 
   const ordinaryIncome = rothConversion + otherIncome
   const result = useMemo(() => calcTax(ordinaryIncome, capitalGains), [ordinaryIncome, capitalGains])
 
-  const totalSpendable = capitalGains + rothConversion + otherIncome
   const overLTCGThreshold = result.totalIncome > LTCG_THRESHOLD_MFJ
   const overCGThreshold = result.totalIncome > LTCG_THRESHOLD_MFJ
 
-  // Build bracket fill visualization
   const bracketData = useMemo(() => {
     const bars = []
     const ordinary = Math.max(0, ordinaryIncome - STANDARD_DEDUCTION)
 
-    // Standard deduction
     bars.push({
       name: 'Std Deduction',
       amount: Math.min(ordinaryIncome, STANDARD_DEDUCTION),
@@ -109,7 +109,6 @@ export default function TaxBracketVisualizer() {
       type: 'ordinary',
     })
 
-    // Ordinary income brackets
     let filled = 0
     for (const b of BRACKETS_MFJ.slice(1)) {
       const bracketSize = (b.upTo - STANDARD_DEDUCTION) - (BRACKETS_MFJ[BRACKETS_MFJ.indexOf(b) - 1]?.upTo - STANDARD_DEDUCTION || 0)
@@ -127,7 +126,6 @@ export default function TaxBracketVisualizer() {
       if (filled >= ordinary + 20_000) break
     }
 
-    // Capital gains bar
     bars.push({
       name: 'Capital Gains',
       amount: capitalGains,
@@ -139,11 +137,10 @@ export default function TaxBracketVisualizer() {
     return bars
   }, [ordinaryIncome, capitalGains, overCGThreshold])
 
-  // Year simulation: show tax at different income levels
   const scenarioData = useMemo(() => {
     return [20, 30, 40, 50, 60, 70, 80, 94, 110, 130].map(k => {
-      const cg = k * 1000 * 0.6 // 60% capital gains
-      const ord = k * 1000 * 0.4 // 40% ordinary (Roth conversions)
+      const cg = k * 1000 * 0.6
+      const ord = k * 1000 * 0.4
       const r = calcTax(ord, cg)
       return {
         name: `$${k}k`,
@@ -176,9 +173,9 @@ export default function TaxBracketVisualizer() {
         {/* Controls */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, marginBottom: 20 }}>
           {[
-            { label: 'Roth Conversion Amount', value: rothConversion, set: setRothConversion, min: 0, max: 100_000, step: 1000, fmt: (v: number) => formatDollars(v), sublabel: 'Ordinary income' },
-            { label: 'Capital Gains / Dividends', value: capitalGains, set: setCapitalGains, min: 0, max: 150_000, step: 1000, fmt: (v: number) => formatDollars(v), sublabel: 'From taxable account' },
-            { label: 'Other Ordinary Income', value: otherIncome, set: setOtherIncome, min: 0, max: 50_000, step: 1000, fmt: (v: number) => formatDollars(v), sublabel: 'SS, part-time, etc.' },
+            { label: 'Roth Conversion Amount', value: rothConversion, set: tracked(setRothConversion), min: 0, max: 100_000, step: 1000, fmt: (v: number) => formatDollars(v), sublabel: 'Ordinary income' },
+            { label: 'Capital Gains / Dividends', value: capitalGains, set: tracked(setCapitalGains), min: 0, max: 150_000, step: 1000, fmt: (v: number) => formatDollars(v), sublabel: 'From taxable account' },
+            { label: 'Other Ordinary Income', value: otherIncome, set: tracked(setOtherIncome), min: 0, max: 50_000, step: 1000, fmt: (v: number) => formatDollars(v), sublabel: 'SS, part-time, etc.' },
           ].map(({ label, value, set, min, max, step, fmt, sublabel }) => (
             <div key={label} style={{ background: '#141C28', borderRadius: 10, padding: '12px 14px', border: '1px solid rgba(255,255,255,0.06)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
@@ -253,7 +250,6 @@ export default function TaxBracketVisualizer() {
               </div>
               <div style={{ width: 60, fontSize: 9, color: COLORS.sage, textAlign: 'right' as const }}>Cap: $30k</div>
             </div>
-            {/* 10% bracket */}
             {[
               { label: '10% Bracket', max: 23_850, color: COLORS.teal },
               { label: '12% Bracket', max: 96_950, color: COLORS.blue },
@@ -343,7 +339,11 @@ export default function TaxBracketVisualizer() {
       {/* Footer */}
       <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '12px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.15)', letterSpacing: 1 }}>2026 MFJ brackets · State taxes not included · For educational purposes only</span>
-        <a href="/#download" style={{ fontSize: 9, color: COLORS.gold, textDecoration: 'none', letterSpacing: 2, textTransform: 'uppercase' }}>Get Free Planner →</a>
+        <a href="/#download"
+          onClick={() => trackProCtaClick('tax-bracket-footer-planner')}
+          style={{ fontSize: 9, color: COLORS.gold, textDecoration: 'none', letterSpacing: 2, textTransform: 'uppercase' }}>
+          Get Free Planner →
+        </a>
       </div>
     </div>
   )

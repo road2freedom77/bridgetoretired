@@ -1,5 +1,6 @@
 'use client'
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
+import { trackCalculatorUsed } from '@/lib/analytics'
 
 interface YearRow {
   year: number
@@ -70,7 +71,6 @@ const fmt = (n: number) =>
   n < 0 ? `-$${Math.abs(Math.round(n)).toLocaleString()}` : `$${Math.round(n).toLocaleString()}`
 
 export function Calculator() {
-  // Defaults chosen to show a healthy, solvent portfolio as the first impression
   const [inputs, setInputs] = useState({
     currentAge:   45,
     retireAge:    55,
@@ -85,8 +85,12 @@ export function Calculator() {
     inflationAdj: true,
   })
 
-  const set = (k: keyof typeof inputs, v: number | boolean) =>
+  const track = useCallback(() => trackCalculatorUsed('bridge-calculator'), [])
+
+  const set = (k: keyof typeof inputs, v: number | boolean) => {
+    track()
     setInputs(prev => ({ ...prev, [k]: v }))
+  }
 
   const rows = useMemo(() =>
     calcBridge(

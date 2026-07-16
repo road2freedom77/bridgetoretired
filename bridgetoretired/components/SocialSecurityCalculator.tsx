@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts'
+import { trackCalculatorUsed, trackProCtaClick } from '@/lib/analytics'
 
 const COLORS = {
   gold: '#E8B84B',
@@ -40,23 +41,24 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 }
 
 export default function SocialSecurityCalculator() {
-  const [fullBenefit, setFullBenefit] = useState(2_400) // monthly at FRA
+  const [fullBenefit, setFullBenefit] = useState(2_400)
   const [currentAge, setCurrentAge] = useState(52)
   const [portfolioSize, setPortfolioSize] = useState(1_200_000)
   const [annualSpend, setAnnualSpend] = useState(70_000)
   const [portfolioReturn, setPortfolioReturn] = useState(6)
 
+  const track = useCallback(() => trackCalculatorUsed('social-security-calculator'), [])
+  function tracked(setter: (v: number) => void) {
+    return (v: number) => { track(); setter(v) }
+  }
+
   const FRA = 67
 
-  // Benefit multipliers
   const benefit62 = Math.round(fullBenefit * 0.70)
   const benefit67 = fullBenefit
   const benefit70 = Math.round(fullBenefit * 1.24)
 
-  // Break-even calculations (cumulative lifetime benefits)
   const breakEven6267 = useMemo(() => {
-    // Age 62 gets payments 5 years earlier but smaller
-    // Find age where cumulative 67 benefit exceeds cumulative 62 benefit
     let cum62 = 0, cum67 = 0
     for (let age = 62; age <= 95; age++) {
       cum62 += age >= 62 ? benefit62 * 12 : 0
@@ -86,7 +88,6 @@ export default function SocialSecurityCalculator() {
     return 81
   }, [benefit62, benefit70])
 
-  // Cumulative lifetime benefit chart
   const cumulativeData = useMemo(() => {
     let cum62 = 0, cum67 = 0, cum70 = 0
     const rows = []
@@ -104,7 +105,6 @@ export default function SocialSecurityCalculator() {
     return rows
   }, [benefit62, benefit67, benefit70])
 
-  // Portfolio survival: how does claiming age affect portfolio longevity?
   const portfolioData = useMemo(() => {
     const rate = portfolioReturn / 100
     const rows = []
@@ -137,10 +137,6 @@ export default function SocialSecurityCalculator() {
     return rows
   }, [currentAge, portfolioSize, annualSpend, portfolioReturn, benefit62, benefit67, benefit70])
 
-  const portDepletedAge62 = portfolioData.find(d => d['Claim 62'] === 0)?.age
-  const portDepletedAge67 = portfolioData.find(d => d['Claim 67'] === 0)?.age
-  const portDepletedAge70 = portfolioData.find(d => d['Claim 70'] === 0)?.age
-
   const port90_62 = portfolioData[portfolioData.length - 1]?.['Claim 62'] ?? 0
   const port90_67 = portfolioData[portfolioData.length - 1]?.['Claim 67'] ?? 0
   const port90_70 = portfolioData[portfolioData.length - 1]?.['Claim 70'] ?? 0
@@ -172,11 +168,11 @@ export default function SocialSecurityCalculator() {
         {/* Controls */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, marginBottom: 20 }}>
           {[
-            { label: 'Monthly Benefit at 67 (FRA)', value: fullBenefit, set: setFullBenefit, min: 500, max: 4000, step: 50, fmt: (v: number) => `$${v.toLocaleString()}/mo` },
-            { label: 'Current Age', value: currentAge, set: setCurrentAge, min: 40, max: 62, step: 1, fmt: (v: number) => `Age ${v}` },
-            { label: 'Portfolio Size', value: portfolioSize, set: setPortfolioSize, min: 300000, max: 5000000, step: 100000, fmt: (v: number) => formatDollars(v) },
-            { label: 'Annual Spending', value: annualSpend, set: setAnnualSpend, min: 30000, max: 150000, step: 5000, fmt: (v: number) => formatDollars(v) },
-            { label: 'Portfolio Return', value: portfolioReturn, set: setPortfolioReturn, min: 3, max: 9, step: 0.5, fmt: (v: number) => `${v}%/yr` },
+            { label: 'Monthly Benefit at 67 (FRA)', value: fullBenefit, set: tracked(setFullBenefit), min: 500, max: 4000, step: 50, fmt: (v: number) => `$${v.toLocaleString()}/mo` },
+            { label: 'Current Age', value: currentAge, set: tracked(setCurrentAge), min: 40, max: 62, step: 1, fmt: (v: number) => `Age ${v}` },
+            { label: 'Portfolio Size', value: portfolioSize, set: tracked(setPortfolioSize), min: 300000, max: 5000000, step: 100000, fmt: (v: number) => formatDollars(v) },
+            { label: 'Annual Spending', value: annualSpend, set: tracked(setAnnualSpend), min: 30000, max: 150000, step: 5000, fmt: (v: number) => formatDollars(v) },
+            { label: 'Portfolio Return', value: portfolioReturn, set: tracked(setPortfolioReturn), min: 3, max: 9, step: 0.5, fmt: (v: number) => `${v}%/yr` },
           ].map(({ label, value, set, min, max, step, fmt }) => (
             <div key={label} style={{ background: '#141C28', borderRadius: 10, padding: '12px 14px', border: '1px solid rgba(255,255,255,0.06)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
@@ -321,7 +317,9 @@ export default function SocialSecurityCalculator() {
         <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.15)', letterSpacing: 1 }}>
           Verify your actual benefit at ssa.gov · For educational purposes only
         </span>
-        <a href="/#download" style={{ fontSize: 9, color: COLORS.gold, textDecoration: 'none', letterSpacing: 2, textTransform: 'uppercase' }}>
+        <a href="/#download"
+          onClick={() => trackProCtaClick('social-security-footer-planner')}
+          style={{ fontSize: 9, color: COLORS.gold, textDecoration: 'none', letterSpacing: 2, textTransform: 'uppercase' }}>
           Get Free Planner →
         </a>
       </div>

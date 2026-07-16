@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import Link from 'next/link'
 import { useUser } from '@clerk/nextjs'
+import { trackCalculatorUsed, trackProCtaClick } from '@/lib/analytics'
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts'
 
 const COLORS = {
@@ -65,6 +66,8 @@ export default function BridgeStrategyVisualizer({
   const [rothBalance, setRothBalance] = useState(defaultRoth)
   const [annualSpend, setAnnualSpend] = useState(defaultSpend)
   const [returnRate, setReturnRate] = useState(6)
+
+  const track = useCallback(() => trackCalculatorUsed('bridge-strategy'), [])
 
   const bridgeEnd = 59.5
   const ssAge = 67
@@ -161,7 +164,7 @@ export default function BridgeStrategyVisualizer({
                 <span style={{ fontSize: 12, color: COLORS.gold, fontWeight: 600 }}>{fmt(value)}</span>
               </div>
               <input type="range" min={min} max={max} step={step} value={value}
-                onChange={e => set(Number(e.target.value))}
+                onChange={e => { track(); set(Number(e.target.value)) }}
                 style={{ width: '100%', accentColor: COLORS.gold, cursor: 'pointer' }} />
             </div>
           ))}
@@ -295,11 +298,13 @@ export default function BridgeStrategyVisualizer({
                 Enter your exact balances, spending, and retirement age — free, no account required.
               </div>
             </div>
-            <a href="/#calculator" style={{
-              background: 'transparent', color: COLORS.teal, border: `1px solid ${COLORS.teal}`,
-              fontFamily: 'monospace', fontWeight: 700, fontSize: 11, padding: '8px 16px',
-              borderRadius: 8, textDecoration: 'none', whiteSpace: 'nowrap' as const, flexShrink: 0,
-            }}>
+            <a href="/#calculator"
+              onClick={() => trackProCtaClick('bridge-strategy-free-calculator')}
+              style={{
+                background: 'transparent', color: COLORS.teal, border: `1px solid ${COLORS.teal}`,
+                fontFamily: 'monospace', fontWeight: 700, fontSize: 11, padding: '8px 16px',
+                borderRadius: 8, textDecoration: 'none', whiteSpace: 'nowrap' as const, flexShrink: 0,
+              }}>
               Try Free →
             </a>
           </div>
@@ -329,11 +334,13 @@ export default function BridgeStrategyVisualizer({
                 See if your specific bridge is Stable, Moderate Risk, or Fragile — based on withdrawal rate, taxable coverage, cash buffer, and Social Security timing.
               </div>
             </div>
-            <Link href="/pricing" style={{
-              background: COLORS.gold, color: '#0D1420', fontFamily: 'Georgia, serif',
-              fontWeight: 700, fontSize: 12, padding: '10px 20px', borderRadius: 8,
-              textDecoration: 'none', whiteSpace: 'nowrap' as const, flexShrink: 0,
-            }}>
+            <Link href="/pricing"
+              onClick={() => trackProCtaClick('bridge-strategy-upsell')}
+              style={{
+                background: COLORS.gold, color: '#0D1420', fontFamily: 'Georgia, serif',
+                fontWeight: 700, fontSize: 12, padding: '10px 20px', borderRadius: 8,
+                textDecoration: 'none', whiteSpace: 'nowrap' as const, flexShrink: 0,
+              }}>
               Get Pro →
             </Link>
           </div>
@@ -344,7 +351,9 @@ export default function BridgeStrategyVisualizer({
       <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '12px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.15)', letterSpacing: 1 }}>For educational purposes only · Not financial advice</span>
         {!isPro && (
-          <a href="/#download" style={{ fontSize: 9, color: COLORS.gold, textDecoration: 'none', letterSpacing: 2, textTransform: 'uppercase' }}>
+          <a href="/#download"
+            onClick={() => trackProCtaClick('bridge-strategy-footer-planner')}
+            style={{ fontSize: 9, color: COLORS.gold, textDecoration: 'none', letterSpacing: 2, textTransform: 'uppercase' }}>
             Get Free Planner →
           </a>
         )}

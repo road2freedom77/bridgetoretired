@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { useUser } from '@clerk/nextjs'
 import Link from 'next/link'
+import { trackCalculatorUsed, trackProCtaClick } from '@/lib/analytics'
 import {
   calcSEPPComparison,
   calcMaxAllowedRate,
@@ -226,8 +227,8 @@ function fmt(n: number) {
 
 function fmtPct(n: number) { return `${(n * 100).toFixed(1)}%` }
 
-function NumField({ label, value, onChange, prefix, suffix, note }: {
-  label: string; value: number; onChange: (v: number) => void
+function NumField({ label, value, onChange, onTrack, prefix, suffix, note }: {
+  label: string; value: number; onChange: (v: number) => void; onTrack?: () => void
   prefix?: string; suffix?: string; note?: string
 }) {
   const [raw, setRaw] = useState(String(value))
@@ -244,7 +245,7 @@ function NumField({ label, value, onChange, prefix, suffix, note }: {
             if (/^-?\d*\.?\d*$/.test(val) || val === '') {
               setRaw(val)
               const p = parseFloat(val)
-              if (!isNaN(p)) onChange(p)
+              if (!isNaN(p)) { onTrack?.(); onChange(p) }
             }
           }}
           onBlur={e => {
@@ -322,6 +323,8 @@ export default function VsComparisonTool() {
 
   const [activeTab, setActiveTab] = useState<'summary' | 'sepp' | 'ladder'>('summary')
 
+  const track = useCallback(() => trackCalculatorUsed('72t-vs-roth'), [])
+
   const maxRate = calcMaxAllowedRate(seppExtra.midTermAFR)
 
   const seppResult = useMemo(() => calcSEPPScenario(shared, seppExtra), [shared, seppExtra])
@@ -352,6 +355,7 @@ export default function VsComparisonTool() {
               efficiency analysis are Pro-only. Free users see the summary cards only.
             </p>
             <Link href="/pricing"
+              onClick={() => trackProCtaClick('vs-comparison-gate')}
               className="inline-block bg-gold text-black font-syne font-semibold text-[12px] px-5 py-2.5 rounded hover:opacity-85 transition-opacity">
               Upgrade to Pro — $9/mo →
             </Link>
@@ -367,40 +371,40 @@ export default function VsComparisonTool() {
             <div className="font-syne font-bold text-[13px] text-white mb-4">Your Situation</div>
 
             <NumField label="IRA / 401k Balance" value={shared.accountBalance}
-              onChange={setS('accountBalance')} prefix="$" note="Starting balance for both strategies" />
+              onChange={setS('accountBalance')} onTrack={track} prefix="$" note="Starting balance for both strategies" />
             <NumField label="Current Age" value={shared.currentAge}
-              onChange={setS('currentAge')} note="Must be under 59½" />
+              onChange={setS('currentAge')} onTrack={track} note="Must be under 59½" />
             <NumField label="Bridge-End Age" value={shared.bridgeEndAge}
-              onChange={setS('bridgeEndAge')} note="When SS, pension, or 59½ income begins" />
+              onChange={setS('bridgeEndAge')} onTrack={track} note="When SS, pension, or 59½ income begins" />
             <NumField label="Annual Spend Needed" value={shared.annualSpend}
-              onChange={setS('annualSpend')} prefix="$" />
+              onChange={setS('annualSpend')} onTrack={track} prefix="$" />
             <NumField label="Other Annual Income" value={shared.otherIncome}
-              onChange={setS('otherIncome')} prefix="$" note="Rental, part-time, dividends" />
+              onChange={setS('otherIncome')} onTrack={track} prefix="$" note="Rental, part-time, dividends" />
             <NumField label="Expected Growth Rate" value={shared.growthRate * 100}
-              onChange={v => setS('growthRate')(v / 100)} suffix="%" />
+              onChange={v => setS('growthRate')(v / 100)} onTrack={track} suffix="%" />
           </div>
 
           <div className="bg-ink border border-white/[0.07] rounded-xl p-5">
             <div className="font-mono text-[9px] tracking-widest uppercase text-gold mb-3">72(t) SEPP Settings</div>
             <NumField label="Federal Mid-Term AFR" value={seppExtra.midTermAFR * 100}
-              onChange={v => setSE('midTermAFR')(v / 100)} suffix="%" note="Check IRS.gov monthly" />
+              onChange={v => setSE('midTermAFR')(v / 100)} onTrack={track} suffix="%" note="Check IRS.gov monthly" />
             <div className="bg-gold/5 border border-gold/15 rounded-lg px-3 py-1.5 mb-3">
               <div className="font-mono text-[8px] text-white/30">Max allowed rate</div>
               <div className="font-syne font-bold text-[14px] text-gold">{fmtPct(maxRate)}</div>
             </div>
             <NumField label="Rate to Use" value={seppExtra.interestRate * 100}
-              onChange={v => setSE('interestRate')(Math.min(v / 100, maxRate))}
+              onChange={v => setSE('interestRate')(Math.min(v / 100, maxRate))} onTrack={track}
               suffix="%" note={`Max: ${fmtPct(maxRate)}`} />
           </div>
 
           <div className="bg-ink border border-white/[0.07] rounded-xl p-5">
             <div className="font-mono text-[9px] tracking-widest uppercase text-teal mb-3">Roth Ladder Settings</div>
             <NumField label="Taxable / Cash Balance" value={ladderExtra.taxableBalance}
-              onChange={v => setLE('taxableBalance')(v)} prefix="$" note="Funds the 5-year gap" />
+              onChange={v => setLE('taxableBalance')(v)} onTrack={track} prefix="$" note="Funds the 5-year gap" />
             <div className="mb-3">
               <label className="font-mono text-[9px] tracking-widest uppercase text-white/35 block mb-1">Filing Status</label>
               <select value={ladderExtra.filingStatus}
-                onChange={e => setLE('filingStatus')(e.target.value as FilingStatus)}
+                onChange={e => { track(); setLE('filingStatus')(e.target.value as FilingStatus) }}
                 className="w-full bg-ink border border-white/[0.08] rounded-lg py-2 px-3 font-mono text-[12px] text-blue-400 font-bold outline-none focus:border-gold/40">
                 <option value="mfj">Married Filing Jointly</option>
                 <option value="single">Single</option>
@@ -492,6 +496,7 @@ export default function VsComparisonTool() {
                   Get a data-driven recommendation based on your inputs — which strategy wins on tax, flexibility, and gap risk.
                 </p>
                 <Link href="/pricing"
+                  onClick={() => trackProCtaClick('vs-comparison-upsell')}
                   className="inline-block bg-gold text-black font-syne font-semibold text-[11px] px-4 py-2 rounded hover:opacity-85 transition-opacity">
                   Upgrade to Pro →
                 </Link>

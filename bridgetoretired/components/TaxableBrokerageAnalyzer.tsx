@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import Link from 'next/link'
 import { useUser } from '@clerk/nextjs'
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts'
+import { trackCalculatorUsed, trackProCtaClick } from '@/lib/analytics'
 
 const COLORS = {
   gold: '#E8B84B', teal: '#2DD4BF', purple: '#A78BFA',
@@ -39,6 +40,11 @@ export default function TaxableBrokerageAnalyzer() {
   const [roth, setRoth] = useState(120_000)
   const [annualSpend, setAnnualSpend] = useState(55_000)
   const [returnRate, setReturnRate] = useState(6)
+
+  const track = useCallback(() => trackCalculatorUsed('taxable-bridge-analyzer'), [])
+  function tracked(setter: (v: number) => void) {
+    return (v: number) => { track(); setter(v) }
+  }
 
   const bridgeEnd = 59.5
   const rate = returnRate / 100
@@ -87,12 +93,12 @@ export default function TaxableBrokerageAnalyzer() {
         {/* Controls */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, marginBottom: 20 }}>
           {[
-            { label: 'Retirement Age', value: retireAge, set: setRetireAge, min: 40, max: 58, step: 1, fmt: (v: number) => `Age ${v}` },
-            { label: 'Annual Spending', value: annualSpend, set: setAnnualSpend, min: 30000, max: 120000, step: 5000, fmt: (v: number) => formatDollars(v) },
-            { label: 'Taxable Account', value: taxable, set: setTaxable, min: 0, max: 2000000, step: 25000, fmt: (v: number) => formatDollars(v) },
-            { label: '401k / IRA', value: k401k, set: setK401k, min: 0, max: 3000000, step: 50000, fmt: (v: number) => formatDollars(v) },
-            { label: 'Roth IRA', value: roth, set: setRoth, min: 0, max: 500000, step: 25000, fmt: (v: number) => formatDollars(v) },
-            { label: 'Annual Return', value: returnRate, set: setReturnRate, min: 3, max: 10, step: 0.5, fmt: (v: number) => `${v}%` },
+            { label: 'Retirement Age', value: retireAge, set: tracked(setRetireAge), min: 40, max: 58, step: 1, fmt: (v: number) => `Age ${v}` },
+            { label: 'Annual Spending', value: annualSpend, set: tracked(setAnnualSpend), min: 30000, max: 120000, step: 5000, fmt: (v: number) => formatDollars(v) },
+            { label: 'Taxable Account', value: taxable, set: tracked(setTaxable), min: 0, max: 2000000, step: 25000, fmt: (v: number) => formatDollars(v) },
+            { label: '401k / IRA', value: k401k, set: tracked(setK401k), min: 0, max: 3000000, step: 50000, fmt: (v: number) => formatDollars(v) },
+            { label: 'Roth IRA', value: roth, set: tracked(setRoth), min: 0, max: 500000, step: 25000, fmt: (v: number) => formatDollars(v) },
+            { label: 'Annual Return', value: returnRate, set: tracked(setReturnRate), min: 3, max: 10, step: 0.5, fmt: (v: number) => `${v}%` },
           ].map(({ label, value, set, min, max, step, fmt }) => (
             <div key={label} style={{ background: '#141C28', borderRadius: 10, padding: '12px 14px', border: '1px solid rgba(255,255,255,0.06)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
@@ -205,7 +211,7 @@ export default function TaxableBrokerageAnalyzer() {
           </p>
         </div>
 
-        {/* Pro upsell — hidden for Pro users */}
+        {/* Pro upsell */}
         {!isPro && (
           <div style={{ background: 'linear-gradient(135deg, rgba(232,184,75,0.06) 0%, rgba(232,184,75,0.02) 100%)', border: '1px solid rgba(232,184,75,0.2)', borderLeft: '3px solid #E8B84B', borderRadius: 12, padding: '20px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 20 }}>
             <div>
@@ -215,7 +221,11 @@ export default function TaxableBrokerageAnalyzer() {
                 See if your specific bridge is Stable, Moderate Risk, or Fragile — based on withdrawal rate, taxable coverage, cash buffer, and Social Security timing.
               </div>
             </div>
-            <Link href="/pricing" style={{ background: COLORS.gold, color: '#0D1420', fontFamily: 'Georgia, serif', fontWeight: 700, fontSize: 12, padding: '10px 20px', borderRadius: 8, textDecoration: 'none', whiteSpace: 'nowrap' as const, flexShrink: 0 }}>
+            <Link
+              href="/pricing"
+              onClick={() => trackProCtaClick('taxable-bridge-upsell')}
+              style={{ background: COLORS.gold, color: '#0D1420', fontFamily: 'Georgia, serif', fontWeight: 700, fontSize: 12, padding: '10px 20px', borderRadius: 8, textDecoration: 'none', whiteSpace: 'nowrap' as const, flexShrink: 0 }}
+            >
               Get Pro →
             </Link>
           </div>
@@ -224,7 +234,13 @@ export default function TaxableBrokerageAnalyzer() {
 
       <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '12px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.15)', letterSpacing: 1 }}>Simplified model · For educational purposes only</span>
-        {!isPro && <a href="/#download" style={{ fontSize: 9, color: COLORS.gold, textDecoration: 'none', letterSpacing: 2, textTransform: 'uppercase' }}>Get Free Planner →</a>}
+        {!isPro && (
+          <a href="/#download"
+            onClick={() => trackProCtaClick('taxable-bridge-footer-planner')}
+            style={{ fontSize: 9, color: COLORS.gold, textDecoration: 'none', letterSpacing: 2, textTransform: 'uppercase' }}>
+            Get Free Planner →
+          </a>
+        )}
       </div>
     </div>
   )

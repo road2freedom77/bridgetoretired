@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import Link from 'next/link'
 import { useUser } from '@clerk/nextjs'
+import { trackCalculatorUsed, trackProCtaClick } from '@/lib/analytics'
 
 const COLORS = {
   gold: '#E8B84B', teal: '#2DD4BF', sage: '#4ADE80',
@@ -193,8 +194,8 @@ function ScoreRing({ score, color }: { score: number; color: string }) {
 
 // ── Slider ────────────────────────────────────────────────────────────────────
 
-function Slider({ label, value, set, min, max, step, display, note, color = COLORS.gold }: {
-  label: string; value: number; set: (v: number) => void
+function Slider({ label, value, set, onTrack, min, max, step, display, note, color = COLORS.gold }: {
+  label: string; value: number; set: (v: number) => void; onTrack?: () => void
   min: number; max: number; step: number; display: string; note?: string; color?: string
 }) {
   return (
@@ -204,7 +205,7 @@ function Slider({ label, value, set, min, max, step, display, note, color = COLO
         <span style={{ fontSize: 12, color, fontWeight: 600 }}>{display}</span>
       </div>
       <input type="range" min={min} max={max} step={step} value={value}
-        onChange={e => set(Number(e.target.value))}
+        onChange={e => { onTrack?.(); set(Number(e.target.value)) }}
         style={{ width: '100%', accentColor: color, cursor: 'pointer' }} />
       {note && <div style={{ fontSize: 8, color: 'rgba(255,255,255,0.2)', marginTop: 4 }}>{note}</div>}
     </div>
@@ -235,6 +236,8 @@ export default function RetirementReadinessScore() {
   const [ssClaimAge, setSsClaimAge] = useState(67)
   const [healthcareAnnual, setHealthcareAnnual] = useState(14_400)
 
+  const track = useCallback(() => trackCalculatorUsed('retirement-readiness'), [])
+
   const result = useMemo(() => calcReadiness({
     currentAge, retireAge, annualSpend, totalPortfolio,
     taxableBalance, rothBalance, k401kBalance,
@@ -258,16 +261,16 @@ export default function RetirementReadinessScore() {
 
         {/* Inputs */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, marginBottom: 20 }}>
-          <Slider label="Current Age" value={currentAge} set={setCurrentAge} min={30} max={57} step={1} display={`Age ${currentAge}`} />
-          <Slider label="Target Retire Age" value={retireAge} set={v => setRetireAge(Math.max(currentAge + 1, v))} min={40} max={70} step={1} display={`Age ${retireAge}`} />
-          <Slider label="Annual Spending" value={annualSpend} set={setAnnualSpend} min={30_000} max={150_000} step={5_000} display={fmt(annualSpend)} />
-          <Slider label="Total Portfolio" value={totalPortfolio} set={setTotalPortfolio} min={0} max={5_000_000} step={25_000} display={fmt(totalPortfolio)} note="All accounts combined" />
-          <Slider label="Taxable / Brokerage" value={taxableBalance} set={setTaxableBalance} min={0} max={2_000_000} step={10_000} display={fmt(taxableBalance)} />
-          <Slider label="Roth IRA Balance" value={rothBalance} set={setRothBalance} min={0} max={1_000_000} step={10_000} display={fmt(rothBalance)} color={COLORS.purple} />
-          <Slider label="401k / IRA Balance" value={k401kBalance} set={setK401kBalance} min={0} max={3_000_000} step={25_000} display={fmt(k401kBalance)} />
-          <Slider label="Monthly SS Benefit (at FRA)" value={ssMonthly} set={setSsMonthly} min={0} max={4_000} step={100} display={`$${ssMonthly.toLocaleString()}/mo`} />
-          <Slider label="SS Claiming Age" value={ssClaimAge} set={setSsClaimAge} min={62} max={70} step={1} display={`Age ${ssClaimAge}`} color={ssClaimAge >= 68 ? COLORS.sage : ssClaimAge >= 66 ? COLORS.gold : COLORS.orange} />
-          <Slider label="Annual Healthcare Budget" value={healthcareAnnual} set={setHealthcareAnnual} min={0} max={30_000} step={1_000} display={fmt(healthcareAnnual)} note="Before Medicare at 65" color={COLORS.teal} />
+          <Slider label="Current Age" value={currentAge} set={setCurrentAge} onTrack={track} min={30} max={57} step={1} display={`Age ${currentAge}`} />
+          <Slider label="Target Retire Age" value={retireAge} set={v => setRetireAge(Math.max(currentAge + 1, v))} onTrack={track} min={40} max={70} step={1} display={`Age ${retireAge}`} />
+          <Slider label="Annual Spending" value={annualSpend} set={setAnnualSpend} onTrack={track} min={30_000} max={150_000} step={5_000} display={fmt(annualSpend)} />
+          <Slider label="Total Portfolio" value={totalPortfolio} set={setTotalPortfolio} onTrack={track} min={0} max={5_000_000} step={25_000} display={fmt(totalPortfolio)} note="All accounts combined" />
+          <Slider label="Taxable / Brokerage" value={taxableBalance} set={setTaxableBalance} onTrack={track} min={0} max={2_000_000} step={10_000} display={fmt(taxableBalance)} />
+          <Slider label="Roth IRA Balance" value={rothBalance} set={setRothBalance} onTrack={track} min={0} max={1_000_000} step={10_000} display={fmt(rothBalance)} color={COLORS.purple} />
+          <Slider label="401k / IRA Balance" value={k401kBalance} set={setK401kBalance} onTrack={track} min={0} max={3_000_000} step={25_000} display={fmt(k401kBalance)} />
+          <Slider label="Monthly SS Benefit (at FRA)" value={ssMonthly} set={setSsMonthly} onTrack={track} min={0} max={4_000} step={100} display={`$${ssMonthly.toLocaleString()}/mo`} />
+          <Slider label="SS Claiming Age" value={ssClaimAge} set={setSsClaimAge} onTrack={track} min={62} max={70} step={1} display={`Age ${ssClaimAge}`} color={ssClaimAge >= 68 ? COLORS.sage : ssClaimAge >= 66 ? COLORS.gold : COLORS.orange} />
+          <Slider label="Annual Healthcare Budget" value={healthcareAnnual} set={setHealthcareAnnual} onTrack={track} min={0} max={30_000} step={1_000} display={fmt(healthcareAnnual)} note="Before Medicare at 65" color={COLORS.teal} />
         </div>
 
         {/* Score hero */}
@@ -363,7 +366,9 @@ export default function RetirementReadinessScore() {
                 <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', marginBottom: 16, lineHeight: 1.6, maxWidth: 300 }}>
                   Pro unlocks the full breakdown — each dimension scored, explained, and with a specific fix amount.
                 </div>
-                <a href="/pricing" style={{ background: COLORS.gold, color: '#0D1420', fontFamily: 'Georgia, serif', fontWeight: 700, fontSize: 12, padding: '10px 24px', borderRadius: 8, textDecoration: 'none', display: 'inline-block' }}>
+                <a href="/pricing"
+                  onClick={() => trackProCtaClick('readiness-score-gate')}
+                  style={{ background: COLORS.gold, color: '#0D1420', fontFamily: 'Georgia, serif', fontWeight: 700, fontSize: 12, padding: '10px 24px', borderRadius: 8, textDecoration: 'none', display: 'inline-block' }}>
                   Unlock Full Breakdown — $9/mo
                 </a>
               </div>
@@ -400,7 +405,9 @@ export default function RetirementReadinessScore() {
                 </div>
               ))}
             </div>
-            <a href="/pricing" style={{ background: COLORS.gold, color: '#0D1420', fontFamily: 'Georgia, serif', fontWeight: 700, fontSize: 12, padding: '10px 24px', borderRadius: 8, textDecoration: 'none', display: 'inline-block' }}>
+            <a href="/pricing"
+              onClick={() => trackProCtaClick('readiness-score-upsell')}
+              style={{ background: COLORS.gold, color: '#0D1420', fontFamily: 'Georgia, serif', fontWeight: 700, fontSize: 12, padding: '10px 24px', borderRadius: 8, textDecoration: 'none', display: 'inline-block' }}>
               See Pro Plans →
             </a>
           </div>
@@ -409,7 +416,13 @@ export default function RetirementReadinessScore() {
 
       <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '12px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.15)', letterSpacing: 1 }}>For educational purposes only · Not financial advice</span>
-        {!isPro && <a href="/#download" style={{ fontSize: 9, color: COLORS.gold, textDecoration: 'none', letterSpacing: 2, textTransform: 'uppercase' }}>Get Free Planner →</a>}
+        {!isPro && (
+          <a href="/#download"
+            onClick={() => trackProCtaClick('readiness-score-footer-planner')}
+            style={{ fontSize: 9, color: COLORS.gold, textDecoration: 'none', letterSpacing: 2, textTransform: 'uppercase' }}>
+            Get Free Planner →
+          </a>
+        )}
       </div>
     </div>
   )

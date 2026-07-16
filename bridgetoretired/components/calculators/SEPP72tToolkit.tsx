@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useUser } from '@clerk/nextjs'
 import Link from 'next/link'
+import { trackCalculatorUsed, trackProCtaClick } from '@/lib/analytics'
 import {
   calcSEPPComparison,
   calcAccountSplit,
@@ -30,8 +31,8 @@ const PRO_FEATURES = [
   { icon: '📄', label: 'PDF Report Export', sub: 'CPA-ready, shareable' },
 ]
 
-function NumField({ label, value, onChange, prefix, suffix, note, step, min, max }: {
-  label: string; value: number; onChange: (v: number) => void
+function NumField({ label, value, onChange, onTrack, prefix, suffix, note, step, min, max }: {
+  label: string; value: number; onChange: (v: number) => void; onTrack?: () => void
   prefix?: string; suffix?: string; note?: string; step?: number; min?: number; max?: number
 }) {
   const [raw, setRaw] = useState(String(value))
@@ -47,7 +48,7 @@ function NumField({ label, value, onChange, prefix, suffix, note, step, min, max
             if (/^-?\d*\.?\d*$/.test(val) || val === '') {
               setRaw(val)
               const parsed = parseFloat(val)
-              if (!isNaN(parsed)) onChange(parsed)
+              if (!isNaN(parsed)) { onTrack?.(); onChange(parsed) }
             }
           }}
           onBlur={e => {
@@ -80,7 +81,7 @@ function MethodCard({ method, result, isRecommended, isPro, isLocked }: {
       <div className="absolute inset-0 backdrop-blur-sm bg-black/60 flex flex-col items-center justify-center z-10 rounded-xl">
         <div className="text-2xl mb-2">🔒</div>
         <div className="font-mono text-[9px] tracking-widest uppercase text-gold mb-2">Pro Only</div>
-        <Link href="/pricing" className="text-[12px] text-white/60 hover:text-white transition-colors underline underline-offset-2">Upgrade to unlock</Link>
+        <Link href="/pricing" onClick={() => trackProCtaClick('sepp-annuitization-lock')} className="text-[12px] text-white/60 hover:text-white transition-colors underline underline-offset-2">Upgrade to unlock</Link>
       </div>
       <div className="font-mono text-[9px] tracking-widest uppercase text-white/30 mb-2">{method}</div>
       <div className="font-syne font-bold text-[28px] text-white/20">$??</div>
@@ -170,6 +171,8 @@ export default function SEPP72tToolkit() {
   const [targetIncome, setTargetIncome] = useState(40000)
   const [showSplit, setShowSplit] = useState(false)
 
+  const track = useCallback(() => trackCalculatorUsed('sepp-72t'), [])
+
   const calculate = useCallback(() => {
     const r = calcSEPPComparison(inputs)
     setResults(r)
@@ -195,11 +198,11 @@ export default function SEPP72tToolkit() {
         {/* Inputs */}
         <div className="bg-ink border border-white/[0.07] rounded-xl p-5">
           <div className="font-syne font-bold text-[13px] text-white mb-4">Your Numbers</div>
-          <NumField label="Account Balance" value={inputs.accountBalance} onChange={set('accountBalance')} prefix="$" step={10000} note="IRA or 401k balance at valuation date" />
-          <NumField label="Current Age" value={inputs.currentAge} onChange={set('currentAge')} min={40} max={58} note="Must be under 59½" />
+          <NumField label="Account Balance" value={inputs.accountBalance} onChange={set('accountBalance')} onTrack={track} prefix="$" step={10000} note="IRA or 401k balance at valuation date" />
+          <NumField label="Current Age" value={inputs.currentAge} onChange={set('currentAge')} onTrack={track} min={40} max={58} note="Must be under 59½" />
           <div className="mb-4">
             <label className="font-mono text-[9px] tracking-widest uppercase text-white/35 block mb-1">Life Expectancy Table</label>
-            <select value={inputs.lifeTable} onChange={e => set('lifeTable')(e.target.value as LifeTable)}
+            <select value={inputs.lifeTable} onChange={e => { track(); set('lifeTable')(e.target.value as LifeTable) }}
               className="w-full bg-ink border border-white/[0.08] rounded-lg py-2 px-3 font-mono text-[12px] text-blue-400 font-bold outline-none focus:border-gold/40">
               <option value="single">Single Life (most common)</option>
               <option value="uniform">Uniform Lifetime</option>
@@ -209,13 +212,13 @@ export default function SEPP72tToolkit() {
           </div>
           <div className="border-t border-white/[0.06] pt-4 mb-4">
             <div className="font-mono text-[9px] tracking-widest uppercase text-white/25 mb-3">Interest Rate (Notice 2022-6)</div>
-            <NumField label="Federal Mid-Term AFR" value={(inputs.midTermAFR ?? 0.045) * 100} onChange={v => set('midTermAFR')(v / 100)} suffix="%" step={0.1} note="Check IRS.gov monthly — changes each month" />
+            <NumField label="Federal Mid-Term AFR" value={(inputs.midTermAFR ?? 0.045) * 100} onChange={v => set('midTermAFR')(v / 100)} onTrack={track} suffix="%" step={0.1} note="Check IRS.gov monthly — changes each month" />
             <div className="bg-gold/5 border border-gold/15 rounded-lg px-3 py-2 mb-3">
               <div className="font-mono text-[8px] text-white/30 mb-0.5">Max allowed rate</div>
               <div className="font-syne font-bold text-[16px] text-gold">{fmtPct(maxRate)}</div>
               <div className="font-mono text-[8px] text-white/20">Greater of 5% or 120% × AFR ({fmtPct((inputs.midTermAFR ?? 0.045) * 1.20)})</div>
             </div>
-            <NumField label="Rate to Use" value={inputs.interestRate * 100} onChange={v => set('interestRate')(Math.min(v / 100, maxRate))} suffix="%" step={0.1} note={`Max: ${fmtPct(maxRate)} — higher rate = higher payment`} />
+            <NumField label="Rate to Use" value={inputs.interestRate * 100} onChange={v => set('interestRate')(Math.min(v / 100, maxRate))} onTrack={track} suffix="%" step={0.1} note={`Max: ${fmtPct(maxRate)} — higher rate = higher payment`} />
           </div>
           <div className="bg-navy/50 rounded-lg px-3 py-2 text-center">
             <div className="font-mono text-[8px] text-white/25 mb-0.5">Illustrative only</div>
@@ -250,7 +253,7 @@ export default function SEPP72tToolkit() {
                   {showSplit && splitResult && (
                     <>
                       <p className="text-white/45 text-[13px] leading-relaxed mb-4">Instead of running a SEPP on your entire account, split it first. Run the SEPP on just the portion needed to hit your target income — keep the rest penalty-free at 59½.</p>
-                      <NumField label="Target Annual Income" value={targetIncome} onChange={setTargetIncome} prefix="$" step={1000} />
+                      <NumField label="Target Annual Income" value={targetIncome} onChange={setTargetIncome} onTrack={track} prefix="$" step={1000} />
                       <div className="grid grid-cols-2 gap-4 mt-4">
                         <div className="bg-gold/5 border border-gold/15 rounded-xl p-4">
                           <div className="font-mono text-[8px] tracking-widest uppercase text-gold mb-1">SEPP Account</div>
@@ -274,7 +277,7 @@ export default function SEPP72tToolkit() {
                     <div className="font-mono text-[9px] tracking-widest uppercase text-gold mb-1">Pro Feature</div>
                     <div className="font-syne font-semibold text-white text-[14px] mb-1">Account Splitting Strategy</div>
                     <p className="text-white/40 text-[12px] leading-relaxed mb-3">Run a SEPP on just part of your IRA — generate exactly the income you need while keeping the rest growing penalty-free until 59½ or a future SEPP.</p>
-                    <Link href="/pricing" className="inline-block bg-gold text-black font-syne font-semibold text-[11px] tracking-wide px-4 py-2 rounded hover:opacity-85 transition-opacity">Upgrade to Pro →</Link>
+                    <Link href="/pricing" onClick={() => trackProCtaClick('sepp-account-split-gate')} className="inline-block bg-gold text-black font-syne font-semibold text-[11px] tracking-wide px-4 py-2 rounded hover:opacity-85 transition-opacity">Upgrade to Pro →</Link>
                   </div>
                 </div>
               )}
@@ -327,7 +330,7 @@ export default function SEPP72tToolkit() {
                       </div>
                     ))}
                   </div>
-                  <Link href="/pricing" className="inline-block bg-gold text-black font-syne font-semibold text-[12px] px-6 py-2.5 rounded hover:opacity-85 transition-opacity">See Pro Plans →</Link>
+                  <Link href="/pricing" onClick={() => trackProCtaClick('sepp-toolkit-upsell')} className="inline-block bg-gold text-black font-syne font-semibold text-[12px] px-6 py-2.5 rounded hover:opacity-85 transition-opacity">See Pro Plans →</Link>
                 </div>
               )}
             </>

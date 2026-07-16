@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useUser } from "@clerk/nextjs";
+import { trackCalculatorUsed, trackProCtaClick } from "@/lib/analytics";
 import {
   calcRothLadder,
   formatCurrency,
@@ -46,7 +47,11 @@ function ProGateOverlay() {
           Unlock the complete year-by-year conversion schedule, ACA/MAGI
           impact warnings, shortfall alerts, and CSV export.
         </p>
-        <a href="/pricing" className="btn-gold">
+        <a
+          href="/pricing"
+          className="btn-gold"
+          onClick={() => trackProCtaClick("roth-ladder-calc-gate")}
+        >
           Upgrade to Pro — $9/mo
         </a>
       </div>
@@ -84,6 +89,8 @@ export function RothLadderCalculator() {
 
   const [form, setForm] = useState<FormState>(DEFAULT_FORM);
   const [calculated, setCalculated] = useState(false);
+
+  const track = useCallback(() => trackCalculatorUsed("roth-ladder-calculator"), []);
 
   function set(field: keyof FormState, value: string) {
     setForm((f) => ({ ...f, [field]: value }));
@@ -124,7 +131,10 @@ export function RothLadderCalculator() {
   }, [inputs, calculated]);
 
   function handleCalculate() {
-    if (inputs) setCalculated(true);
+    if (inputs) {
+      track();
+      setCalculated(true);
+    }
   }
 
   function handleExportCSV() {
@@ -419,7 +429,11 @@ export function RothLadderCalculator() {
                   First rung unlocks in <strong>Year 6</strong> (age{" "}
                   {inputs!.currentAge + 5}).
                 </p>
-                <a href="/pricing" className="btn-gold-sm">
+                <a
+                  href="/pricing"
+                  className="btn-gold-sm"
+                  onClick={() => trackProCtaClick("roth-ladder-calc-upsell")}
+                >
                   Upgrade to Pro for the full schedule →
                 </a>
               </div>

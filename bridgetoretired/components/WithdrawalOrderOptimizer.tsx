@@ -321,7 +321,13 @@ export default function WithdrawalOrderOptimizer() {
 
       <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '12px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.15)', letterSpacing: 1 }}>Simplified model · For educational purposes only</span>
-        {!isPro && <a href="/#download" style={{ fontSize: 9, color: COLORS.gold, textDecoration: 'none', letterSpacing: 2, textTransform: 'uppercase' }}>Get Free Planner →</a>}
+        {!isPro && (
+          <a href="/#download"
+            onClick={() => trackProCtaClick('withdrawal-optimizer-footer-planner')}
+            style={{ fontSize: 9, color: COLORS.gold, textDecoration: 'none', letterSpacing: 2, textTransform: 'uppercase' }}>
+            Get Free Planner →
+          </a>
+        )}
       </div>
     </div>
   )
