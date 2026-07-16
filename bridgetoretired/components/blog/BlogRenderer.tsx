@@ -13,8 +13,6 @@ import WithdrawalOrderOptimizer   from '@/components/WithdrawalOrderOptimizer'
 import TaxBracketVisualizer       from '@/components/TaxBracketVisualizer'
 import TaxableBrokerageAnalyzer   from '@/components/TaxableBrokerageAnalyzer'
 import SEPPCalculator             from '@/components/SEPPCalculator'
-import FinanceTable               from '@/components/FinanceTable'
-
 const EMBED_MAP: Record<string, React.ComponentType> = {
   'roth-ladder-builder':      RothLadderBuilder,
   'sepp-calculator':          SEPPCalculator,
@@ -26,7 +24,6 @@ const EMBED_MAP: Record<string, React.ComponentType> = {
   'bridge-strategy':          BridgeStrategyVisualizer,
   'fire-number':              FIRENumberCalculator,
   'aca-estimator':            ACASubsidyEstimator,
-  'finance-table':            FinanceTable,
 }
 
 // Regex to match [[tool:component-name]] tokens on their own line
