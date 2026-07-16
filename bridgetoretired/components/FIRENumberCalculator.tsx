@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { useUser } from '@clerk/nextjs'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts'
+import { trackCalculatorUsed, trackProCtaClick } from '@/lib/analytics'
 
 const COLORS = {
   gold: '#E8B84B', teal: '#2DD4BF', purple: '#A78BFA',
@@ -53,13 +54,14 @@ export default function FIRENumberCalculator() {
   const [healthcareBudget, setHealthcareBudget] = useState(12_000)
   const [currentSaved, setCurrentSaved] = useState(800_000)
 
+  // Track first interaction
+  const track = useCallback(() => trackCalculatorUsed('fire-number'), [])
+
   const lifeExpectancy = 90
   const retirementYears = lifeExpectancy - retireAge
   const bridgeYears = 59.5 - retireAge
   const withdrawalRate = WITHDRAWAL_RATES[Math.min(50, Math.max(30, Math.round(retirementYears / 5) * 5))] ?? 0.033
   const withdrawalRatePct = (withdrawalRate * 100).toFixed(1)
-
-  // Combined SS — both benefits kick in at ssAge
   const ssAnnual = (ssMonthly + (hasSpouse ? spouseSSMonthly : 0)) * 12
 
   const bridgeNeeded = Math.round(annualSpend * bridgeYears * 1.15)
@@ -86,6 +88,11 @@ export default function FIRENumberCalculator() {
     { name: 'Real Number\n(Bridge + Healthcare)', value: totalFireNumber, fill: COLORS.sage },
   ]
 
+  // Tracked slider setter — fires calculator_used once per session on first interaction
+  function tracked(setter: (v: number) => void) {
+    return (v: number) => { track(); setter(v) }
+  }
+
   return (
     <div style={{ background: '#0D1420', borderRadius: 16, border: '1px solid rgba(232,184,75,0.15)', overflow: 'hidden', fontFamily: "'IBM Plex Mono', monospace", margin: '2rem 0' }}>
       <div style={{ background: '#141C28', borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '20px 24px' }}>
@@ -98,19 +105,21 @@ export default function FIRENumberCalculator() {
         {/* Controls */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, marginBottom: 16 }}>
           {[
-            { label: 'Target Retire Age', value: retireAge, set: setRetireAge, min: 40, max: 58, step: 1, fmt: (v: number) => `Age ${v}` },
-            { label: 'Annual Spending', value: annualSpend, set: setAnnualSpend, min: 30000, max: 150000, step: 5000, fmt: (v: number) => formatDollars(v) },
-            { label: 'SS Claiming Age', value: ssAge, set: setSsAge, min: 62, max: 70, step: 1, fmt: (v: number) => `Age ${v}` },
-            { label: 'Your Monthly SS Benefit', value: ssMonthly, set: setSsMonthly, min: 0, max: 4000, step: 100, fmt: (v: number) => `$${v.toLocaleString()}/mo` },
-            { label: 'Annual Healthcare Budget', value: healthcareBudget, set: setHealthcareBudget, min: 5000, max: 30000, step: 1000, fmt: (v: number) => formatDollars(v) },
-            { label: 'Currently Saved', value: currentSaved, set: setCurrentSaved, min: 0, max: 5000000, step: 50000, fmt: (v: number) => formatDollars(v) },
+            { label: 'Target Retire Age', value: retireAge, set: tracked(setRetireAge), min: 40, max: 58, step: 1, fmt: (v: number) => `Age ${v}` },
+            { label: 'Annual Spending', value: annualSpend, set: tracked(setAnnualSpend), min: 30000, max: 150000, step: 5000, fmt: (v: number) => formatDollars(v) },
+            { label: 'SS Claiming Age', value: ssAge, set: tracked(setSsAge), min: 62, max: 70, step: 1, fmt: (v: number) => `Age ${v}` },
+            { label: 'Your Monthly SS Benefit', value: ssMonthly, set: tracked(setSsMonthly), min: 0, max: 4000, step: 100, fmt: (v: number) => `$${v.toLocaleString()}/mo` },
+            { label: 'Annual Healthcare Budget', value: healthcareBudget, set: tracked(setHealthcareBudget), min: 5000, max: 30000, step: 1000, fmt: (v: number) => formatDollars(v) },
+            { label: 'Currently Saved', value: currentSaved, set: tracked(setCurrentSaved), min: 0, max: 5000000, step: 50000, fmt: (v: number) => formatDollars(v) },
           ].map(({ label, value, set, min, max, step, fmt }) => (
             <div key={label} style={{ background: '#141C28', borderRadius: 10, padding: '12px 14px', border: '1px solid rgba(255,255,255,0.06)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
                 <span style={{ fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)' }}>{label}</span>
                 <span style={{ fontSize: 12, color: COLORS.gold, fontWeight: 600 }}>{fmt(value)}</span>
               </div>
-              <input type="range" min={min} max={max} step={step} value={value} onChange={e => set(Number(e.target.value))} style={{ width: '100%', accentColor: COLORS.gold, cursor: 'pointer' }} />
+              <input type="range" min={min} max={max} step={step} value={value}
+                onChange={e => set(Number(e.target.value))}
+                style={{ width: '100%', accentColor: COLORS.gold, cursor: 'pointer' }} />
             </div>
           ))}
         </div>
@@ -127,7 +136,7 @@ export default function FIRENumberCalculator() {
               )}
             </div>
             <button
-              onClick={() => setHasSpouse(!hasSpouse)}
+              onClick={() => { track(); setHasSpouse(!hasSpouse) }}
               style={{
                 padding: '5px 14px', borderRadius: 6, border: 'none', cursor: 'pointer',
                 fontFamily: 'monospace', fontSize: 10, fontWeight: 600,
@@ -147,7 +156,7 @@ export default function FIRENumberCalculator() {
                 <span style={{ fontSize: 12, color: COLORS.teal, fontWeight: 600 }}>${spouseSSMonthly.toLocaleString()}/mo</span>
               </div>
               <input type="range" min={0} max={4000} step={100} value={spouseSSMonthly}
-                onChange={e => setSpouseSSMonthly(Number(e.target.value))}
+                onChange={e => { track(); setSpouseSSMonthly(Number(e.target.value)) }}
                 style={{ width: '100%', accentColor: COLORS.teal, cursor: 'pointer' }} />
               <div style={{ fontSize: 8, color: 'rgba(255,255,255,0.2)', marginTop: 4 }}>
                 Both SS benefits assumed to start at same claiming age · Set to $0 if spouse has no SS
@@ -246,7 +255,11 @@ export default function FIRENumberCalculator() {
                 </div>
               ))}
             </div>
-            <Link href="/pricing" style={{ background: COLORS.gold, color: '#0D1420', fontFamily: 'Georgia, serif', fontWeight: 700, fontSize: 12, padding: '10px 24px', borderRadius: 8, textDecoration: 'none', display: 'inline-block' }}>
+            <Link
+              href="/pricing"
+              onClick={() => trackProCtaClick('fire-calculator-upsell')}
+              style={{ background: COLORS.gold, color: '#0D1420', fontFamily: 'Georgia, serif', fontWeight: 700, fontSize: 12, padding: '10px 24px', borderRadius: 8, textDecoration: 'none', display: 'inline-block' }}
+            >
               See Pro Plans →
             </Link>
           </div>
