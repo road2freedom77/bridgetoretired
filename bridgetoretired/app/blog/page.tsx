@@ -1,17 +1,70 @@
-import { getAllPosts }  from '@/lib/blog'
+import { createClient } from '@supabase/supabase-js'
+import { getAllPosts }   from '@/lib/blog'
 import { format }       from 'date-fns'
 import Link             from 'next/link'
 import type { Metadata } from 'next'
+
+export const revalidate = 3600
 
 export const metadata: Metadata = {
   title: 'Blog – Early Retirement Guides & Strategy',
   description: 'In-depth guides on bridge strategies, Roth conversions, tax planning, and everything FIRE for early retirees.',
 }
 
-export default function BlogPage() {
-  const posts    = getAllPosts()
-  const featured = posts.find(p => p.featured) ?? posts[0]
-  const rest     = posts.filter(p => p !== featured)
+interface PostItem {
+  slug:        string
+  title:       string
+  description: string
+  date:        string
+  category:    string
+  readTime:    string
+  featured:    boolean
+}
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
+
+export default async function BlogPage() {
+  // Fetch published Supabase posts
+  const { data: sbPosts } = await supabase
+    .from('blog_posts')
+    .select('slug, title, description, published_at, category, read_time, featured')
+    .eq('published', true)
+    .lte('published_at', new Date().toISOString())
+    .order('published_at', { ascending: false })
+
+  const supabasePosts: PostItem[] = (sbPosts ?? []).map(p => ({
+    slug:        p.slug,
+    title:       p.title,
+    description: p.description ?? '',
+    date:        p.published_at,
+    category:    p.category ?? 'General',
+    readTime:    p.read_time ?? '5 min read',
+    featured:    p.featured ?? false,
+  }))
+
+  // Get contentlayer posts — skip any slugs already in Supabase
+  const sbSlugs = new Set(supabasePosts.map(p => p.slug))
+  const mdxPosts: PostItem[] = getAllPosts()
+    .filter(p => !sbSlugs.has(p.slug))
+    .map(p => ({
+      slug:        p.slug,
+      title:       p.title,
+      description: p.description,
+      date:        p.date,
+      category:    p.category,
+      readTime:    p.readTime,
+      featured:    p.featured,
+    }))
+
+  // Merge and sort by date descending
+  const allPosts: PostItem[] = [...supabasePosts, ...mdxPosts]
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+
+  const featured = allPosts.find(p => p.featured) ?? allPosts[0]
+  const rest     = allPosts.filter(p => p !== featured)
 
   return (
     <div className="min-h-screen bg-black">
@@ -34,7 +87,10 @@ export default function BlogPage() {
         {featured && (
           <div className="mb-14">
             <div className="font-mono text-[9px] tracking-widest uppercase text-white/30 mb-5">Featured</div>
-            <Link href={`/blog/${featured.slug}`} className="group block bg-ink border border-white/[0.07] rounded-xl overflow-hidden hover:border-gold/20 transition-all duration-300">
+            <Link
+              href={`/blog/${featured.slug}`}
+              className="group block bg-ink border border-white/[0.07] rounded-xl overflow-hidden hover:border-gold/20 transition-all duration-300"
+            >
               <div className="grid md:grid-cols-[1fr_1.4fr]">
                 <div className="h-56 md:h-full bg-slate flex items-center justify-center relative overflow-hidden">
                   <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_60%_at_30%_50%,rgba(232,184,75,0.1),transparent)]" />
