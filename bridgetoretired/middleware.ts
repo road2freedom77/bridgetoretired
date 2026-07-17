@@ -34,9 +34,12 @@ export const config = {
     '/scenario-compare(.*)',
     '/pdf-report(.*)',
     '/pro/planner(.*)',
+    '/home(.*)',
+    '/admin(.*)',
     '/api/planner/(.*)',
+    '/api/admin/(.*)',
+    '/api/webhooks/(.*)',
     '/sign-in(.*)',
     '/sign-up(.*)',
-    '/api/webhooks/(.*)',
   ],
 }
