@@ -9,17 +9,23 @@ const supabaseAdmin = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-export async function POST(req: NextRequest) {
-  // NO try/catch around auth() — let the real error surface in Vercel logs
+export async function GET(req: NextRequest) {
   const { userId } = await auth()
+  if (userId !== ADMIN_USER_ID) {
+    return NextResponse.json({ error: 'Unauthorized', userId }, { status: 401 })
+  }
 
-  console.log('=== /api/admin/blog POST ===')
-  console.log('userId from auth():', userId)
-  console.log('expected ADMIN_USER_ID:', ADMIN_USER_ID)
-  console.log('match:', userId === ADMIN_USER_ID)
-  console.log('SERVICE_ROLE_KEY present:', !!process.env.SUPABASE_SERVICE_ROLE_KEY)
-  console.log('SUPABASE_URL present:', !!process.env.NEXT_PUBLIC_SUPABASE_URL)
+  const { data, error } = await supabaseAdmin
+    .from('blog_posts')
+    .select('id, slug, title, category, published, published_at, featured, read_time, description, updated_at, content')
+    .order('published_at', { ascending: false })
 
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  return NextResponse.json({ posts: data })
+}
+
+export async function POST(req: NextRequest) {
+  const { userId } = await auth()
   if (userId !== ADMIN_USER_ID) {
     return NextResponse.json({ error: 'Unauthorized', userId }, { status: 401 })
   }
@@ -34,10 +40,7 @@ export async function POST(req: NextRequest) {
     ;({ error } = await supabaseAdmin.from('blog_posts').insert(record))
   }
 
-  if (error) {
-    console.error('Supabase error:', error)
-    return NextResponse.json({ error: error.message }, { status: 500 })
-  }
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json({ ok: true })
 }
 

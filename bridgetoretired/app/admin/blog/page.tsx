@@ -3,15 +3,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useUser } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@supabase/supabase-js'
 
 const ADMIN_USER_ID = 'user_3Ev0Q9ORn9oZwaXGROJq4bniaBI'
-
-// Read-only client for fetching posts (anon key, RLS SELECT policy)
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
 
 interface Post {
   id: string
@@ -63,7 +56,6 @@ const TOOL_TOKENS = [
   { label: 'ACA Subsidy Estimator',      token: '[[tool:aca-estimator]]' },
 ]
 
-// ── Styles ────────────────────────────────────────────────────────────────────
 const S = {
   page:     { background: '#0D1420', minHeight: '100vh', fontFamily: "'IBM Plex Mono', monospace", padding: '0 0 80px' },
   header:   { background: '#141C28', borderBottom: '1px solid rgba(255,255,255,0.07)', padding: '16px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
@@ -86,38 +78,16 @@ const S = {
   }),
 }
 
-// ── API helpers ───────────────────────────────────────────────────────────────
-async function apiSave(body: Record<string, any>) {
+async function apiFetch(method: string, body?: Record<string, any>) {
   const res = await fetch('/api/admin/blog', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    method,
     credentials: 'include',
-    body: JSON.stringify(body),
+    headers: body ? { 'Content-Type': 'application/json' } : undefined,
+    body: body ? JSON.stringify(body) : undefined,
   })
   return res.json()
 }
 
-async function apiDelete(id: string) {
-  const res = await fetch('/api/admin/blog', {
-    method: 'DELETE',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
-    body: JSON.stringify({ id }),
-  })
-  return res.json()
-}
-
-async function apiPatch(id: string, updates: Record<string, any>) {
-  const res = await fetch('/api/admin/blog', {
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
-    body: JSON.stringify({ id, ...updates }),
-  })
-  return res.json()
-}
-
-// ── Main component ────────────────────────────────────────────────────────────
 export default function AdminBlogPage() {
   const { user, isLoaded } = useUser()
   const router = useRouter()
@@ -130,42 +100,36 @@ export default function AdminBlogPage() {
   const [toast, setToast] = useState<string | null>(null)
   const [toastOk, setToastOk] = useState(true)
   const [search, setSearch] = useState('')
+  const [loading, setLoading] = useState(true)
 
-  // ── Auth guard ──────────────────────────────────────────────────────────────
   useEffect(() => {
     if (isLoaded && user?.id !== ADMIN_USER_ID) router.replace('/')
   }, [isLoaded, user, router])
 
-  // ── Load posts (all, including drafts — admin sees everything) ──────────────
   const loadPosts = useCallback(async () => {
-    const { data } = await supabase
-      .from('blog_posts')
-      .select('id, slug, title, category, published, published_at, featured, read_time, description, updated_at, content')
-      .order('published_at', { ascending: false })
-    setPosts(data ?? [])
+    setLoading(true)
+    const data = await apiFetch('GET')
+    setPosts(data.posts ?? [])
+    setLoading(false)
   }, [])
 
   useEffect(() => { loadPosts() }, [loadPosts])
 
-  // ── Toast ───────────────────────────────────────────────────────────────────
   function showToast(msg: string, ok = true) {
     setToast(msg); setToastOk(ok)
     setTimeout(() => setToast(null), 3500)
   }
 
-  // ── New post ────────────────────────────────────────────────────────────────
   function handleNew() {
     setEditing({ ...EMPTY_POST, published_at: new Date().toISOString().slice(0, 16) })
     setView('edit')
   }
 
-  // ── Edit post ───────────────────────────────────────────────────────────────
   function handleEdit(post: Post) {
     setEditing({ ...post, published_at: post.published_at?.slice(0, 16) ?? new Date().toISOString().slice(0, 16) })
     setView('edit')
   }
 
-  // ── Save post (via API route → service role key) ────────────────────────────
   async function handleSave() {
     if (!editing.slug || !editing.title || !editing.content) {
       showToast('⚠ Slug, title, and content are required', false); return
@@ -186,7 +150,7 @@ export default function AdminBlogPage() {
     }
 
     const payload = editing.id ? { id: editing.id, ...record } : record
-    const data = await apiSave(payload)
+    const data = await apiFetch('POST', payload)
     setSaving(false)
 
     if (data.error) {
@@ -198,24 +162,21 @@ export default function AdminBlogPage() {
     }
   }
 
-  // ── Delete post ─────────────────────────────────────────────────────────────
   async function handleDelete(id: string) {
     if (!confirm('Delete this post? This cannot be undone.')) return
     setDeleting(id)
-    const data = await apiDelete(id)
+    const data = await apiFetch('DELETE', { id })
     setDeleting(null)
     if (data.error) showToast(`❌ ${data.error}`, false)
     else { showToast('✓ Post deleted'); await loadPosts() }
   }
 
-  // ── Toggle published ────────────────────────────────────────────────────────
   async function togglePublished(post: Post) {
-    const data = await apiPatch(post.id, { published: !post.published })
+    const data = await apiFetch('PATCH', { id: post.id, published: !post.published })
     if (data.error) showToast(`❌ ${data.error}`, false)
     else { showToast(`✓ ${!post.published ? 'Published' : 'Unpublished'}`); await loadPosts() }
   }
 
-  // ── Insert token ────────────────────────────────────────────────────────────
   function insertToken(token: string) {
     setEditing(e => ({ ...e, content: (e.content ?? '') + '\n\n' + token + '\n\n' }))
   }
@@ -240,7 +201,6 @@ export default function AdminBlogPage() {
           {toast}
         </div>
       )}
-
       <div style={S.header}>
         <span style={S.title}>Blog Admin</span>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
@@ -250,7 +210,6 @@ export default function AdminBlogPage() {
           <button style={S.btnGold} onClick={handleNew}>+ New Post</button>
         </div>
       </div>
-
       <div style={S.body}>
         <div style={{ marginBottom: 20 }}>
           <input
@@ -260,8 +219,9 @@ export default function AdminBlogPage() {
             style={{ ...S.input, maxWidth: 380 }}
           />
         </div>
-
-        {filtered.length === 0 ? (
+        {loading ? (
+          <div style={{ color: 'rgba(255,255,255,0.25)', fontSize: 12, padding: '40px 0' }}>Loading posts...</div>
+        ) : filtered.length === 0 ? (
           <div style={{ color: 'rgba(255,255,255,0.25)', fontSize: 13, textAlign: 'center', padding: '60px 0' }}>
             {search ? 'No posts match your search.' : 'No posts yet.'}
             {!search && <button style={{ ...S.btnGold, marginLeft: 12 }} onClick={handleNew}>Create first post</button>}
@@ -292,19 +252,11 @@ export default function AdminBlogPage() {
               <button style={S.btnGhost} onClick={() => togglePublished(post)}>
                 {post.published ? 'Unpublish' : 'Publish'}
               </button>
-              <a
-                href={`/blog/${post.slug}`}
-                target="_blank"
-                rel="noreferrer"
-                style={{ ...S.btnGhost, textDecoration: 'none', display: 'inline-block' }}
-              >
+              <a href={`/blog/${post.slug}`} target="_blank" rel="noreferrer"
+                style={{ ...S.btnGhost, textDecoration: 'none', display: 'inline-block' }}>
                 View →
               </a>
-              <button
-                style={S.btnRed}
-                onClick={() => handleDelete(post.id)}
-                disabled={deleting === post.id}
-              >
+              <button style={S.btnRed} onClick={() => handleDelete(post.id)} disabled={deleting === post.id}>
                 {deleting === post.id ? '...' : 'Delete'}
               </button>
             </div>
@@ -327,7 +279,6 @@ export default function AdminBlogPage() {
           {toast}
         </div>
       )}
-
       <div style={S.header}>
         <button style={S.btnGhost} onClick={() => setView('list')}>← All Posts</button>
         <span style={S.title}>{editing.id ? 'Edit Post' : 'New Post'}</span>
@@ -338,157 +289,90 @@ export default function AdminBlogPage() {
           </button>
         </div>
       </div>
-
       <div style={S.body}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 20 }}>
-
-          {/* ── Left: content ── */}
           <div>
             <div style={S.card}>
               <label style={S.label}>Title</label>
-              <input
-                style={{ ...S.input, fontSize: 16, marginBottom: 16 }}
-                placeholder="Post title..."
-                value={editing.title ?? ''}
-                onChange={e => setEditing(p => ({ ...p, title: e.target.value }))}
-              />
-
+              <input style={{ ...S.input, fontSize: 16, marginBottom: 16 }} placeholder="Post title..."
+                value={editing.title ?? ''} onChange={e => setEditing(p => ({ ...p, title: e.target.value }))} />
               <label style={S.label}>Slug</label>
-              <input
-                style={{ ...S.input, marginBottom: 16 }}
-                placeholder="post-slug-here"
-                value={editing.slug ?? ''}
-                onChange={e => setEditing(p => ({ ...p, slug: e.target.value }))}
-              />
-
+              <input style={{ ...S.input, marginBottom: 16 }} placeholder="post-slug-here"
+                value={editing.slug ?? ''} onChange={e => setEditing(p => ({ ...p, slug: e.target.value }))} />
               <label style={S.label}>Description (SEO meta)</label>
-              <textarea
-                style={{ ...S.textarea, minHeight: 80, marginBottom: 0 }}
-                placeholder="2-3 sentence SEO description..."
-                value={editing.description ?? ''}
-                onChange={e => setEditing(p => ({ ...p, description: e.target.value }))}
-              />
+              <textarea style={{ ...S.textarea, minHeight: 80, marginBottom: 0 }} placeholder="SEO description..."
+                value={editing.description ?? ''} onChange={e => setEditing(p => ({ ...p, description: e.target.value }))} />
             </div>
-
             <div style={S.card}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
                 <label style={{ ...S.label, margin: 0 }}>Content (Markdown)</label>
                 <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.2)' }}>
-                  {(editing.content ?? '').length.toLocaleString()} chars · ~{Math.round((editing.content ?? '').split(' ').length / 200)} min read
+                  {(editing.content ?? '').length.toLocaleString()} chars
                 </span>
               </div>
-
-              {/* Tool embed buttons */}
               <div style={{ marginBottom: 12 }}>
-                <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.25)', marginBottom: 8, letterSpacing: 1, textTransform: 'uppercase' }}>
-                  Insert Tool Embed
-                </div>
+                <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.25)', marginBottom: 8, letterSpacing: 1, textTransform: 'uppercase' }}>Insert Tool Embed</div>
                 <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: 6 }}>
                   {TOOL_TOKENS.map(t => (
-                    <button
-                      key={t.token}
-                      style={{ ...S.btnGhost, fontSize: 10, padding: '4px 10px' }}
-                      onClick={() => insertToken(t.token)}
-                    >
-                      {t.label}
-                    </button>
+                    <button key={t.token} style={{ ...S.btnGhost, fontSize: 10, padding: '4px 10px' }}
+                      onClick={() => insertToken(t.token)}>{t.label}</button>
                   ))}
                 </div>
               </div>
-
-              <textarea
-                style={{ ...S.textarea, minHeight: 560 }}
-                placeholder={`Write your post in Markdown...\n\nEmbeds:\n  [[tool:roth-ladder-builder]]\n  [[tool:bridge-strategy]]\n\nTable:\n  [[table:{"columns":[...],"rows":[...]}]]`}
-                value={editing.content ?? ''}
-                onChange={e => setEditing(p => ({ ...p, content: e.target.value }))}
-              />
-
-              {/* Table syntax reference */}
+              <textarea style={{ ...S.textarea, minHeight: 560 }}
+                placeholder={`Write in Markdown...\n\nEmbeds:\n[[tool:roth-ladder-builder]]\n\nTable:\n[[table:{...}]]`}
+                value={editing.content ?? ''} onChange={e => setEditing(p => ({ ...p, content: e.target.value }))} />
               <details style={{ marginTop: 10 }}>
-                <summary style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', cursor: 'pointer', userSelect: 'none' }}>
+                <summary style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', cursor: 'pointer', userSelect: 'none' as const }}>
                   Table syntax reference
                 </summary>
                 <pre style={{ marginTop: 8, fontSize: 10, color: 'rgba(255,255,255,0.4)', background: 'rgba(255,255,255,0.03)', borderRadius: 6, padding: '10px 14px', overflowX: 'auto' as const, lineHeight: 1.6 }}>
 {`[[table:{
-  "columns": [
-    {"key": "col1", "header": "Col 1", "highlight": true},
-    {"key": "col2", "header": "Col 2"}
-  ],
-  "rows": [
-    {"col1": "Value", "col2": "Value"},
-    {"col1": "Highlighted", "col2": "Value", "_highlight": true}
-  ],
+  "columns": [{"key":"col1","header":"Col 1","highlight":true},{"key":"col2","header":"Col 2"}],
+  "rows": [{"col1":"Value","col2":"Value"},{"col1":"Highlighted","col2":"Value","_highlight":true}],
   "caption": "Optional caption"
 }]]`}
                 </pre>
               </details>
             </div>
           </div>
-
-          {/* ── Right: settings ── */}
           <div>
             <div style={S.card}>
               <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.25)', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 16 }}>Publishing</div>
-
               <label style={S.label}>Status</label>
               <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
                 {['Draft', 'Published'].map(s => (
-                  <button
-                    key={s}
-                    onClick={() => setEditing(p => ({ ...p, published: s === 'Published' }))}
-                    style={{
-                      flex: 1, padding: '8px', borderRadius: 6, border: 'none', cursor: 'pointer',
-                      fontFamily: 'monospace', fontSize: 11, fontWeight: 600,
+                  <button key={s} onClick={() => setEditing(p => ({ ...p, published: s === 'Published' }))}
+                    style={{ flex: 1, padding: '8px', borderRadius: 6, border: 'none', cursor: 'pointer', fontFamily: 'monospace', fontSize: 11, fontWeight: 600,
                       background: (editing.published ? 'Published' : 'Draft') === s ? '#E8B84B' : 'rgba(255,255,255,0.06)',
-                      color: (editing.published ? 'Published' : 'Draft') === s ? '#0D1420' : 'rgba(255,255,255,0.4)',
-                    }}
-                  >
+                      color: (editing.published ? 'Published' : 'Draft') === s ? '#0D1420' : 'rgba(255,255,255,0.4)' }}>
                     {s}
                   </button>
                 ))}
               </div>
-
               <label style={S.label}>Publish Date / Schedule</label>
-              <input
-                type="datetime-local"
-                style={{ ...S.input, marginBottom: 16 }}
+              <input type="datetime-local" style={{ ...S.input, marginBottom: 16 }}
                 value={editing.published_at?.slice(0, 16) ?? ''}
-                onChange={e => setEditing(p => ({ ...p, published_at: e.target.value }))}
-              />
-
+                onChange={e => setEditing(p => ({ ...p, published_at: e.target.value }))} />
               <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
-                <input
-                  type="checkbox"
-                  checked={editing.featured ?? false}
+                <input type="checkbox" checked={editing.featured ?? false}
                   onChange={e => setEditing(p => ({ ...p, featured: e.target.checked }))}
-                  style={{ accentColor: '#E8B84B', width: 14, height: 14 }}
-                />
+                  style={{ accentColor: '#E8B84B', width: 14, height: 14 }} />
                 <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>Featured post</span>
               </label>
             </div>
-
             <div style={S.card}>
               <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.25)', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 16 }}>Metadata</div>
-
               <label style={S.label}>Category</label>
-              <select
-                style={{ ...S.select, marginBottom: 16 }}
-                value={editing.category ?? ''}
-                onChange={e => setEditing(p => ({ ...p, category: e.target.value }))}
-              >
+              <select style={{ ...S.select, marginBottom: 16 }} value={editing.category ?? ''}
+                onChange={e => setEditing(p => ({ ...p, category: e.target.value }))}>
                 <option value="">— Select category —</option>
                 {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
-
               <label style={S.label}>Read Time</label>
-              <input
-                style={S.input}
-                placeholder="e.g. 14 min read"
-                value={editing.read_time ?? ''}
-                onChange={e => setEditing(p => ({ ...p, read_time: e.target.value }))}
-              />
+              <input style={S.input} placeholder="e.g. 14 min read" value={editing.read_time ?? ''}
+                onChange={e => setEditing(p => ({ ...p, read_time: e.target.value }))} />
             </div>
-
             {editing.slug && (
               <div style={{ ...S.card, padding: '14px 16px' }}>
                 <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.25)', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 6 }}>URL Preview</div>
@@ -497,19 +381,14 @@ export default function AdminBlogPage() {
                 </div>
               </div>
             )}
-
             <div style={{ ...S.card, padding: '14px 16px' }}>
               <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.25)', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 8 }}>Scheduling</div>
               <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', lineHeight: 1.7 }}>
-                Set status to <strong style={{ color: '#fff' }}>Published</strong> with a future date to schedule. The post stays hidden until that date is reached.
+                Set status to <strong style={{ color: '#fff' }}>Published</strong> with a future date to schedule. Post stays hidden until that date is reached.
               </div>
             </div>
-
-            <button
-              style={{ ...S.btnGold, width: '100%', padding: '12px', fontSize: 13 }}
-              onClick={handleSave}
-              disabled={saving}
-            >
+            <button style={{ ...S.btnGold, width: '100%', padding: '12px', fontSize: 13 }}
+              onClick={handleSave} disabled={saving}>
               {saving ? 'Saving...' : editing.id ? 'Save Changes' : 'Create Post'}
             </button>
           </div>
