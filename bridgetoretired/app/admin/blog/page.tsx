@@ -445,7 +445,7 @@ export default function AdminBlogPage() {
                 ))}
               </div>
 
-              <label style={S.label}>Publish Date / Schedule</label>
+              <label style={S.label}>Publish Date: / Schedule</label>
               <input
                 type="datetime-local"
                 style={{ ...S.input, marginBottom: 16 }}
