@@ -1,4 +1,4 @@
-import { currentUser } from '@clerk/nextjs/server'
+import { auth } from '@clerk/nextjs/server'
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 
@@ -9,77 +9,65 @@ const supabaseAdmin = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-async function getAuthUserId(): Promise<string | null> {
-  try {
-    const user = await currentUser()
-    return user?.id ?? null
-  } catch {
-    return null
-  }
-}
-
 export async function POST(req: NextRequest) {
-  try {
-    const userId = await getAuthUserId()
-    if (userId !== ADMIN_USER_ID) {
-      return NextResponse.json({ error: 'Unauthorized', userId }, { status: 401 })
-    }
+  // NO try/catch around auth() — let the real error surface in Vercel logs
+  const { userId } = await auth()
 
-    const body = await req.json()
-    const { id, ...record } = body
+  console.log('=== /api/admin/blog POST ===')
+  console.log('userId from auth():', userId)
+  console.log('expected ADMIN_USER_ID:', ADMIN_USER_ID)
+  console.log('match:', userId === ADMIN_USER_ID)
+  console.log('SERVICE_ROLE_KEY present:', !!process.env.SUPABASE_SERVICE_ROLE_KEY)
+  console.log('SUPABASE_URL present:', !!process.env.NEXT_PUBLIC_SUPABASE_URL)
 
-    let error
-    if (id) {
-      ;({ error } = await supabaseAdmin.from('blog_posts').update(record).eq('id', id))
-    } else {
-      ;({ error } = await supabaseAdmin.from('blog_posts').insert(record))
-    }
-
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-    return NextResponse.json({ ok: true })
-  } catch (err: any) {
-    console.error('POST /api/admin/blog error:', err)
-    return NextResponse.json({ error: err.message ?? 'Unknown error' }, { status: 500 })
+  if (userId !== ADMIN_USER_ID) {
+    return NextResponse.json({ error: 'Unauthorized', userId }, { status: 401 })
   }
+
+  const body = await req.json()
+  const { id, ...record } = body
+
+  let error
+  if (id) {
+    ;({ error } = await supabaseAdmin.from('blog_posts').update(record).eq('id', id))
+  } else {
+    ;({ error } = await supabaseAdmin.from('blog_posts').insert(record))
+  }
+
+  if (error) {
+    console.error('Supabase error:', error)
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+  return NextResponse.json({ ok: true })
 }
 
 export async function DELETE(req: NextRequest) {
-  try {
-    const userId = await getAuthUserId()
-    if (userId !== ADMIN_USER_ID) {
-      return NextResponse.json({ error: 'Unauthorized', userId }, { status: 401 })
-    }
-
-    const body = await req.json()
-    const { id } = body
-    const { error } = await supabaseAdmin.from('blog_posts').delete().eq('id', id)
-
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-    return NextResponse.json({ ok: true })
-  } catch (err: any) {
-    console.error('DELETE /api/admin/blog error:', err)
-    return NextResponse.json({ error: err.message ?? 'Unknown error' }, { status: 500 })
+  const { userId } = await auth()
+  if (userId !== ADMIN_USER_ID) {
+    return NextResponse.json({ error: 'Unauthorized', userId }, { status: 401 })
   }
+
+  const body = await req.json()
+  const { id } = body
+  const { error } = await supabaseAdmin.from('blog_posts').delete().eq('id', id)
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  return NextResponse.json({ ok: true })
 }
 
 export async function PATCH(req: NextRequest) {
-  try {
-    const userId = await getAuthUserId()
-    if (userId !== ADMIN_USER_ID) {
-      return NextResponse.json({ error: 'Unauthorized', userId }, { status: 401 })
-    }
-
-    const body = await req.json()
-    const { id, ...updates } = body
-    const { error } = await supabaseAdmin
-      .from('blog_posts')
-      .update({ ...updates, updated_at: new Date().toISOString() })
-      .eq('id', id)
-
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-    return NextResponse.json({ ok: true })
-  } catch (err: any) {
-    console.error('PATCH /api/admin/blog error:', err)
-    return NextResponse.json({ error: err.message ?? 'Unknown error' }, { status: 500 })
+  const { userId } = await auth()
+  if (userId !== ADMIN_USER_ID) {
+    return NextResponse.json({ error: 'Unauthorized', userId }, { status: 401 })
   }
+
+  const body = await req.json()
+  const { id, ...updates } = body
+  const { error } = await supabaseAdmin
+    .from('blog_posts')
+    .update({ ...updates, updated_at: new Date().toISOString() })
+    .eq('id', id)
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  return NextResponse.json({ ok: true })
 }
