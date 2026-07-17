@@ -91,6 +91,7 @@ async function apiSave(body: Record<string, any>) {
   const res = await fetch('/api/admin/blog', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
     body: JSON.stringify(body),
   })
   return res.json()
@@ -100,6 +101,7 @@ async function apiDelete(id: string) {
   const res = await fetch('/api/admin/blog', {
     method: 'DELETE',
     headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
     body: JSON.stringify({ id }),
   })
   return res.json()
@@ -109,6 +111,7 @@ async function apiPatch(id: string, updates: Record<string, any>) {
   const res = await fetch('/api/admin/blog', {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
     body: JSON.stringify({ id, ...updates }),
   })
   return res.json()
@@ -445,7 +448,7 @@ export default function AdminBlogPage() {
                 ))}
               </div>
 
-              <label style={S.label}>Publish Date: / Schedule</label>
+              <label style={S.label}>Publish Date / Schedule</label>
               <input
                 type="datetime-local"
                 style={{ ...S.input, marginBottom: 16 }}
