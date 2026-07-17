@@ -202,7 +202,7 @@ export default function AdminBlogPage() {
         </div>
       )}
       <div style={S.header}>
-        <span style={S.title}>Blog Admin</span>
+        <span style={S.title}>Blog Admin v2</span>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.25)' }}>
             {posts.length} total · {posts.filter(p => p.published).length} published
