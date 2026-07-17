@@ -1,4 +1,4 @@
-import { auth } from '@clerk/nextjs/server'
+import { currentUser } from '@clerk/nextjs/server'
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 
@@ -11,8 +11,8 @@ const supabaseAdmin = createClient(
 
 async function getAuthUserId(): Promise<string | null> {
   try {
-    const { userId } = await auth()
-    return userId
+    const user = await currentUser()
+    return user?.id ?? null
   } catch {
     return null
   }
@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
   try {
     const userId = await getAuthUserId()
     if (userId !== ADMIN_USER_ID) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return NextResponse.json({ error: 'Unauthorized', userId }, { status: 401 })
     }
 
     const body = await req.json()
@@ -47,7 +47,7 @@ export async function DELETE(req: NextRequest) {
   try {
     const userId = await getAuthUserId()
     if (userId !== ADMIN_USER_ID) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return NextResponse.json({ error: 'Unauthorized', userId }, { status: 401 })
     }
 
     const body = await req.json()
@@ -66,7 +66,7 @@ export async function PATCH(req: NextRequest) {
   try {
     const userId = await getAuthUserId()
     if (userId !== ADMIN_USER_ID) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return NextResponse.json({ error: 'Unauthorized', userId }, { status: 401 })
     }
 
     const body = await req.json()
