@@ -20,6 +20,7 @@ import SEPPCalculator             from '@/components/SEPPCalculator'
 import FinanceTable               from '@/components/FinanceTable'
 
 export const revalidate = 3600
+export const dynamicParams = true
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
