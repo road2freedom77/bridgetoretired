@@ -336,6 +336,100 @@ export default function SEPP72tToolkit() {
           )}
         </div>
       </div>
+
+      {/* ── Educational content for SEO ── */}
+      <div className="mt-16 max-w-3xl">
+
+        <div className="mb-10">
+          <h2 className="font-syne font-bold text-[22px] text-white mb-3">What Is a SEPP Calculator?</h2>
+          <p className="text-white/55 text-[14px] leading-relaxed">
+            A SEPP calculator computes your Substantially Equal Periodic Payments under IRS Rule 72(t) — the provision that lets you withdraw from an IRA or 401(k) before age 59½ without the 10% early withdrawal penalty. You enter your account balance, age, life expectancy table, and interest rate, and the calculator returns the exact annual and monthly payment for each of the three IRS-approved methods. Because the payment amount is locked in for years, getting the inputs right before you start matters enormously.
+          </p>
+        </div>
+
+        <div className="mb-10">
+          <h2 className="font-syne font-bold text-[22px] text-white mb-3">Compare the Three IRS SEPP Calculation Methods</h2>
+          <p className="text-white/55 text-[14px] leading-relaxed mb-4">
+            The IRS permits exactly three methods under Revenue Ruling 2002-62 and Notice 2022-6. Each uses your account balance and life expectancy table, but they differ in how the payment is derived:
+          </p>
+          <div className="space-y-4">
+            <div className="bg-ink border border-white/[0.07] rounded-xl p-5">
+              <div className="font-syne font-semibold text-white text-[14px] mb-1">RMD Method</div>
+              <p className="text-white/50 text-[13px] leading-relaxed">Divides your account balance by your life expectancy factor each year. Because both the balance and the factor are recalculated annually, the payment fluctuates. This method produces the lowest payment but is the most flexible — payments automatically adjust if your account value drops, reducing the risk of depleting the account.</p>
+            </div>
+            <div className="bg-ink border border-white/[0.07] rounded-xl p-5">
+              <div className="font-syne font-semibold text-white text-[14px] mb-1">Fixed Amortization</div>
+              <p className="text-white/50 text-[13px] leading-relaxed">Amortizes your account balance over your life expectancy at a fixed interest rate, like a mortgage in reverse. The payment is calculated once and never changes. This typically produces the highest payment of the three methods and is the most commonly chosen option for early retirees who need maximum income.</p>
+            </div>
+            <div className="bg-ink border border-white/[0.07] rounded-xl p-5">
+              <div className="font-syne font-semibold text-white text-[14px] mb-1">Fixed Annuitization</div>
+              <p className="text-white/50 text-[13px] leading-relaxed">Uses an annuity factor derived from the IRS mortality table and your chosen interest rate. Like amortization, the payment is fixed for the life of the SEPP. Payments are very close to the amortization method but calculated differently. Available to Pro users on this calculator.</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="mb-10">
+          <h2 className="font-syne font-bold text-[22px] text-white mb-3">Which SEPP Method Produces the Highest Payment?</h2>
+          <p className="text-white/55 text-[14px] leading-relaxed">
+            Fixed amortization almost always produces the highest annual payment, followed closely by fixed annuitization. The RMD method produces the lowest payment — often 20–40% less than amortization for the same balance and age. If maximizing income during your bridge years is the priority, most early retirees choose fixed amortization. However, if you are concerned about outliving the account or want flexibility if markets decline, the RMD method offers a built-in safety valve since payments adjust with your balance each year.
+          </p>
+        </div>
+
+        <div className="mb-10">
+          <h2 className="font-syne font-bold text-[22px] text-white mb-3">How Long Must SEPP Payments Continue?</h2>
+          <p className="text-white/55 text-[14px] leading-relaxed">
+            The IRS requires you to continue payments for the longer of five full years or until you reach age 59½. If you start at age 50, you must continue until age 59½ — a 9.5-year commitment. If you start at age 57, you must continue for five full years, until age 62, even though you pass 59½ in year 2. This lock-in is one of the most misunderstood aspects of 72(t) planning and the most consequential — the timeline above in the calculator shows your exact lock-in end date based on your inputs.
+          </p>
+        </div>
+
+        <div className="mb-10">
+          <h2 className="font-syne font-bold text-[22px] text-white mb-3">What Interest Rate Can You Use?</h2>
+          <p className="text-white/55 text-[14px] leading-relaxed">
+            Under IRS Notice 2022-6, you may use any interest rate that does not exceed the greater of 5% or 120% of the federal mid-term Applicable Federal Rate (AFR) for either the month of your first distribution or either of the two months preceding it. A higher rate produces a higher payment under fixed amortization and annuitization. The AFR changes monthly — check IRS.gov before locking in your rate. The calculator above shows the current maximum allowed rate based on the AFR you enter.
+          </p>
+        </div>
+
+        <div className="mb-10">
+          <h2 className="font-syne font-bold text-[22px] text-white mb-3">SEPP Calculator Example</h2>
+          <p className="text-white/55 text-[14px] leading-relaxed mb-4">
+            Consider a 50-year-old with an $800,000 IRA, using the single life table and a 5.00% interest rate:
+          </p>
+          <div className="bg-ink border border-white/[0.07] rounded-xl p-5 font-mono text-[12px] space-y-2">
+            <div className="flex justify-between border-b border-white/[0.06] pb-2">
+              <span className="text-white/40">RMD Method</span>
+              <span className="text-white">~$24,100/yr · ~$2,008/mo</span>
+            </div>
+            <div className="flex justify-between border-b border-white/[0.06] pb-2">
+              <span className="text-white/40">Fixed Amortization</span>
+              <span className="text-gold font-bold">~$46,900/yr · ~$3,908/mo</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-white/40">Fixed Annuitization</span>
+              <span className="text-white">~$46,200/yr · ~$3,850/mo</span>
+            </div>
+          </div>
+          <p className="text-white/40 text-[12px] mt-3">Lock-in runs from age 50 to 59½ — 9.5 years. Payments under amortization are nearly double the RMD method at this age and balance.</p>
+        </div>
+
+        <div className="mb-10">
+          <h2 className="font-syne font-bold text-[22px] text-white mb-3">Important Rule 72(t) Risks</h2>
+          <div className="space-y-3">
+            {[
+              { title: 'Modification penalty', body: 'If you modify, stop, or otherwise bust the SEPP before the lock-in ends, the IRS retroactively applies the 10% penalty to every prior distribution, plus interest. A single missed payment or an accidental rollover of the SEPP account can trigger this. The penalty often exceeds the tax savings that motivated the SEPP in the first place.' },
+              { title: 'One-time method switch', body: 'You may switch from amortization or annuitization to the RMD method once, irrevocably. This is an escape valve if markets crash and you need lower payments to avoid draining the account. You cannot switch in the other direction.' },
+              { title: 'Account segregation', body: 'The SEPP applies to one specific IRA or 401(k) account. If you have multiple IRAs, consider splitting one account to run the SEPP on only the portion you need — leaving the rest untouched and accessible penalty-free at 59½.' },
+              { title: 'Tax treatment', body: 'Distributions avoid the 10% penalty but are still taxable as ordinary income. Plan your SEPP payment to stay within a manageable tax bracket, especially if you have other income sources during the bridge years.' },
+            ].map(({ title, body }) => (
+              <div key={title} className="bg-ink border border-white/[0.07] rounded-xl p-5">
+                <div className="font-syne font-semibold text-white text-[14px] mb-1">{title}</div>
+                <p className="text-white/50 text-[13px] leading-relaxed">{body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+      </div>
+
     </div>
   )
 }
