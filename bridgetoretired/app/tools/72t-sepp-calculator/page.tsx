@@ -184,6 +184,15 @@ export default function SEPP72tToolkit() {
   return (
     <div className="max-w-5xl mx-auto px-5 py-10">
 
+      <div className="mb-8">
+        <h1 className="font-syne font-bold text-[clamp(28px,3.5vw,44px)] tracking-tight text-white">
+          SEPP Calculator
+        </h1>
+        <p className="text-white/45 text-[14px] mt-2">
+          Compare all 3 IRS-approved 72(t) methods side-by-side
+        </p>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6">
         {/* Inputs */}
         <div className="bg-ink border border-white/[0.07] rounded-xl p-5">
