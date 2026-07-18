@@ -355,7 +355,7 @@ export default function SEPP72tToolkit() {
           <div className="space-y-4">
             <div className="bg-ink border border-white/[0.07] rounded-xl p-5">
               <div className="font-syne font-semibold text-white text-[14px] mb-1">RMD Method</div>
-              <p className="text-white/50 text-[13px] leading-relaxed">Divides your account balance by your life expectancy factor each year. Because both the balance and the factor are recalculated annually, the payment fluctuates. This method produces the lowest payment but is the most flexible — payments automatically adjust if your account value drops, reducing the risk of depleting the account.</p>
+              <p className="text-white/50 text-[13px] leading-relaxed">Divides your account balance by your life expectancy factor each year. Because both the balance and the factor are recalculated annually, the payment fluctuates. The RMD method produces the lowest payment and adjusts annually with the account balance, but the SEPP series must still follow IRS duration and modification rules — you cannot freely alter or stop payments without triggering penalties.</p>
             </div>
             <div className="bg-ink border border-white/[0.07] rounded-xl p-5">
               <div className="font-syne font-semibold text-white text-[14px] mb-1">Fixed Amortization</div>
@@ -371,7 +371,7 @@ export default function SEPP72tToolkit() {
         <div className="mb-10">
           <h2 className="font-syne font-bold text-[22px] text-white mb-3">Which SEPP Method Produces the Highest Payment?</h2>
           <p className="text-white/55 text-[14px] leading-relaxed">
-            Fixed amortization almost always produces the highest annual payment, followed closely by fixed annuitization. The RMD method produces the lowest payment — often 20–40% less than amortization for the same balance and age. If maximizing income during your bridge years is the priority, most early retirees choose fixed amortization. However, if you are concerned about outliving the account or want flexibility if markets decline, the RMD method offers a built-in safety valve since payments adjust with your balance each year.
+            Fixed amortization almost always produces the highest annual payment, followed closely by fixed annuitization. The RMD method produces the lowest payment — often 20–40% less than amortization for the same balance and age. If maximizing income during your bridge years is the priority, most early retirees choose fixed amortization. However, if you are concerned about outliving the account or want a payment that adjusts with your balance each year, the RMD method recalculates annually — though the SEPP series itself remains locked in for the full required duration.
           </p>
         </div>
 
