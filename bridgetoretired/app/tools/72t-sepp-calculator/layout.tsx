@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'SEPP Calculator — All 3 IRS Methods Compared (2026) | BridgeToRetired',
+  title: 'SEPP Calculator — All 3 IRS Methods Compared (2026)',
   description: 'Calculate your 72(t) SEPP distributions using all three IRS-approved methods: RMD, Fixed Amortization, and Fixed Annuitization. Compare payments side-by-side.',
 }
 
