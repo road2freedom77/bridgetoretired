@@ -78,6 +78,25 @@ const S = {
   }),
 }
 
+// Convert local datetime-local string to UTC ISO string
+function localToUTC(local: string): string {
+  if (!local) return new Date().toISOString()
+  return new Date(local).toISOString()
+}
+
+// Convert UTC ISO string to local datetime-local string
+function utcToLocal(utc: string): string {
+  if (!utc) return new Date().toISOString().slice(0, 16)
+  const d = new Date(utc)
+  const offset = d.getTimezoneOffset()
+  const local = new Date(d.getTime() - offset * 60 * 1000)
+  return local.toISOString().slice(0, 16)
+}
+
+function wordCount(text: string): number {
+  return text.trim() === '' ? 0 : text.trim().split(/\s+/).length
+}
+
 async function apiFetch(method: string, body?: Record<string, any>) {
   const res = await fetch('/api/admin/blog', {
     method,
@@ -121,12 +140,15 @@ export default function AdminBlogPage() {
   }
 
   function handleNew() {
-    setEditing({ ...EMPTY_POST, published_at: new Date().toISOString().slice(0, 16) })
+    setEditing({ ...EMPTY_POST, published_at: utcToLocal(new Date().toISOString()) })
     setView('edit')
   }
 
   function handleEdit(post: Post) {
-    setEditing({ ...post, published_at: post.published_at?.slice(0, 16) ?? new Date().toISOString().slice(0, 16) })
+    setEditing({
+      ...post,
+      published_at: utcToLocal(post.published_at ?? new Date().toISOString()),
+    })
     setView('edit')
   }
 
@@ -144,7 +166,7 @@ export default function AdminBlogPage() {
       read_time:    editing.read_time || null,
       featured:     editing.featured ?? false,
       published:    editing.published ?? false,
-      published_at: editing.published_at ? new Date(editing.published_at).toISOString() : new Date().toISOString(),
+      published_at: editing.published_at ? localToUTC(editing.published_at) : new Date().toISOString(),
       updated_at:   new Date().toISOString(),
       content:      editing.content,
     }
@@ -187,6 +209,9 @@ export default function AdminBlogPage() {
     p.title?.toLowerCase().includes(search.toLowerCase()) ||
     p.slug?.toLowerCase().includes(search.toLowerCase())
   )
+
+  const words = wordCount(editing.content ?? '')
+  const chars = (editing.content ?? '').length
 
   // ── LIST VIEW ───────────────────────────────────────────────────────────────
   if (view === 'list') return (
@@ -307,7 +332,7 @@ export default function AdminBlogPage() {
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
                 <label style={{ ...S.label, margin: 0 }}>Content (Markdown)</label>
                 <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.2)' }}>
-                  {(editing.content ?? '').length.toLocaleString()} chars
+                  {words.toLocaleString()} words · {chars.toLocaleString()} chars
                 </span>
               </div>
               <div style={{ marginBottom: 12 }}>
@@ -351,9 +376,12 @@ export default function AdminBlogPage() {
                 ))}
               </div>
               <label style={S.label}>Publish Date / Schedule</label>
-              <input type="datetime-local" style={{ ...S.input, marginBottom: 16 }}
-                value={editing.published_at?.slice(0, 16) ?? ''}
+              <input type="datetime-local" style={{ ...S.input, marginBottom: 4 }}
+                value={editing.published_at ?? ''}
                 onChange={e => setEditing(p => ({ ...p, published_at: e.target.value }))} />
+              <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.2)', marginBottom: 16 }}>
+                Times are in your local timezone
+              </div>
               <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
                 <input type="checkbox" checked={editing.featured ?? false}
                   onChange={e => setEditing(p => ({ ...p, featured: e.target.checked }))}
