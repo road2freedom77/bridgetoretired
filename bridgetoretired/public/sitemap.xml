@@ -4,7 +4,7 @@
   <!-- Core pages -->
   <url>
     <loc>https://bridgetoretired.com/</loc>
-    <lastmod>2026-06-14</lastmod>
+    <lastmod>2026-07-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
@@ -16,13 +16,13 @@
   </url>
   <url>
     <loc>https://bridgetoretired.com/blog</loc>
-    <lastmod>2026-06-14</lastmod>
+    <lastmod>2026-07-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://bridgetoretired.com/pricing</loc>
-    <lastmod>2026-06-14</lastmod>
+    <lastmod>2026-07-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
@@ -48,7 +48,7 @@
   <!-- Tools hub -->
   <url>
     <loc>https://bridgetoretired.com/tools</loc>
-    <lastmod>2026-07-16</lastmod>
+    <lastmod>2026-07-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
@@ -56,43 +56,43 @@
   <!-- Tool pages -->
   <url>
     <loc>https://bridgetoretired.com/tools/bridge-strategy-calculator</loc>
-    <lastmod>2026-05-11</lastmod>
+    <lastmod>2026-07-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://bridgetoretired.com/tools/early-retirement-age-calculator</loc>
-    <lastmod>2026-07-16</lastmod>
+    <lastmod>2026-07-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://bridgetoretired.com/tools/bridge-health-check</loc>
-    <lastmod>2026-07-16</lastmod>
+    <lastmod>2026-07-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://bridgetoretired.com/tools/retirement-readiness-score</loc>
-    <lastmod>2026-07-16</lastmod>
+    <lastmod>2026-07-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://bridgetoretired.com/tools/taxable-brokerage-gap-calculator</loc>
-    <lastmod>2026-07-16</lastmod>
+    <lastmod>2026-07-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://bridgetoretired.com/tools/coast-fire-calculator</loc>
-    <lastmod>2026-07-16</lastmod>
+    <lastmod>2026-07-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://bridgetoretired.com/tools/72t-vs-roth-ladder</loc>
-    <lastmod>2026-07-16</lastmod>
+    <lastmod>2026-07-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -104,7 +104,7 @@
   </url>
   <url>
     <loc>https://bridgetoretired.com/tools/72t-sepp-calculator</loc>
-    <lastmod>2026-05-11</lastmod>
+    <lastmod>2026-07-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -156,111 +156,117 @@
   <!-- Blog posts -->
   <url>
     <loc>https://bridgetoretired.com/blog/what-is-retirement-bridge-strategy</loc>
-    <lastmod>2026-02-20</lastmod>
+    <lastmod>2026-07-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://bridgetoretired.com/blog/roth-conversion-ladder-guide</loc>
-    <lastmod>2026-02-19</lastmod>
+    <lastmod>2026-07-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://bridgetoretired.com/blog/taxable-brokerage-secret-weapon</loc>
-    <lastmod>2026-02-18</lastmod>
+    <lastmod>2026-07-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://bridgetoretired.com/blog/rule-72t-sepp-guide</loc>
-    <lastmod>2026-06-09</lastmod>
+    <lastmod>2026-07-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://bridgetoretired.com/blog/how-much-to-retire-at-50</loc>
-    <lastmod>2026-02-16</lastmod>
+    <lastmod>2026-07-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://bridgetoretired.com/blog/health-insurance-before-medicare</loc>
-    <lastmod>2026-02-15</lastmod>
+    <lastmod>2026-07-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://bridgetoretired.com/blog/social-security-timing-62-vs-70</loc>
-    <lastmod>2026-02-14</lastmod>
+    <lastmod>2026-07-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://bridgetoretired.com/blog/sequence-of-returns-risk</loc>
-    <lastmod>2026-02-13</lastmod>
+    <lastmod>2026-07-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://bridgetoretired.com/blog/zero-tax-early-retirement</loc>
-    <lastmod>2026-02-12</lastmod>
+    <lastmod>2026-07-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://bridgetoretired.com/blog/withdrawal-order-taxable-roth-401k</loc>
-    <lastmod>2026-02-11</lastmod>
+    <lastmod>2026-07-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://bridgetoretired.com/blog/can-i-retire-at-55-with-750k</loc>
-    <lastmod>2026-03-11</lastmod>
+    <lastmod>2026-07-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://bridgetoretired.com/blog/how-do-i-retire-at-50</loc>
-    <lastmod>2026-03-19</lastmod>
+    <lastmod>2026-07-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://bridgetoretired.com/blog/coastfire-explained</loc>
-    <lastmod>2026-04-18</lastmod>
+    <lastmod>2026-07-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://bridgetoretired.com/blog/how-much-taxable-brokerage-to-retire-early</loc>
-    <lastmod>2026-05-11</lastmod>
+    <lastmod>2026-07-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://bridgetoretired.com/blog/roth-ladder-vs-72t</loc>
-    <lastmod>2026-06-09</lastmod>
+    <lastmod>2026-07-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://bridgetoretired.com/blog/can-i-retire-at-50-with-1-million</loc>
-    <lastmod>2026-06-09</lastmod>
+    <lastmod>2026-07-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://bridgetoretired.com/blog/bridge-planner-pro-v3</loc>
-    <lastmod>2026-06-12</lastmod>
+    <lastmod>2026-07-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://bridgetoretired.com/blog/online-retirement-planner</loc>
-    <lastmod>2026-06-14</lastmod>
+    <lastmod>2026-07-19</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://bridgetoretired.com/blog/what-is-a-retirement-bridge-account</loc>
+    <lastmod>2026-07-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
-</urlset> 
+</urlset>
