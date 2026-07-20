@@ -34,6 +34,17 @@ export function Nav() {
               </Link>
             </li>
           ))}
+          {/* Dashboard link — free signed-in users only */}
+          {isSignedIn && !isPro && (
+            <li>
+              <Link
+                href="/home"
+                className="font-mono text-[11px] tracking-widest uppercase text-white/40 hover:text-white/80 transition-colors"
+              >
+                Dashboard
+              </Link>
+            </li>
+          )}
           {FLAGS.PRO_ENABLED && (
             <li>
               <Link
@@ -101,6 +112,16 @@ export function Nav() {
               {label}
             </Link>
           ))}
+          {/* Dashboard link — free signed-in users only */}
+          {isSignedIn && !isPro && (
+            <Link
+              href="/home"
+              onClick={() => setOpen(false)}
+              className="font-mono text-[12px] tracking-wider uppercase text-white/50 hover:text-white transition-colors"
+            >
+              Dashboard
+            </Link>
+          )}
           {FLAGS.PRO_ENABLED && (
             <Link
               href={isPro ? '/pro-welcome' : '/pricing'}
