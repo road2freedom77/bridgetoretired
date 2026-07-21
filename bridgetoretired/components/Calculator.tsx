@@ -105,9 +105,9 @@ export function Calculator() {
   const depleted     = rows.find(r => r.totalEnd <= 0)
 
   return (
-    <section id="calculator" className="py-24 px-5 bg-navy">
+    <section id="calculator" className="py-12 md:py-24 px-5 bg-navy">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-12">
+        <div className="mb-8 md:mb-12">
           <div className="flex items-center gap-3 font-mono text-[10px] tracking-[0.24em] uppercase text-gold mb-4">
             <span className="block w-6 h-px bg-gold" />
             Live Calculator
@@ -120,7 +120,7 @@ export function Calculator() {
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-[340px_1fr] gap-8">
+        <div className="grid lg:grid-cols-[340px_1fr] gap-6 lg:gap-8">
 
           {/* Inputs panel */}
           <div className="bg-ink border border-white/[0.07] rounded-xl p-6 h-fit">

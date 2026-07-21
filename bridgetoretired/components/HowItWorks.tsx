@@ -26,18 +26,18 @@ const steps = [
 ]
 
 const timeline = [
-  { icon: '🏠', age: 'Age 48 — Today',            desc: 'Building the bridge. Maxing accounts.',           tag: '4 years to go',    tagColor: 'gold' },
-  { icon: '🎯', age: 'Age 52 — Retire Early',      desc: '$860k total portfolio. Bridge begins.',           tag: 'Retire Year 2030', tagColor: 'gold' },
+  { icon: '🏠', age: 'Age 48 — Today',            desc: 'Building the bridge. Maxing accounts.',            tag: '4 years to go',     tagColor: 'gold' },
+  { icon: '🎯', age: 'Age 52 — Retire Early',      desc: '$860k total portfolio. Bridge begins.',            tag: 'Retire Year 2030',  tagColor: 'gold' },
   { icon: '📊', age: 'Age 52–59½ — Bridge Years',  desc: 'Drawing from taxable only. 401k grows untouched.', tag: '$40k/yr withdrawal', tagColor: 'teal' },
-  { icon: '🔓', age: 'Age 59½ — 401k Unlocks',     desc: 'Penalty-free access to tax-deferred funds.',      tag: 'Bridge End',        tagColor: 'sage' },
-  { icon: '💰', age: 'Age 67 — Social Security',   desc: 'Full benefits claimed. Portfolio pressure eases.', tag: 'Max Benefit',        tagColor: 'sage' },
+  { icon: '🔓', age: 'Age 59½ — 401k Unlocks',     desc: 'Penalty-free access to tax-deferred funds.',       tag: 'Bridge End',         tagColor: 'sage' },
+  { icon: '💰', age: 'Age 67 — Social Security',   desc: 'Full benefits claimed. Portfolio pressure eases.',  tag: 'Max Benefit',        tagColor: 'sage' },
 ]
 
 export function HowItWorks() {
   return (
-    <section id="how" className="py-24 px-5 bg-navy relative overflow-hidden">
+    <section id="how" className="py-12 md:py-24 px-5 bg-navy relative overflow-hidden">
       <div className="absolute right-[-200px] top-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-gold/[0.03] blur-[120px] pointer-events-none" />
-      <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-20 items-center">
+      <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-10 lg:gap-20 items-center">
 
         <div>
           <div className="flex items-center gap-3 font-mono text-[10px] tracking-[0.24em] uppercase text-gold mb-5">
