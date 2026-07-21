@@ -88,7 +88,8 @@ export default function ActiveScenarioBar() {
   const mc      = scenario.monte_carlo_success
   const wr      = scenario.withdrawal_rate
   const at90    = scenario.portfolio_at_90
-  const mcPass  = mc !== null && mc >= 80
+  // monte_carlo_success is stored as a 0–1 decimal (successes / sims). Compare against 0.80, not 80.
+  const mcPass  = mc !== null && mc >= 0.80
   const wrSafe  = wr !== null && wr <= 4
   const source  = scenario.risk_flags?._source
 
@@ -105,7 +106,7 @@ export default function ActiveScenarioBar() {
           <span className="font-mono text-[10px] text-white/25">· Retire {scenario.retire_age}</span>
           {mc !== null && (
             <span className="font-mono text-[10px]" style={{ color: mcPass ? SAGE : RED }}>
-              · {Math.round(mc)}% MC
+              · {Math.round(mc * 100)}% MC
             </span>
           )}
           <button
@@ -147,7 +148,7 @@ export default function ActiveScenarioBar() {
           )}
 
           {mc !== null && isPlanner && (
-            <Stat label="Monte Carlo" value={`${Math.round(mc)}%`} color={mcPass ? SAGE : RED} />
+            <Stat label="Monte Carlo" value={`${Math.round(mc * 100)}%`} color={mcPass ? SAGE : RED} />
           )}
 
           <Stat label="Updated" value={timeAgo(scenario.updated_at)} color="rgba(255,255,255,0.3)" />
