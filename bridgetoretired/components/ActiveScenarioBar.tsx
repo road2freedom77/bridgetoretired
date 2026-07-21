@@ -97,9 +97,9 @@ export default function ActiveScenarioBar({ onRegisterRefetch }: Props) {
   const mc      = scenario.monte_carlo_success
   const wr      = scenario.withdrawal_rate
   const at90    = scenario.portfolio_at_90
-  // successRate is stored as 0–1 decimal (e.g. 0.83). Threshold and display both need * 100.
+  // Both mc and wr are stored as 0–1 decimals (e.g. mc=0.83, wr=0.041)
   const mcPass  = mc !== null && mc >= 0.80
-  const wrSafe  = wr !== null && wr <= 4
+  const wrSafe  = wr !== null && wr <= 0.04
   const source  = scenario.risk_flags?._source
   const isPlanner = source !== 'compare'
 
@@ -111,6 +111,11 @@ export default function ActiveScenarioBar({ onRegisterRefetch }: Props) {
           <span className="font-mono text-[9px] tracking-widest uppercase text-[#E8B84B]/60">Active</span>
           <span className="font-syne font-semibold text-white text-[12px]">{scenario.name}</span>
           <span className="font-mono text-[10px] text-white/25">· Retire {scenario.retire_age}</span>
+          {wr !== null && (
+            <span className="font-mono text-[10px]" style={{ color: wrSafe ? SAGE : RED }}>
+              · {(wr * 100).toFixed(1)}% W/R
+            </span>
+          )}
           {mc !== null && isPlanner && (
             <span className="font-mono text-[10px]" style={{ color: mcPass ? SAGE : RED }}>
               · {Math.round(mc * 100)}% MC
@@ -147,7 +152,7 @@ export default function ActiveScenarioBar({ onRegisterRefetch }: Props) {
           <Stat label="Retire Age" value={`${scenario.retire_age}`} color="white" />
 
           {wr !== null && (
-            <Stat label="W/R" value={`${wr.toFixed(1)}%`} color={wrSafe ? SAGE : RED} />
+            <Stat label="W/R" value={`${(wr * 100).toFixed(1)}%`} color={wrSafe ? SAGE : RED} />
           )}
 
           {at90 !== null && (
