@@ -7,7 +7,7 @@ export function Hero() {
       <div className="absolute top-[-100px] right-[-100px] w-[500px] h-[500px] rounded-full bg-gold/[0.06] blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-100px] left-[20%] w-[400px] h-[400px] rounded-full bg-teal/[0.04] blur-[100px] pointer-events-none" />
 
-      <div className="relative z-10 max-w-7xl mx-auto px-5 py-20 grid md:grid-cols-2 gap-16 items-center w-full">
+      <div className="relative z-10 max-w-7xl mx-auto px-5 py-16 md:py-20 grid md:grid-cols-2 gap-8 md:gap-16 items-center w-full">
 
         {/* Content */}
         <div>
@@ -16,7 +16,7 @@ export function Hero() {
             Early Retirement · FIRE Strategy
           </div>
 
-          <h1 className="font-syne font-extrabold text-[clamp(42px,5.5vw,72px)] leading-[1.0] tracking-tight text-white mb-6">
+          <h1 className="font-syne font-extrabold text-[clamp(36px,5.5vw,72px)] leading-[1.05] tracking-tight text-white mb-6">
             Retire Early.<br />
             Bridge the{' '}
             <em className="font-lora font-normal text-gold not-italic italic">Gap.</em>
@@ -48,9 +48,9 @@ export function Hero() {
 
           <div className="flex gap-8 pt-7 border-t border-white/[0.07]">
             {[
-              { val: '4–12', unit: '', label: 'Bridge Years Planned' },
-              { val: '3',    unit: '', label: 'Account Types Modeled' },
-              { val: '$0',   unit: '', label: 'Cost to Download'      },
+              { val: '4–12', label: 'Bridge Years Planned' },
+              { val: '3',    label: 'Account Types Modeled' },
+              { val: '$0',   label: 'Cost to Download'      },
             ].map(({ val, label }) => (
               <div key={label}>
                 <div className="font-syne font-bold text-[26px] text-white leading-none mb-1">
@@ -75,7 +75,7 @@ export function Hero() {
                 <div className="w-2.5 h-2.5 rounded-full bg-[#28c941]" />
               </div>
               <span className="font-mono text-[11px] text-white/30 tracking-wide">
-              Early_Retirement_Bridge_Planner_v2.xlsx
+                Early_Retirement_Bridge_Planner_v2.xlsx
               </span>
             </div>
 
@@ -120,7 +120,7 @@ export function Hero() {
                 Account Balances
               </div>
               {[
-                { label: 'Taxable Brokerage', val: '$120,000' },
+                { label: 'Taxable Brokerage',  val: '$120,000' },
                 { label: 'Traditional 401(k)', val: '$650,000' },
                 { label: 'Roth IRA',           val: '$90,000'  },
                 { label: 'Annual Spending',     val: '$40,000', green: true },
