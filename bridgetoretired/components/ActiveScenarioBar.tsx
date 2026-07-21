@@ -20,6 +20,12 @@ interface ActiveScenario {
   updated_at:          string
 }
 
+interface Props {
+  // Optional: parent can register a refetch callback to trigger bar updates
+  // e.g. after setting a scenario active from the sidebar
+  onRegisterRefetch?: (refetch: () => void) => void
+}
+
 function fmt(n: number) {
   if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(2)}M`
   if (n >= 1_000)     return `$${Math.round(n / 1_000)}k`
@@ -35,7 +41,7 @@ function timeAgo(dateStr: string) {
   return new Date(dateStr).toLocaleDateString()
 }
 
-export default function ActiveScenarioBar() {
+export default function ActiveScenarioBar({ onRegisterRefetch }: Props) {
   const { user, isLoaded } = useUser()
   const isPro = user?.publicMetadata?.isPro === true
 
@@ -58,15 +64,18 @@ export default function ActiveScenarioBar() {
     }
   }, [])
 
+  // Register refetch with parent so it can trigger bar updates (e.g. after Set Active)
+  useEffect(() => {
+    onRegisterRefetch?.(fetchActive)
+  }, [fetchActive, onRegisterRefetch])
+
   useEffect(() => {
     if (isLoaded && isPro) fetchActive()
     else if (isLoaded) setLoading(false)
   }, [isLoaded, isPro, fetchActive])
 
-  // Don't render for non-Pro or while loading
   if (!isLoaded || !isPro || loading) return null
 
-  // No active scenario set yet
   if (!scenario) {
     return (
       <div className="w-full bg-[#0D1420] border-b border-[#E8B84B]/10">
@@ -88,12 +97,10 @@ export default function ActiveScenarioBar() {
   const mc      = scenario.monte_carlo_success
   const wr      = scenario.withdrawal_rate
   const at90    = scenario.portfolio_at_90
-  // monte_carlo_success is stored as a 0–1 decimal (successes / sims). Compare against 0.80, not 80.
+  // successRate is stored as 0–1 decimal (e.g. 0.83). Threshold and display both need * 100.
   const mcPass  = mc !== null && mc >= 0.80
   const wrSafe  = wr !== null && wr <= 4
   const source  = scenario.risk_flags?._source
-
-  // Determine if this is a planner scenario (has MC data) or compare scenario
   const isPlanner = source !== 'compare'
 
   if (collapsed) {
@@ -104,7 +111,7 @@ export default function ActiveScenarioBar() {
           <span className="font-mono text-[9px] tracking-widest uppercase text-[#E8B84B]/60">Active</span>
           <span className="font-syne font-semibold text-white text-[12px]">{scenario.name}</span>
           <span className="font-mono text-[10px] text-white/25">· Retire {scenario.retire_age}</span>
-          {mc !== null && (
+          {mc !== null && isPlanner && (
             <span className="font-mono text-[10px]" style={{ color: mcPass ? SAGE : RED }}>
               · {Math.round(mc * 100)}% MC
             </span>

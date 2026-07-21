@@ -1,7 +1,7 @@
 'use client'
 
 import { useUser } from '@clerk/nextjs'
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { PlannerInputs, PlannerResults } from '@/lib/planner/types'
 import InputsForm from '@/components/planner/InputsForm'
 import ResultsDashboard from '@/components/planner/ResultsDashboard'
@@ -42,6 +42,9 @@ export default function PlannerPage() {
   const [saving, setSaving] = useState(false)
   const [saveMsg, setSaveMsg] = useState('')
   const [saveMsgType, setSaveMsgType] = useState<'success' | 'error'>('success')
+
+  // Ref to trigger ActiveScenarioBar refetch without remounting it
+  const barRefetchRef = useRef<(() => void) | null>(null)
 
   const calculate = useCallback(async (inp: PlannerInputs) => {
     setCalculating(true)
@@ -136,6 +139,11 @@ export default function PlannerPage() {
     setResults(null)
     setEditingName(false)
   }
+
+  // Called by sidebar after a scenario is set active — refetches the bar
+  const handleActivated = useCallback(() => {
+    barRefetchRef.current?.()
+  }, [])
 
   if (!isLoaded) return (
     <div className="min-h-screen bg-black flex items-center justify-center">
@@ -233,8 +241,8 @@ export default function PlannerPage() {
         </div>
       </div>
 
-      {/* Active Scenario Bar */}
-      <ActiveScenarioBar />
+      {/* Active Scenario Bar — exposes refetch via callback ref */}
+      <ActiveScenarioBar onRegisterRefetch={fn => { barRefetchRef.current = fn }} />
 
       <div className="max-w-[1400px] mx-auto flex">
         {/* Scenario sidebar */}
@@ -242,6 +250,7 @@ export default function PlannerPage() {
           activeScenarioId={activeScenarioId}
           onLoad={handleLoadScenario}
           onNew={handleNewScenario}
+          onActivated={handleActivated}
         />
 
         {/* Main content */}
