@@ -123,7 +123,7 @@ export function Calculator() {
         <div className="grid lg:grid-cols-[340px_1fr] gap-6 lg:gap-8">
 
           {/* Inputs panel */}
-          <div className="bg-ink border border-white/[0.07] rounded-xl p-6 h-fit">
+          <div className="bg-ink border border-white/[0.07] rounded-xl p-6 h-fit min-w-0">
             <div className="font-mono text-[9px] tracking-[0.2em] uppercase text-gold mb-5">
               Your Numbers
             </div>
@@ -211,7 +211,7 @@ export function Calculator() {
           </div>
 
           {/* Results */}
-          <div className="space-y-5">
+          <div className="space-y-5 min-w-0">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {[
                 { label: 'Total Portfolio',  val: fmt(totalPortfolio),          sub: 'at retirement'            },
@@ -239,7 +239,7 @@ export function Calculator() {
                   Showing all {rows.length} years
                 </span>
               </div>
-              <div className="overflow-auto max-h-[420px]">
+              <div className="overflow-auto max-h-[420px] max-w-full">
                 <table className="w-full text-left">
                   <thead className="sticky top-0 bg-slate">
                     <tr>
@@ -259,7 +259,7 @@ export function Calculator() {
                           <td className="font-mono text-[11px] text-white/70 px-4 py-2 font-medium">{r.age}</td>
                           <td className="font-mono text-[11px] text-white/60 px-4 py-2">{fmt(r.withdrawal)}</td>
                           <td className="px-4 py-2">
-                            <span className={`font-mono text-[9px] tracking-wide px-2 py-0.5 rounded border ${
+                            <span className={`font-mono text-[9px] tracking-wide px-2 py-0.5 rounded border whitespace-nowrap ${
                               isBridge
                                 ? 'text-gold bg-gold/10 border-gold/25'
                                 : 'text-teal bg-teal/10 border-teal/25'
