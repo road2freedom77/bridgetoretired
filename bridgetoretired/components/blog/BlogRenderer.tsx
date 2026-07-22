@@ -30,18 +30,19 @@ const EMBED_MAP: Record<string, React.ComponentType> = {
 }
 
 // ── Token regexes ─────────────────────────────────────────────────────────────
-// [[tool:component-name]]
 const TOOL_REGEX  = /\[\[tool:([a-z0-9-]+)\]\]/
-// [[table:{...json...}]]  — greedy match for multiline JSON
 const TABLE_REGEX = /\[\[table:(\{[\s\S]*?\})\]\]/
+// [[image:filename.ext]] or [[image:filename.ext|Optional caption]]
+const IMAGE_REGEX = /\[\[image:([^\]|]+)(?:\|([^\]]*))?\]\]/
 
-// Combined splitter — matches either token type
-const TOKEN_REGEX = /(\[\[tool:[a-z0-9-]+\]\]|\[\[table:\{[\s\S]*?\}\]\])/g
+// Combined splitter
+const TOKEN_REGEX = /(\[\[tool:[a-z0-9-]+\]\]|\[\[table:\{[\s\S]*?\}\]\]|\[\[image:[^\]]+\]\])/g
 
 // ── Segment types ─────────────────────────────────────────────────────────────
 interface Segment {
-  type: 'markdown' | 'tool' | 'table'
-  content: string        // markdown text OR tool name OR raw JSON string
+  type: 'markdown' | 'tool' | 'table' | 'image'
+  content: string
+  caption?: string
 }
 
 function parseSegments(content: string): Segment[] {
@@ -51,7 +52,6 @@ function parseSegments(content: string): Segment[] {
 
   TOKEN_REGEX.lastIndex = 0
   while ((match = TOKEN_REGEX.exec(content)) !== null) {
-    // Markdown before this token
     if (match.index > lastIndex) {
       segments.push({ type: 'markdown', content: content.slice(lastIndex, match.index) })
     }
@@ -59,14 +59,19 @@ function parseSegments(content: string): Segment[] {
     const token = match[1]
     const toolMatch  = token.match(TOOL_REGEX)
     const tableMatch = token.match(TABLE_REGEX)
+    const imageMatch = token.match(IMAGE_REGEX)
 
     if (toolMatch)  segments.push({ type: 'tool',  content: toolMatch[1] })
     if (tableMatch) segments.push({ type: 'table', content: tableMatch[1] })
+    if (imageMatch) segments.push({
+      type: 'image',
+      content: imageMatch[1].trim(),
+      caption: imageMatch[2]?.trim() || undefined,
+    })
 
     lastIndex = match.index + match[0].length
   }
 
-  // Remaining markdown
   if (lastIndex < content.length) {
     segments.push({ type: 'markdown', content: content.slice(lastIndex) })
   }
@@ -160,7 +165,7 @@ export default function BlogRenderer({ content }: BlogRendererProps) {
           return <Component key={i} />
         }
 
-        // FinanceTable embed with inline JSON props
+        // FinanceTable embed
         if (segment.type === 'table') {
           try {
             const props = JSON.parse(segment.content)
@@ -176,6 +181,24 @@ export default function BlogRenderer({ content }: BlogRendererProps) {
             console.warn(`BlogRenderer: invalid table JSON at segment ${i}`, e)
             return null
           }
+        }
+
+        // Image embed — resolves from /public/images/
+        if (segment.type === 'image') {
+          return (
+            <figure key={i} className="my-8">
+              <img
+                src={`/images/${segment.content}`}
+                alt={segment.caption || ''}
+                className="w-full rounded-xl border border-white/10"
+              />
+              {segment.caption && (
+                <figcaption className="mt-3 text-center font-mono text-[11px] tracking-wide text-white/35">
+                  {segment.caption}
+                </figcaption>
+              )}
+            </figure>
+          )
         }
 
         // Markdown
