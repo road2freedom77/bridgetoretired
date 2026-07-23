@@ -146,13 +146,13 @@ export default function ProWelcomePage() {
             <div className="px-6 py-5 grid grid-cols-2 sm:grid-cols-4 gap-4">
               <Stat label="Retire Age" value={`${active.retire_age}`} color="white" />
               {wr !== null && wr !== undefined && (
-                <Stat label="Withdrawal Rate" value={`${wr.toFixed(1)}%`} color={wr <= 4 ? SAGE : RED} />
+                <Stat label="Withdrawal Rate" value={`${(wr * 100).toFixed(1)}%`} color={wr <= 0.04 ? SAGE : RED} />
               )}
               {at90 !== null && at90 !== undefined && (
                 <Stat label="Portfolio at 90" value={fmt(at90)} color={at90 > 0 ? TEAL : RED} />
               )}
               {mc !== null && mc !== undefined && isPlanner && (
-                <Stat label="Monte Carlo" value={`${Math.round(mc)}%`} color={mc >= 80 ? SAGE : RED} />
+                <Stat label="Monte Carlo" value={`${Math.round(mc * 100)}%`} color={mc >= 0.80 ? SAGE : RED} />
               )}
               <Stat label="Last Updated" value={timeAgo(active.updated_at)} color="rgba(255,255,255,0.35)" />
             </div>
@@ -313,4 +313,4 @@ function Stat({ label, value, color }: { label: string; value: string; color: st
       <div className="font-syne font-bold text-[18px]" style={{ color }}>{value}</div>
     </div>
   )
-} 
+}
