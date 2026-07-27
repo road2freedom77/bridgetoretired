@@ -53,6 +53,7 @@ export async function GET(req: NextRequest) {
 
     const email = session.customer_details?.email ?? ''
     const customerId = session.customer as string | null
+    const ref = session.client_reference_id ?? null
 
     // Record in Supabase (upsert — safe to call multiple times)
     await supabaseAdmin
@@ -62,6 +63,7 @@ export async function GET(req: NextRequest) {
         stripe_customer_id: customerId ?? null,
         email,
         product_version: 'v3',
+        ref,
       }, { onConflict: 'stripe_session_id' })
 
     // Generate signed download token

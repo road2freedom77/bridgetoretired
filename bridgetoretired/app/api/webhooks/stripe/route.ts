@@ -119,6 +119,7 @@ export async function POST(req: NextRequest) {
               stripe_customer_id: customerId ?? null,
               email,
               product_version:    'v3',
+              ref:                session.client_reference_id ?? null,
             }, { onConflict: 'stripe_session_id' })
 
           console.log(`XLS purchase recorded for ${email}`)

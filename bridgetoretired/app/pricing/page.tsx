@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { useState, useEffect } from 'react'
 import { notFound } from 'next/navigation'
 import { FLAGS } from '@/lib/feature-flags'
 import { trackProCtaClick } from '@/lib/analytics'
@@ -59,6 +60,24 @@ const ONLINE_PRO_LINK     = 'https://buy.stripe.com/00w28rcmngCd52AgLYfYY01'
 
 export default function PricingPage() {
   if (!FLAGS.PRO_ENABLED) notFound()
+
+  // Forward utm_campaign to Stripe as client_reference_id so every purchase
+  // row records its acquisition source (read back in the verify route).
+  const [xlsLink,    setXlsLink]    = useState(XLS_PAYMENT_LINK)
+  const [onlineLink, setOnlineLink] = useState(ONLINE_PRO_LINK)
+
+  useEffect(() => {
+    const params   = new URLSearchParams(window.location.search)
+    const campaign = params.get('utm_campaign')
+    if (campaign) {
+      // client_reference_id: alphanumeric, dash, underscore only, max 200 chars
+      const ref = campaign.replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 200)
+      if (ref) {
+        setXlsLink(`${XLS_PAYMENT_LINK}?client_reference_id=${ref}`)
+        setOnlineLink(`${ONLINE_PRO_LINK}?client_reference_id=${ref}`)
+      }
+    }
+  }, [])
 
   return (
     <div className="min-h-screen bg-black">
@@ -127,7 +146,7 @@ export default function PricingPage() {
               <div className="text-white/30 text-[12px] font-mono mb-2">one-time purchase</div>
               <div className="text-white/25 text-[11px] font-mono mb-6">Best for offline planning without recurring billing.</div>
               <a
-                href={XLS_PAYMENT_LINK}
+                href={xlsLink}
                 onClick={() => trackProCtaClick('pricing-xls-card')}
                 className="block text-center font-syne font-semibold text-[13px] tracking-wide py-3.5 rounded-lg hover:opacity-90 transition-opacity mb-7"
                 style={{ background: '#2DD4BF', color: '#0D1420' }}
@@ -168,7 +187,7 @@ export default function PricingPage() {
               <div className="text-white/25 text-[11px] font-mono mb-2">cancel anytime</div>
               <div className="text-white/25 text-[11px] font-mono mb-6">Best for plans you expect to revisit, update, and stress-test over time.</div>
               <a
-                href={ONLINE_PRO_LINK}
+                href={onlineLink}
                 onClick={() => trackProCtaClick('pricing-online-pro-card')}
                 className="block text-center bg-gold text-black font-syne font-semibold text-[13px] tracking-wide py-3.5 rounded-lg hover:opacity-90 transition-opacity mb-7"
               >
@@ -192,7 +211,7 @@ export default function PricingPage() {
               </div>
               <div className="mt-6 pt-5 border-t border-white/[0.06]">
                 <div className="font-mono text-[9px] text-white/20 leading-relaxed">
-                  Prefer Excel? <a href={XLS_PAYMENT_LINK} onClick={() => trackProCtaClick('pricing-online-pro-xls-link')} className="text-[#2DD4BF]/60 hover:text-[#2DD4BF] transition-colors">Purchase Pro Excel v3 separately for $39 →</a>
+                  Prefer Excel? <a href={xlsLink} onClick={() => trackProCtaClick('pricing-online-pro-xls-link')} className="text-[#2DD4BF]/60 hover:text-[#2DD4BF] transition-colors">Purchase Pro Excel v3 separately for $39 →</a>
                 </div>
               </div>
             </div>
@@ -268,7 +287,7 @@ export default function PricingPage() {
             </div>
             <div className="flex items-center gap-4">
               <a
-                href={ONLINE_PRO_LINK}
+                href={onlineLink}
                 onClick={() => trackProCtaClick('pricing-planner-callout')}
                 className="inline-block bg-gold text-black font-syne font-semibold text-[13px] tracking-wide px-6 py-3 rounded hover:opacity-85 transition-opacity"
               >
@@ -304,7 +323,7 @@ export default function PricingPage() {
             </div>
             <div className="flex items-center gap-4">
               <a
-                href={XLS_PAYMENT_LINK}
+                href={xlsLink}
                 onClick={() => trackProCtaClick('pricing-xls-callout')}
                 className="inline-block font-syne font-semibold text-[13px] tracking-wide px-6 py-3 rounded hover:opacity-85 transition-opacity"
                 style={{ background: '#2DD4BF', color: '#0D1420' }}
@@ -395,7 +414,7 @@ export default function PricingPage() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-4">
               <a
-                href={XLS_PAYMENT_LINK}
+                href={xlsLink}
                 onClick={() => trackProCtaClick('pricing-final-xls')}
                 className="inline-block font-syne font-semibold text-[14px] tracking-wide px-8 py-4 rounded-xl hover:opacity-90 transition-opacity"
                 style={{ background: '#2DD4BF', color: '#0D1420' }}
@@ -403,7 +422,7 @@ export default function PricingPage() {
                 Buy Pro Excel — $39 one-time →
               </a>
               <a
-                href={ONLINE_PRO_LINK}
+                href={onlineLink}
                 onClick={() => trackProCtaClick('pricing-final-online-pro')}
                 className="inline-block bg-gold text-black font-syne font-semibold text-[14px] tracking-wide px-8 py-4 rounded-xl hover:opacity-90 transition-opacity"
               >
