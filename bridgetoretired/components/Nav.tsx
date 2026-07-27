@@ -129,7 +129,7 @@ export function Nav() {
               className="font-mono text-[12px] tracking-wider uppercase text-gold/70 hover:text-gold transition-colors flex items-center gap-2"
             >
               <span className="inline-block w-1.5 h-1.5 rounded-full bg-gold/60" />
-              {isPro ? 'Pro ✓' : 'Pro — $9/mo'}
+              {isPro ? 'Pro ✓' : 'Pro — $15/mo'}
             </Link>
           )}
           {isSignedIn ? (
