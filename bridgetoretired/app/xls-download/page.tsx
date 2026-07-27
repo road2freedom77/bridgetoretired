@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 
@@ -12,7 +12,7 @@ interface VerifyResult {
   error?: string
 }
 
-export default function XlsDownloadPage() {
+function XlsDownloadInner() {
   const searchParams = useSearchParams()
   const sessionId    = searchParams.get('session_id')
 
@@ -200,5 +200,19 @@ export default function XlsDownloadPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function XlsDownloadPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="font-mono text-[11px] tracking-widest uppercase text-white/30 animate-pulse">
+          Loading...
+        </div>
+      </div>
+    }>
+      <XlsDownloadInner />
+    </Suspense>
   )
 }
