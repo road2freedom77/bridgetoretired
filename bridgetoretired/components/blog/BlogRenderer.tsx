@@ -165,10 +165,37 @@ export default function BlogRenderer({ content }: BlogRendererProps) {
           return <Component key={i} />
         }
 
-        // FinanceTable embed
+        // FinanceTable embed — supports two formats:
+        // 1. {columns: [{key, header}], rows: [{key: value}]} — original FinanceTable format
+        // 2. {headers: [string], rows: [[string]]}            — simpler GPT-friendly format
         if (segment.type === 'table') {
           try {
             const props = JSON.parse(segment.content)
+
+            // Normalize headers/rows array format → columns/rows object format
+            if (Array.isArray(props.headers)) {
+              const columns = props.headers.map((h: string, idx: number) => ({
+                key:    `col${idx}`,
+                header: h,
+              }))
+              const rows = (props.rows as string[][]).map((row: string[]) => {
+                const obj: Record<string, string> = {}
+                columns.forEach((col: { key: string }, idx: number) => {
+                  obj[col.key] = row[idx] ?? ''
+                })
+                return obj
+              })
+              return (
+                <FinanceTable
+                  key={i}
+                  columns={columns}
+                  rows={rows}
+                  caption={props.caption}
+                />
+              )
+            }
+
+            // Original columns/rows format
             return (
               <FinanceTable
                 key={i}
