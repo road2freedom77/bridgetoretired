@@ -172,12 +172,12 @@ export default function PricingPage() {
           </div>
 
           {/* Pro XLS card */}
-          <div className="bg-ink border border-teal-500/25 rounded-2xl p-7 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-[150px] h-[150px] bg-teal-500/5 blur-[60px] rounded-full pointer-events-none" />
+          <div className="bg-ink border border-[#2DD4BF]/25 rounded-2xl p-7 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-[150px] h-[150px] bg-[#2DD4BF]/5 blur-[60px] rounded-full pointer-events-none" />
             <div className="relative">
               <div className="flex items-center justify-between mb-3">
-                <div className="font-mono text-[9px] tracking-widest uppercase text-teal-400">Pro Excel</div>
-                <div className="bg-teal-500/10 border border-teal-500/20 rounded-full px-3 py-1 font-mono text-[8px] tracking-widest uppercase text-teal-400">One-Time</div>
+                <div className="font-mono text-[9px] tracking-widest uppercase text-[#2DD4BF]">Pro Excel</div>
+                <div className="bg-[#2DD4BF]/10 border border-[#2DD4BF]/20 rounded-full px-3 py-1 font-mono text-[8px] tracking-widest uppercase text-[#2DD4BF]">One-Time</div>
               </div>
               <div className="flex items-end gap-2 mb-1">
                 <div className="text-4xl font-syne font-bold text-white">$39</div>
@@ -187,7 +187,7 @@ export default function PricingPage() {
               <a
                 href={XLS_PAYMENT_LINK}
                 onClick={handleXlsCheckout}
-                className="block text-center bg-teal-500 text-black font-syne font-semibold text-[13px] tracking-wide py-3.5 rounded-lg hover:opacity-90 transition-opacity mb-7"
+                className="block text-center bg-[#2DD4BF] text-black font-syne font-semibold text-[13px] tracking-wide py-3.5 rounded-lg hover:opacity-90 transition-opacity mb-7"
               >
                 Get Pro Excel Planner →
               </a>
@@ -195,8 +195,8 @@ export default function PricingPage() {
                 <div className="font-mono text-[8px] tracking-widest uppercase text-white/25 mb-4">Everything in Free, plus:</div>
                 {XLS_FEATURES.map(f => (
                   <div key={f} className="flex items-start gap-3">
-                    <div className="w-4 h-4 rounded-full bg-teal-500/15 border border-teal-500/30 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <div className="w-1.5 h-1.5 rounded-full bg-teal-400" />
+                    <div className="w-4 h-4 rounded-full bg-[#2DD4BF]/15 border border-[#2DD4BF]/30 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <div className="w-1.5 h-1.5 rounded-full bg-[#2DD4BF]" />
                     </div>
                     <span className="text-white/45 text-[12px] leading-snug">{f}</span>
                   </div>
@@ -319,7 +319,7 @@ export default function PricingPage() {
               <a
                 href={XLS_PAYMENT_LINK}
                 onClick={handleXlsCheckout}
-                className="inline-block bg-teal-500 text-black font-syne font-semibold text-[13px] tracking-wide px-6 py-3 rounded hover:opacity-85 transition-opacity"
+                className="inline-block bg-[#2DD4BF] text-black font-syne font-semibold text-[13px] tracking-wide px-6 py-3 rounded hover:opacity-85 transition-opacity"
               >
                 Get Pro Excel — $39 one-time →
               </a>
@@ -428,7 +428,7 @@ export default function PricingPage() {
               <a
                 href={XLS_PAYMENT_LINK}
                 onClick={handleXlsCheckout}
-                className="inline-block bg-teal-500 text-black font-syne font-semibold text-[14px] tracking-wide px-8 py-4 rounded-xl hover:opacity-90 transition-opacity"
+                className="inline-block bg-[#2DD4BF] text-black font-syne font-semibold text-[14px] tracking-wide px-8 py-4 rounded-xl hover:opacity-90 transition-opacity"
               >
                 Pro Excel — $39 one-time →
               </a>
