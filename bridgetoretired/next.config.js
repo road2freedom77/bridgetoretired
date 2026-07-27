@@ -3,6 +3,12 @@ const { withContentlayer } = require('next-contentlayer2')
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+
+  // Bundle private files that are served by API routes (not in /public)
+  outputFileTracingIncludes: {
+    '/api/xls-download': ['./private_files/**/*'],
+  },
+
   async redirects() {
     return [
       {

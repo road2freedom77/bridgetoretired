@@ -70,6 +70,9 @@ export default function ProWelcomePage() {
   const source    = active?.risk_flags?._source
   const isPlanner = source !== 'compare'
 
+  // Pro Excel download is now gated via /xls-download (payment required).
+  // Existing Online Pro subscribers who purchased before the split get a direct
+  // download link — handled by the support contact flow if needed.
   const PRO_TOOLS = [
     { icon: '🖥️', title: 'Online Retirement Planner', badge: 'New', badgeColor: 'gold', description: 'Build and save up to 5 retirement plans. Compare ages, run Monte Carlo, and see which scenario survives longest.', href: '/pro/planner', cta: 'Open Planner →', download: false, featured: true },
     { icon: '🛡️', title: 'Bridge Risk Score™', badge: 'Signature Feature', badgeColor: 'gold', description: 'Discover your biggest retirement risk and what to fix first. Every risk factor ranked by severity with a specific fix amount.', href: '/bridge-risk-score', cta: 'Calculate My Score →', download: false, featured: false },
@@ -77,7 +80,6 @@ export default function ProWelcomePage() {
     { icon: '💾', title: 'Scenario Save + Compare', badge: 'Pro', badgeColor: 'gold', description: 'Compare retirement ages side-by-side. See whether retiring at 50, 52, or 55 gives your plan the best chance of lasting to 90.', href: '/scenario-compare', cta: 'Compare Scenarios →', download: false, featured: false },
     { icon: '📊', title: 'Advanced Bridge Calculator', badge: 'Pro', badgeColor: 'gold', description: 'All variables unlocked. Three SS scenarios side-by-side. Full withdrawal order control. Dynamic spending mode.', href: '/advanced-calculator', cta: 'Open Calculator →', download: false, featured: false },
     { icon: '📄', title: 'PDF Report Export', badge: 'Pro', badgeColor: 'gold', description: 'One-click export of your complete retirement plan. Branded, shareable, and CPA-ready.', href: '/pdf-report', cta: 'Generate Report →', download: false, featured: false },
-    { icon: '📋', title: 'Pro Excel Planner v3', badge: 'Download', badgeColor: 'sage', description: '9-sheet system: BRIDGE, TAX ESTIMATE, ROTH LADDER, MONTE CARLO, RISK FLAGS, REBALANCE. The offline companion to the online planner.', href: '/downloads/bridge-planner-pro-v3.xlsx', cta: 'Download v3 ↓', download: true, featured: false },
   ]
 
   const ONBOARDING_STEPS = [
@@ -253,15 +255,9 @@ export default function ProWelcomePage() {
                   </span>
                 </div>
                 <p className="text-white/40 text-[12px] leading-relaxed mb-3">{tool.description}</p>
-                {tool.download ? (
-                  <a href={tool.href} className="inline-block border border-white/[0.12] text-white/60 font-mono text-[10px] tracking-widest uppercase px-4 py-2 rounded hover:border-white/25 hover:text-white/80 transition-all">
-                    {tool.cta}
-                  </a>
-                ) : (
-                  <Link href={tool.href} className="inline-block bg-gold text-black font-syne font-semibold text-[11px] tracking-wide px-4 py-2 rounded hover:opacity-85 transition-opacity">
-                    {tool.cta}
-                  </Link>
-                )}
+                <Link href={tool.href} className="inline-block bg-gold text-black font-syne font-semibold text-[11px] tracking-wide px-4 py-2 rounded hover:opacity-85 transition-opacity">
+                  {tool.cta}
+                </Link>
               </div>
             </div>
           ))}

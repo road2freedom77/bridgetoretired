@@ -1,10 +1,9 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
 import { notFound } from 'next/navigation'
 import { FLAGS } from '@/lib/feature-flags'
-import { trackProCtaClick, trackBeginCheckout } from '@/lib/analytics'
+import { trackProCtaClick } from '@/lib/analytics'
 
 const FREE_FEATURES = [
   'All 10 interactive retirement calculators',
@@ -13,7 +12,7 @@ const FREE_FEATURES = [
   'ACA subsidy estimator',
   'Social Security break-even calculator',
   'SEPP / 72(t) calculator',
-  'Early Retirement Bridge Planner v2.2 (Excel) — 7 sheets, SS modeled, risk flags',
+  'Early Retirement Bridge Planner v2.2 (Excel) — 7 sheets',
   'Unlimited blog access',
 ]
 
@@ -28,49 +27,14 @@ const XLS_FEATURES = [
   'Use indefinitely — no subscription required',
 ]
 
-const PRO_FEATURES = [
-  {
-    icon: '🖥️',
-    title: 'Online Retirement Planner',
-    description: 'Save up to 5 named scenarios, run Monte Carlo simulation, and access your plan from anywhere. Enter your numbers and watch all results update instantly.',
-    badge: 'New',
-  },
-  {
-    icon: '🛡️',
-    title: 'Bridge Risk Score™',
-    description: "Your retirement's structural health in a single number. Instant clarity on whether your bridge is Stable, At Risk, or Fragile — based on withdrawal rate, buffer, allocation, and years to Social Security.",
-    badge: 'Signature Feature',
-  },
-  {
-    icon: '📊',
-    title: 'Advanced Bridge Calculator',
-    description: 'Every variable unlocked. Custom retire age 40–65, adjustable inflation, dynamic spending toggle, all three SS claiming ages modeled simultaneously, full withdrawal order customization.',
-    badge: null,
-  },
-  {
-    icon: '📉',
-    title: 'Sequence-of-Returns Stress Tester',
-    description: 'Simulate a 2000, 2008, or 2022-style crash in year one of retirement. See exact portfolio survival odds and "years until depletion" across 5 historical crash scenarios.',
-    badge: null,
-  },
-  {
-    icon: '💾',
-    title: 'Scenario Save + Compare',
-    description: 'Save up to 5 named retirement scenarios. "Retire at 50 aggressive" vs "Retire at 53 conservative." Compare side-by-side. Never lose your numbers.',
-    badge: null,
-  },
-  {
-    icon: '📄',
-    title: 'PDF Report Export',
-    description: 'One-click export of your complete retirement plan. Branded, shareable, CPA-ready. Bring this to your fee-only advisor and skip the $300 first meeting.',
-    badge: null,
-  },
-  {
-    icon: '📋',
-    title: 'Pro Excel Planner v3 — 9 Sheets',
-    description: 'The complete planning system: BRIDGE (taxable → Roth → 401k cascade), TAX ESTIMATE (MFJ/Single switchable brackets), ROTH LADDER (ACA cliff cross-check per year), POST-59½ (SS income modeled), MONTE CARLO (200-scenario simulator with success rate %), RISK FLAGS (9 automated checks with color coding), and REBALANCE tracker. Updated with every major tax law change.',
-    badge: 'New v3',
-  },
+const ONLINE_PRO_FEATURES = [
+  { icon: '🖥️', title: 'Online Retirement Planner', badge: 'New' },
+  { icon: '💾', title: 'Save and compare up to 5 scenarios', badge: null },
+  { icon: '🛡️', title: 'Bridge Risk Score™', badge: 'Signature Feature' },
+  { icon: '📉', title: 'Sequence-of-Returns Stress Tester', badge: null },
+  { icon: '🎲', title: 'Online Monte Carlo simulation', badge: null },
+  { icon: '📄', title: 'PDF retirement plan export', badge: null },
+  { icon: '📱', title: 'Access your plan from any device', badge: null },
 ]
 
 const SCORES = [
@@ -81,36 +45,20 @@ const SCORES = [
 
 const PRO_SHEETS = [
   { name: 'INPUTS', desc: 'Single entry point — ages, balances, filing status, state, SS benefit. Every sheet updates automatically.' },
-  { name: 'BRIDGE', desc: 'Year-by-year funding plan from retirement to 59½. Taxable → Roth → 401k cascade. Rows auto-blank past bridge.' },
+  { name: 'BRIDGE', desc: 'Year-by-year funding plan from retirement to 59½. Taxable → Roth → 401k cascade.' },
   { name: 'TAX ESTIMATE', desc: 'Federal tax per bridge year using 2026 brackets. Switches between MFJ and Single from INPUTS.' },
-  { name: 'ROTH LADDER', desc: 'Optimal Roth conversions filling the 12% bracket. ACA cliff cross-check flags any year MAGI exceeds 400% FPL.' },
+  { name: 'ROTH LADDER', desc: 'Optimal Roth conversions filling the 12% bracket. ACA cliff cross-check per year.' },
   { name: 'POST-59½', desc: 'Full projection to life expectancy. Social Security income reduces withdrawals from your claiming age.' },
   { name: 'MONTE CARLO', desc: '200 randomized return sequences. Success rate %, median, 10th/90th percentile. Press F9 to re-run.' },
   { name: 'RISK FLAGS', desc: '9 automated checks: withdrawal rate, bridge gap, penalty risk, ACA cliff, SS delay value, IRMAA, Monte Carlo success.' },
-  { name: 'REBALANCE', desc: 'Annual target vs actual allocation by asset class. Drift alerts and buy/sell signals linked to your INPUTS balances.' },
+  { name: 'REBALANCE', desc: 'Annual target vs actual allocation by asset class. Drift alerts and buy/sell signals.' },
 ]
 
-const XLS_PAYMENT_LINK = 'https://buy.stripe.com/4gMaEXfyz0DfeDa53gfYY03'
+const XLS_PAYMENT_LINK    = 'https://buy.stripe.com/4gMaEXfyz0DfeDa53gfYY03'
+const ONLINE_PRO_LINK     = 'https://buy.stripe.com/00w28rcmngCd52AgLYfYY01'
 
 export default function PricingPage() {
   if (!FLAGS.PRO_ENABLED) notFound()
-
-  const [billing, setBilling] = useState<'monthly' | 'annual'>('monthly')
-  const monthlyPrice  = 15
-  const annualPrice   = 97
-  const annualMonthly = (annualPrice / 12).toFixed(2)
-  const MONTHLY_LINK  = 'https://buy.stripe.com/00w28rcmngCd52AgLYfYY01'
-  const ANNUAL_LINK   = 'https://buy.stripe.com/aFa6oH9abeu5dz69jwfYY02'
-  const paymentLink   = billing === 'monthly' ? MONTHLY_LINK : ANNUAL_LINK
-
-  function handleCheckout(location: string) {
-    trackProCtaClick(location)
-    trackBeginCheckout(billing, billing === 'monthly' ? monthlyPrice : annualPrice)
-  }
-
-  function handleXlsCheckout() {
-    trackProCtaClick('pricing-xls-card')
-  }
 
   return (
     <div className="min-h-screen bg-black">
@@ -123,6 +71,7 @@ export default function PricingPage() {
         </div>
       </div>
 
+      {/* Hero */}
       <div className="bg-navy border-b border-white/[0.06] relative overflow-hidden">
         <div className="absolute inset-0 bg-grid opacity-100" />
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-gold/5 blur-[120px] rounded-full pointer-events-none" />
@@ -134,32 +83,27 @@ export default function PricingPage() {
           <h1 className="font-syne font-bold text-[clamp(32px,5vw,56px)] tracking-tight text-white leading-tight mb-5">
             Stress-Test Your Early Retirement<br /><span className="text-gold">Before You Quit.</span>
           </h1>
-          <p className="text-white/50 text-[16px] leading-relaxed max-w-xl mx-auto mb-8">
-            Free tools show the math. Pro tells you whether your plan survives market crashes, inflation, and decades of withdrawals.
+          <p className="text-white/50 text-[16px] leading-relaxed max-w-xl mx-auto">
+            Buy the complete Excel planner once, or keep your scenarios saved and stress-tested online.
           </p>
-          <div className="inline-flex items-center bg-ink border border-white/[0.08] rounded-full p-1 mb-2">
-            <button onClick={() => setBilling('monthly')} className={`px-5 py-2 rounded-full font-mono text-[10px] tracking-wider uppercase transition-all ${billing === 'monthly' ? 'bg-gold text-black font-bold' : 'text-white/40 hover:text-white/60'}`}>Monthly</button>
-            <button onClick={() => setBilling('annual')} className={`px-5 py-2 rounded-full font-mono text-[10px] tracking-wider uppercase transition-all ${billing === 'annual' ? 'bg-gold text-black font-bold' : 'text-white/40 hover:text-white/60'}`}>
-              Annual <span className="ml-2 text-sage text-[8px]">SAVE 10%</span>
-            </button>
-          </div>
         </div>
       </div>
 
       <div className="max-w-5xl mx-auto px-5 py-16">
 
         {/* ── Three-plan grid ───────────────────────────────────────────────── */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-20">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
 
-          {/* Free card */}
-          <div className="bg-ink border border-white/[0.07] rounded-2xl p-7">
+          {/* Free */}
+          <div className="bg-ink border border-white/[0.07] rounded-2xl p-7 flex flex-col">
             <div className="font-mono text-[9px] tracking-widest uppercase text-white/30 mb-3">Free Forever</div>
             <div className="text-4xl font-syne font-bold text-white mb-1">$0</div>
-            <div className="text-white/30 text-[12px] font-mono mb-6">no card required</div>
+            <div className="text-white/30 text-[12px] font-mono mb-2">no card required</div>
+            <div className="text-white/25 text-[11px] font-mono mb-6">Best for exploring the tools.</div>
             <Link href="/#download" className="block text-center border border-white/[0.12] text-white/60 font-mono text-[10px] tracking-widest uppercase py-3 rounded-lg hover:border-white/25 hover:text-white/80 transition-all mb-7">
               Download Free Planner
             </Link>
-            <div className="space-y-3">
+            <div className="space-y-3 flex-1">
               {FREE_FEATURES.map(f => (
                 <div key={f} className="flex items-start gap-3">
                   <div className="w-4 h-4 rounded-full border border-white/20 flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -171,32 +115,31 @@ export default function PricingPage() {
             </div>
           </div>
 
-          {/* Pro XLS card */}
-          <div className="bg-ink border border-[#2DD4BF]/25 rounded-2xl p-7 relative overflow-hidden">
+          {/* Pro Excel — one-time */}
+          <div className="bg-ink border border-[#2DD4BF]/25 rounded-2xl p-7 relative overflow-hidden flex flex-col">
             <div className="absolute top-0 right-0 w-[150px] h-[150px] bg-[#2DD4BF]/5 blur-[60px] rounded-full pointer-events-none" />
-            <div className="relative">
+            <div className="relative flex flex-col flex-1">
               <div className="flex items-center justify-between mb-3">
                 <div className="font-mono text-[9px] tracking-widest uppercase text-[#2DD4BF]">Pro Excel</div>
                 <div className="bg-[#2DD4BF]/10 border border-[#2DD4BF]/20 rounded-full px-3 py-1 font-mono text-[8px] tracking-widest uppercase text-[#2DD4BF]">One-Time</div>
               </div>
-              <div className="flex items-end gap-2 mb-1">
-                <div className="text-4xl font-syne font-bold text-white">$39</div>
-              </div>
-              <div className="text-white/30 text-[12px] font-mono mb-1">one-time purchase</div>
-              <div className="text-white/20 text-[11px] font-mono mb-6">no subscription · use indefinitely</div>
+              <div className="text-4xl font-syne font-bold text-white mb-1">$39</div>
+              <div className="text-white/30 text-[12px] font-mono mb-2">one-time purchase</div>
+              <div className="text-white/25 text-[11px] font-mono mb-6">Best for offline planning without recurring billing.</div>
               <a
                 href={XLS_PAYMENT_LINK}
-                onClick={handleXlsCheckout}
-                className="block text-center bg-[#2DD4BF] text-black font-syne font-semibold text-[13px] tracking-wide py-3.5 rounded-lg hover:opacity-90 transition-opacity mb-7"
+                onClick={() => trackProCtaClick('pricing-xls-card')}
+                className="block text-center font-syne font-semibold text-[13px] tracking-wide py-3.5 rounded-lg hover:opacity-90 transition-opacity mb-7"
+                style={{ background: '#2DD4BF', color: '#0D1420' }}
               >
                 Get Pro Excel Planner →
               </a>
-              <div className="space-y-3">
+              <div className="space-y-3 flex-1">
                 <div className="font-mono text-[8px] tracking-widest uppercase text-white/25 mb-4">Everything in Free, plus:</div>
                 {XLS_FEATURES.map(f => (
                   <div key={f} className="flex items-start gap-3">
-                    <div className="w-4 h-4 rounded-full bg-[#2DD4BF]/15 border border-[#2DD4BF]/30 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <div className="w-1.5 h-1.5 rounded-full bg-[#2DD4BF]" />
+                    <div className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5" style={{ background: 'rgba(45,212,191,0.15)', border: '1px solid rgba(45,212,191,0.3)' }}>
+                      <div className="w-1.5 h-1.5 rounded-full" style={{ background: '#2DD4BF' }} />
                     </div>
                     <span className="text-white/45 text-[12px] leading-snug">{f}</span>
                   </div>
@@ -204,52 +147,96 @@ export default function PricingPage() {
               </div>
               <div className="mt-6 pt-5 border-t border-white/[0.06]">
                 <div className="font-mono text-[9px] text-white/20 leading-relaxed">
-                  Includes current version only. Future version upgrades sold separately. No automatic updates.
+                  Includes current version only. Future upgrades sold separately. No automatic updates.
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Online Pro subscription card */}
-          <div className="bg-ink border border-gold/25 rounded-2xl p-7 relative overflow-hidden">
+          {/* Online Pro — subscription */}
+          <div className="bg-ink border border-gold/25 rounded-2xl p-7 relative overflow-hidden flex flex-col">
             <div className="absolute top-0 right-0 w-[200px] h-[200px] bg-gold/5 blur-[80px] rounded-full pointer-events-none" />
-            <div className="relative">
+            <div className="relative flex flex-col flex-1">
               <div className="flex items-center justify-between mb-3">
                 <div className="font-mono text-[9px] tracking-widest uppercase text-gold">Online Pro</div>
-                <div className="bg-gold/10 border border-gold/20 rounded-full px-3 py-1 font-mono text-[8px] tracking-widest uppercase text-gold">Most Popular</div>
+                <div className="bg-gold/10 border border-gold/20 rounded-full px-3 py-1 font-mono text-[8px] tracking-widest uppercase text-gold">Best for ongoing planning</div>
               </div>
               <div className="flex items-end gap-2 mb-1">
-                <div className="text-4xl font-syne font-bold text-white">${billing === 'monthly' ? monthlyPrice : annualMonthly}</div>
+                <div className="text-4xl font-syne font-bold text-white">$15</div>
                 <div className="text-white/30 text-[12px] font-mono mb-1.5">/month</div>
               </div>
-              {billing === 'annual' && (
-                <div className="text-sage text-[11px] font-mono mb-1">${annualPrice} billed annually</div>
-              )}
-              <div className="text-white/25 text-[11px] font-mono mb-6">cancel anytime</div>
+              <div className="text-white/25 text-[11px] font-mono mb-2">cancel anytime</div>
+              <div className="text-white/25 text-[11px] font-mono mb-6">Best for plans you expect to revisit, update, and stress-test over time.</div>
               <a
-                href={paymentLink}
-                onClick={() => handleCheckout('pricing-hero')}
+                href={ONLINE_PRO_LINK}
+                onClick={() => trackProCtaClick('pricing-online-pro-card')}
                 className="block text-center bg-gold text-black font-syne font-semibold text-[13px] tracking-wide py-3.5 rounded-lg hover:opacity-90 transition-opacity mb-7"
               >
                 Start Online Pro →
               </a>
-              <div className="space-y-3">
-                <div className="font-mono text-[8px] tracking-widest uppercase text-white/25 mb-4">Everything in Pro Excel, plus:</div>
-                {PRO_FEATURES.map(f => (
+              <div className="space-y-3 flex-1">
+                <div className="font-mono text-[8px] tracking-widest uppercase text-white/25 mb-4">Built for ongoing retirement planning:</div>
+                {ONLINE_PRO_FEATURES.map(f => (
                   <div key={f.title} className="flex items-start gap-3">
                     <div className="w-4 h-4 rounded-full bg-gold/15 border border-gold/30 flex items-center justify-center flex-shrink-0 mt-0.5">
                       <div className="w-1.5 h-1.5 rounded-full bg-gold" />
                     </div>
-                    <div>
+                    <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-white text-[12px] font-medium">{f.title}</span>
                       {f.badge && (
-                        <span className="ml-2 bg-gold/10 text-gold font-mono text-[7px] tracking-widest uppercase px-2 py-0.5 rounded-full border border-gold/20">{f.badge}</span>
+                        <span className="bg-gold/10 text-gold font-mono text-[7px] tracking-widest uppercase px-2 py-0.5 rounded-full border border-gold/20">{f.badge}</span>
                       )}
                     </div>
                   </div>
                 ))}
               </div>
+              <div className="mt-6 pt-5 border-t border-white/[0.06]">
+                <div className="font-mono text-[9px] text-white/20 leading-relaxed">
+                  Prefer Excel? <a href={XLS_PAYMENT_LINK} onClick={() => trackProCtaClick('pricing-online-pro-xls-link')} className="text-[#2DD4BF]/60 hover:text-[#2DD4BF] transition-colors">Purchase Pro Excel v3 separately for $39 →</a>
+                </div>
+              </div>
             </div>
+          </div>
+        </div>
+
+        {/* Comparison table */}
+        <div className="bg-ink border border-white/[0.07] rounded-2xl overflow-hidden mb-12">
+          <div className="border-b border-white/[0.06] px-8 py-5">
+            <h2 className="font-syne font-bold text-xl text-white">Which option is right for me?</h2>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-white/[0.06]">
+                  <th className="px-6 py-4 text-left font-mono text-[9px] tracking-widest uppercase text-white/30">Feature</th>
+                  <th className="px-4 py-4 text-center font-mono text-[9px] tracking-widest uppercase text-white/30">Free</th>
+                  <th className="px-4 py-4 text-center font-mono text-[9px] tracking-widest uppercase text-[#2DD4BF]">Pro Excel $39</th>
+                  <th className="px-4 py-4 text-center font-mono text-[9px] tracking-widest uppercase text-gold">Online Pro $15/mo</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  ['Interactive calculators', '✓', '✓', '✓'],
+                  ['Free Excel planner v2.2', '✓', '✓', '✓'],
+                  ['Pro Excel v3 — 9 sheets', '—', '✓', '—'],
+                  ['Use purchased XLS indefinitely', '—', '✓', '—'],
+                  ['Online retirement planner', '—', '—', '✓'],
+                  ['Save up to 5 scenarios', '—', '—', '✓'],
+                  ['Scenario comparison', '—', '—', '✓'],
+                  ['Bridge Risk Score™', '—', '—', '✓'],
+                  ['Stress testing', '—', '—', '✓'],
+                  ['PDF report export', '—', '—', '✓'],
+                  ['Access from any device', '—', '—', '✓'],
+                ].map(([feature, free, xls, pro]) => (
+                  <tr key={feature} className="border-b border-white/[0.04] hover:bg-white/[0.02]">
+                    <td className="px-6 py-3 text-[13px] text-white/60">{feature}</td>
+                    <td className="px-4 py-3 text-center text-[13px] text-white/30">{free}</td>
+                    <td className="px-4 py-3 text-center text-[13px]" style={{ color: xls === '✓' ? '#2DD4BF' : 'rgba(255,255,255,0.2)' }}>{xls}</td>
+                    <td className="px-4 py-3 text-center text-[13px]" style={{ color: pro === '✓' ? '#E8B84B' : 'rgba(255,255,255,0.2)' }}>{pro}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
 
@@ -257,14 +244,14 @@ export default function PricingPage() {
         <div className="bg-ink border border-gold/20 rounded-2xl overflow-hidden mb-8">
           <div className="border-b border-white/[0.06] px-8 py-5 flex items-center justify-between">
             <div>
-              <div className="font-mono text-[9px] tracking-widest uppercase text-gold mb-1">New in Pro v3</div>
+              <div className="font-mono text-[9px] tracking-widest uppercase text-gold mb-1">Online Pro</div>
               <h2 className="font-syne font-bold text-xl text-white">Online Retirement Planner</h2>
             </div>
             <div className="text-4xl">🖥️</div>
           </div>
           <div className="p-8">
             <p className="text-white/50 text-[14px] leading-relaxed mb-6 max-w-2xl">
-              The online planner is the reason Online Pro is a subscription, not a one-time download. Save up to 5 named scenarios, run Monte Carlo simulation, and access your plan from any device. Your numbers live in the cloud — come back anytime.
+              Save up to 5 named scenarios, run Monte Carlo simulation, and access your plan from any device. Your numbers live in the cloud — come back anytime as your situation changes.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
               {[
@@ -281,8 +268,8 @@ export default function PricingPage() {
             </div>
             <div className="flex items-center gap-4">
               <a
-                href={paymentLink}
-                onClick={() => handleCheckout('pricing-planner-callout')}
+                href={ONLINE_PRO_LINK}
+                onClick={() => trackProCtaClick('pricing-planner-callout')}
                 className="inline-block bg-gold text-black font-syne font-semibold text-[13px] tracking-wide px-6 py-3 rounded hover:opacity-85 transition-opacity"
               >
                 Start Online Pro →
@@ -294,23 +281,23 @@ export default function PricingPage() {
           </div>
         </div>
 
-        {/* Pro Excel v3 callout */}
-        <div className="bg-ink border border-gold/20 rounded-2xl overflow-hidden mb-12">
+        {/* Pro Excel callout */}
+        <div className="bg-ink border border-white/[0.07] rounded-2xl overflow-hidden mb-12">
           <div className="border-b border-white/[0.06] px-8 py-5 flex items-center justify-between">
             <div>
-              <div className="font-mono text-[9px] tracking-widest uppercase text-gold mb-1">One-Time Purchase</div>
+              <div className="font-mono text-[9px] tracking-widest uppercase text-[#2DD4BF] mb-1">One-Time Purchase</div>
               <h2 className="font-syne font-bold text-xl text-white">Pro Excel Planner — 9 Sheets</h2>
             </div>
             <div className="text-4xl">📋</div>
           </div>
           <div className="p-8">
             <p className="text-white/50 text-[14px] leading-relaxed mb-8 max-w-2xl">
-              The offline companion to the online planner. Change one number in INPUTS and all 9 sheets update instantly — BRIDGE years, tax estimates, Roth ladder, Monte Carlo simulation, and risk flags.
+              The complete offline planning system. Change one number in INPUTS and all 9 sheets update instantly. No internet required, no subscription, use it forever.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-8">
               {PRO_SHEETS.map(s => (
                 <div key={s.name} className="bg-black/30 border border-white/[0.06] rounded-xl p-4">
-                  <div className="font-mono text-[9px] tracking-widest uppercase text-gold mb-1">{s.name}</div>
+                  <div className="font-mono text-[9px] tracking-widest uppercase text-[#2DD4BF] mb-1">{s.name}</div>
                   <div className="text-white/45 text-[12px] leading-relaxed">{s.desc}</div>
                 </div>
               ))}
@@ -318,8 +305,9 @@ export default function PricingPage() {
             <div className="flex items-center gap-4">
               <a
                 href={XLS_PAYMENT_LINK}
-                onClick={handleXlsCheckout}
-                className="inline-block bg-[#2DD4BF] text-black font-syne font-semibold text-[13px] tracking-wide px-6 py-3 rounded hover:opacity-85 transition-opacity"
+                onClick={() => trackProCtaClick('pricing-xls-callout')}
+                className="inline-block font-syne font-semibold text-[13px] tracking-wide px-6 py-3 rounded hover:opacity-85 transition-opacity"
+                style={{ background: '#2DD4BF', color: '#0D1420' }}
               >
                 Get Pro Excel — $39 one-time →
               </a>
@@ -332,7 +320,7 @@ export default function PricingPage() {
         <div className="bg-ink border border-white/[0.07] rounded-2xl overflow-hidden mb-12">
           <div className="border-b border-white/[0.06] px-8 py-5 flex items-center justify-between">
             <div>
-              <div className="font-mono text-[9px] tracking-widest uppercase text-gold mb-1">Signature Pro Feature</div>
+              <div className="font-mono text-[9px] tracking-widest uppercase text-gold mb-1">Signature Online Pro Feature</div>
               <h2 className="font-syne font-bold text-xl text-white">Bridge Risk Score™</h2>
             </div>
             <div className="text-4xl">🛡️</div>
@@ -372,37 +360,16 @@ export default function PricingPage() {
           </div>
         </div>
 
-        {/* All Pro Online features grid */}
-        <div className="mb-12">
-          <h2 className="font-syne font-bold text-2xl text-white mb-8 text-center">Everything in Online Pro</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {PRO_FEATURES.map(f => (
-              <div key={f.title} className="bg-ink border border-white/[0.07] rounded-xl p-5 flex gap-4">
-                <div className="text-2xl flex-shrink-0">{f.icon}</div>
-                <div>
-                  <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-                    <span className="font-syne font-semibold text-white text-[14px]">{f.title}</span>
-                    {f.badge && (
-                      <span className="bg-gold/10 text-gold font-mono text-[7px] tracking-widest uppercase px-2 py-0.5 rounded-full border border-gold/20">{f.badge}</span>
-                    )}
-                  </div>
-                  <p className="text-white/40 text-[12px] leading-relaxed">{f.description}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
         {/* FAQ */}
         <div className="mb-16">
           <h2 className="font-syne font-bold text-2xl text-white mb-8 text-center">Questions</h2>
           <div className="space-y-4 max-w-2xl mx-auto">
             {[
-              { q: 'What is the difference between Pro Excel and Online Pro?', a: 'Pro Excel ($39 one-time) is a downloadable Excel file you use on your own computer — no internet required, use it forever. Online Pro ($15/month) is the cloud-based planner with saved scenarios, Monte Carlo simulation, and access from any device. Both include the 9-sheet Excel system.' },
+              { q: 'What is the difference between Pro Excel and Online Pro?', a: 'Pro Excel ($39 one-time) is a downloadable Excel file you use on your own computer — no internet required, no recurring billing, use it forever. Online Pro ($15/month) is the cloud-based planner with saved scenarios, Monte Carlo, Bridge Risk Score, stress testing, and access from any device. The monthly subscription does not include the Pro Excel download.' },
               { q: 'Does Pro Excel get future updates automatically?', a: 'No. The $39 purchase includes the current version (v3) only. Future major versions will be available as separate purchases. We will notify you by email when a new version ships.' },
+              { q: 'Can I cancel Online Pro anytime?', a: 'Yes. Cancel from your account settings without calling or contacting support. Access continues through the end of your paid billing period.' },
               { q: 'Is this financial advice?', a: 'No — BridgeToRetired Pro is a modeling tool, not a financial advisory service. We help you run the math clearly so you can make your own decisions or bring better questions to a fee-only advisor.' },
-              { q: 'Can I cancel Online Pro anytime?', a: 'Yes. Cancel in one click from your account settings. No questions, no retention flows, no emails begging you to stay.' },
-              { q: "What's new in Pro v3?", a: 'Pro v3 adds the online planner with scenario saving, a full Monte Carlo simulator, a 9-sheet Excel planning system with switchable MFJ/Single tax brackets, ACA cliff cross-check in the Roth Ladder, SS income modeled in POST-59½, and color-coded RISK FLAGS. Existing Pro members get v3 at no extra cost.' },
+              { q: "What's new in Pro v3?", a: 'Pro v3 adds the online planner with scenario saving, full Monte Carlo simulation, the Bridge Risk Score, a 9-sheet Excel planning system with switchable MFJ/Single tax brackets, ACA cliff cross-check in the Roth Ladder, SS income modeled in POST-59½, and color-coded RISK FLAGS.' },
               { q: 'How is this different from ProjectionLab or Boldin?', a: "Those tools model retirement broadly. We're built specifically for early retirees navigating the bridge years — the 59½ problem, Roth ladders, ACA subsidies, and SEPP. Narrower and deeper." },
             ].map(({ q, a }) => (
               <div key={q} className="bg-ink border border-white/[0.07] rounded-xl p-5">
@@ -417,30 +384,33 @@ export default function PricingPage() {
         <div className="bg-ink border border-gold/20 rounded-2xl p-10 text-center relative overflow-hidden">
           <div className="absolute inset-0 bg-gold/3 pointer-events-none" />
           <div className="relative">
-            <div className="font-mono text-[9px] tracking-widest uppercase text-gold mb-4">Get Started</div>
+            <div className="font-mono text-[9px] tracking-widest uppercase text-gold mb-4">Choose How You Want to Plan</div>
             <h2 className="font-syne font-bold text-[clamp(24px,4vw,38px)] text-white tracking-tight mb-4">
               Know your score before<br />you retire.
             </h2>
             <p className="text-white/40 text-[14px] mb-8 max-w-md mx-auto leading-relaxed">
-              Pick the option that fits. One-time Excel or online subscription — either way you get the full 9-sheet planning system.
+              Own the complete Excel workbook once, or keep your scenarios saved and stress-tested online.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-4">
               <a
                 href={XLS_PAYMENT_LINK}
-                onClick={handleXlsCheckout}
-                className="inline-block bg-[#2DD4BF] text-black font-syne font-semibold text-[14px] tracking-wide px-8 py-4 rounded-xl hover:opacity-90 transition-opacity"
+                onClick={() => trackProCtaClick('pricing-final-xls')}
+                className="inline-block font-syne font-semibold text-[14px] tracking-wide px-8 py-4 rounded-xl hover:opacity-90 transition-opacity"
+                style={{ background: '#2DD4BF', color: '#0D1420' }}
               >
-                Pro Excel — $39 one-time →
+                Buy Pro Excel — $39 one-time →
               </a>
               <a
-                href={paymentLink}
-                onClick={() => handleCheckout('pricing-final-cta')}
+                href={ONLINE_PRO_LINK}
+                onClick={() => trackProCtaClick('pricing-final-online-pro')}
                 className="inline-block bg-gold text-black font-syne font-semibold text-[14px] tracking-wide px-8 py-4 rounded-xl hover:opacity-90 transition-opacity"
               >
-                Online Pro — ${billing === 'monthly' ? `${monthlyPrice}/mo` : `${annualPrice}/yr`} →
+                Start Online Pro — $15/mo →
               </a>
             </div>
-            <div className="font-mono text-[9px] text-white/20 tracking-wider">Online Pro: cancel anytime · Pro Excel: one-time, no refunds on digital downloads</div>
+            <div className="font-mono text-[9px] text-white/20 tracking-wider">
+              Online Pro: cancel anytime · Pro Excel: one-time, no refunds on digital downloads
+            </div>
           </div>
         </div>
       </div>
