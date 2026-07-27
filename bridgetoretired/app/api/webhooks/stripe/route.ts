@@ -5,6 +5,13 @@ import { supabaseAdmin } from '@/lib/supabase'
 
 const XLS_PRICE_ID = 'price_1TxoRzGkDMVwlubm2qzU5XkV'
 
+// BTR subscription price IDs — only these should trigger Clerk isPro updates.
+// This account is shared with FaithBlitz; without this guard, a FaithBlitz
+// subscription event could accidentally grant BTR Pro access to the wrong user.
+const BTR_SUBSCRIPTION_PRICE_IDS = new Set([
+  'price_1Txr3dGkDMVwlubmr7eidLLN', // BridgeToRetired Online Pro $15/mo (live)
+])
+
 function getStripe() {
   return new Stripe(process.env.STRIPE_SECRET_KEY!, {
     apiVersion: '2025-02-24.acacia',
@@ -35,6 +42,14 @@ export async function POST(req: NextRequest) {
       const subscription = event.data.object as Stripe.Subscription
       const customerId   = subscription.customer as string
       const isActive     = subscription.status === 'active' || subscription.status === 'trialing'
+
+      // Guard: only process BTR subscription prices — ignore FaithBlitz events
+      const priceIds = subscription.items.data.map(i => i.price.id)
+      const isBtrSub = priceIds.some(id => BTR_SUBSCRIPTION_PRICE_IDS.has(id))
+      if (!isBtrSub) {
+        console.log(`Skipping non-BTR subscription event (prices: ${priceIds.join(', ')})`)
+        break
+      }
 
       const users = await clerk.users.getUserList({
         externalId: [customerId],
@@ -69,6 +84,14 @@ export async function POST(req: NextRequest) {
     case 'customer.subscription.deleted': {
       const subscription = event.data.object as Stripe.Subscription
       const customerId   = subscription.customer as string
+
+      // Guard: only process BTR subscription prices
+      const priceIds = subscription.items.data.map(i => i.price.id)
+      const isBtrSub = priceIds.some(id => BTR_SUBSCRIPTION_PRICE_IDS.has(id))
+      if (!isBtrSub) {
+        console.log(`Skipping non-BTR subscription deleted event (prices: ${priceIds.join(', ')})`)
+        break
+      }
 
       const users = await clerk.users.getUserList({ externalId: [customerId] })
       let clerkUserId: string | null = null

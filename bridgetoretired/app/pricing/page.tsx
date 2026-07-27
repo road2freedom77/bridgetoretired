@@ -56,7 +56,7 @@ const PRO_SHEETS = [
 ]
 
 const XLS_PAYMENT_LINK    = 'https://buy.stripe.com/4gMaEXfyz0DfeDa53gfYY03'
-const ONLINE_PRO_LINK     = 'https://buy.stripe.com/00w28rcmngCd52AgLYfYY01'
+const ONLINE_PRO_LINK     = 'https://buy.stripe.com/28E00jaefeu5amU1R4fYY04'
 
 export default function PricingPage() {
   if (!FLAGS.PRO_ENABLED) notFound()
