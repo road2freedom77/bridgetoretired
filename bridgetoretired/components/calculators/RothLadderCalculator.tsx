@@ -52,7 +52,7 @@ function ProGateOverlay() {
           className="btn-gold"
           onClick={() => trackProCtaClick("roth-ladder-calc-gate")}
         >
-          Upgrade to Pro — $9/mo
+          Upgrade to Pro — $15/mo
         </a>
       </div>
     </div>

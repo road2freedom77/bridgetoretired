@@ -119,7 +119,7 @@ export function Newsletter() {
             <span className="text-xl">🛡️</span>
             <div className="text-left">
               <div className="font-syne font-semibold text-[13px] text-white group-hover:text-gold transition-colors">
-                BridgeToRetired Pro — $9/mo
+                BridgeToRetired Pro — $15/mo
               </div>
               <div className="font-mono text-[10px] text-white/35 mt-0.5">
                 Bridge Risk Score™ · Stress tester · PDF export · Scenario compare

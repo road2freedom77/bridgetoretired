@@ -369,7 +369,7 @@ export default function RetirementReadinessScore() {
                 <a href="/pricing"
                   onClick={() => trackProCtaClick('readiness-score-gate')}
                   style={{ background: COLORS.gold, color: '#0D1420', fontFamily: 'Georgia, serif', fontWeight: 700, fontSize: 12, padding: '10px 24px', borderRadius: 8, textDecoration: 'none', display: 'inline-block' }}>
-                  Unlock Full Breakdown — $9/mo
+                  Unlock Full Breakdown — $15/mo
                 </a>
               </div>
             </div>
@@ -393,7 +393,7 @@ export default function RetirementReadinessScore() {
         {/* Pro upsell */}
         {!isPro && (
           <div style={{ background: 'linear-gradient(135deg, rgba(232,184,75,0.06) 0%, rgba(232,184,75,0.02) 100%)', border: '1px solid rgba(232,184,75,0.2)', borderLeft: '3px solid #E8B84B', borderRadius: 12, padding: '20px 24px' }}>
-            <div style={{ fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: COLORS.gold, marginBottom: 10 }}>⚡ BridgeToRetired Pro — $9/mo</div>
+            <div style={{ fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: COLORS.gold, marginBottom: 10 }}>⚡ BridgeToRetired Pro — $15/mo</div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8, marginBottom: 16 }}>
               {PRO_FEATURES.map(({ icon, label, sub }) => (
                 <div key={label} style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>

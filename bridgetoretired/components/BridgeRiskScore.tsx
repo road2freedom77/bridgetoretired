@@ -327,7 +327,7 @@ export default function BridgeRiskScore() {
                 🔒 Pro unlocks the full Bridge Risk Score™
               </div>
               <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', lineHeight: 1.6 }}>
-                Save scenarios, stress-test against 2008-style crashes, export your full plan as PDF, and get personalized action steps — $9/mo.
+                Save scenarios, stress-test against 2008-style crashes, export your full plan as PDF, and get personalized action steps — $15/mo.
               </div>
             </div>
             <Link

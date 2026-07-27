@@ -318,7 +318,7 @@ export default function SEPP72tToolkit() {
               {/* Pro upsell — free users only */}
               {!isPro && (
                 <div className="bg-ink border border-gold/20 rounded-xl p-5">
-                  <div className="font-mono text-[9px] tracking-widest uppercase text-gold mb-4">⚡ BridgeToRetired Pro — $9/mo</div>
+                  <div className="font-mono text-[9px] tracking-widest uppercase text-gold mb-4">⚡ BridgeToRetired Pro — $15/mo</div>
                   <div className="grid grid-cols-2 gap-3 mb-4">
                     {PRO_FEATURES.map(({ icon, label, sub }) => (
                       <div key={label} className="flex gap-2 items-start">

@@ -357,7 +357,7 @@ export default function VsComparisonTool() {
             <Link href="/pricing"
               onClick={() => trackProCtaClick('vs-comparison-gate')}
               className="inline-block bg-gold text-black font-syne font-semibold text-[12px] px-5 py-2.5 rounded hover:opacity-85 transition-opacity">
-              Upgrade to Pro — $9/mo →
+              Upgrade to Pro — $15/mo →
             </Link>
           </div>
         </div>

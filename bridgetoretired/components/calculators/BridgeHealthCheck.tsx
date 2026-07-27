@@ -344,7 +344,7 @@ export default function BridgeHealthCheck() {
                   onClick={() => trackProCtaClick('bridge-health-gate')}
                   style={{ background: COLORS.gold, color: '#0D1420', fontFamily: 'Georgia, serif', fontWeight: 700, fontSize: 12, padding: '10px 24px', borderRadius: 8, textDecoration: 'none', display: 'inline-block' }}
                 >
-                  Unlock Bridge Risk Score — $9/mo
+                  Unlock Bridge Risk Score — $15/mo
                 </a>
               </div>
             </div>

@@ -202,7 +202,7 @@ export default function FreeHome() {
 
         {/* Pro preview */}
         <div style={{ background: 'linear-gradient(135deg, rgba(232,184,75,0.08) 0%, rgba(232,184,75,0.02) 100%)', border: '1px solid rgba(232,184,75,0.2)', borderRadius: 16, padding: '28px' }}>
-          <div style={{ fontSize: 9, letterSpacing: 3, textTransform: 'uppercase', color: COLORS.gold, marginBottom: 8 }}>BridgeToRetired Pro — $9/mo</div>
+          <div style={{ fontSize: 9, letterSpacing: 3, textTransform: 'uppercase', color: COLORS.gold, marginBottom: 8 }}>BridgeToRetired Pro — $15/mo</div>
           <div style={{ fontFamily: 'Georgia, serif', fontSize: 20, fontWeight: 700, color: '#fff', marginBottom: 6 }}>Ready to go deeper?</div>
           <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginBottom: 20, lineHeight: 1.7, maxWidth: 480 }}>
             Free tools show the math. Pro tells you whether your plan survives market crashes, inflation, and 40 years of withdrawals.
@@ -220,7 +220,7 @@ export default function FreeHome() {
           </div>
           <Link href="/pricing"
             style={{ background: COLORS.gold, color: COLORS.dark, fontFamily: 'Georgia, serif', fontWeight: 700, fontSize: 13, padding: '11px 26px', borderRadius: 8, textDecoration: 'none', display: 'inline-block' }}>
-            Explore Pro — $9/mo →
+            Explore Pro — $15/mo →
           </Link>
         </div>
       </div>
