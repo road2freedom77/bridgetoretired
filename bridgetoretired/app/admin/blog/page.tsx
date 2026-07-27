@@ -41,6 +41,8 @@ const CATEGORIES = [
   'Sequence Risk',
   'FIRE Planning',
   'Tools & Calculators',
+  'Case Studies',
+  'Product Update',
 ]
 
 const TOOL_TOKENS = [
