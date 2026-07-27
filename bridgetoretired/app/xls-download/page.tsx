@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import { trackXlsPurchase, trackXlsDownload } from '@/lib/analytics'
 
 interface VerifyResult {
   success: boolean
@@ -30,6 +31,7 @@ function XlsDownloadInner() {
       if (data.success) {
         setResult(data)
         setState('ready')
+        trackXlsPurchase(sessionId)
       } else {
         setState('error')
       }
@@ -47,6 +49,7 @@ function XlsDownloadInner() {
 
   function handleDownload() {
     setDownloading(true)
+    trackXlsDownload()
     // Reset after a moment so they can click again if needed
     setTimeout(() => setDownloading(false), 3000)
   }

@@ -368,8 +368,10 @@ export default function PricingPage() {
               { q: 'What is the difference between Pro Excel and Online Pro?', a: 'Pro Excel ($39 one-time) is a downloadable Excel file you use on your own computer — no internet required, no recurring billing, use it forever. Online Pro ($15/month) is the cloud-based planner with saved scenarios, Monte Carlo, Bridge Risk Score, stress testing, and access from any device. The monthly subscription does not include the Pro Excel download.' },
               { q: 'Does Pro Excel get future updates automatically?', a: 'No. The $39 purchase includes the current version (v3) only. Future major versions will be available as separate purchases. We will notify you by email when a new version ships.' },
               { q: 'Can I cancel Online Pro anytime?', a: 'Yes. Cancel from your account settings without calling or contacting support. Access continues through the end of your paid billing period.' },
+              { q: 'What is the refund policy for Pro Excel?', a: 'Pro Excel is a digital download and is not refundable once purchased. If you have a problem with the file or your download, contact support and we will make it right.' },
               { q: 'Is this financial advice?', a: 'No — BridgeToRetired Pro is a modeling tool, not a financial advisory service. We help you run the math clearly so you can make your own decisions or bring better questions to a fee-only advisor.' },
-              { q: "What's new in Pro v3?", a: 'Pro v3 adds the online planner with scenario saving, full Monte Carlo simulation, the Bridge Risk Score, a 9-sheet Excel planning system with switchable MFJ/Single tax brackets, ACA cliff cross-check in the Roth Ladder, SS income modeled in POST-59½, and color-coded RISK FLAGS.' },
+              { q: 'What is included in Pro Excel v3?', a: 'Pro Excel v3 is the nine-sheet downloadable workbook. It adds federal tax estimates, Roth conversion planning with an ACA cross-check, post-59½ projections, Monte Carlo simulation, risk flags, and rebalancing tools.' },
+              { q: 'What is included in Online Pro?', a: 'Online Pro adds the cloud-based planner, saved scenario comparison, Bridge Risk Score, online Monte Carlo simulation, sequence-risk testing, PDF reports, and access from any device. It does not include the Pro Excel download.' },
               { q: 'How is this different from ProjectionLab or Boldin?', a: "Those tools model retirement broadly. We're built specifically for early retirees navigating the bridge years — the 59½ problem, Roth ladders, ACA subsidies, and SEPP. Narrower and deeper." },
             ].map(({ q, a }) => (
               <div key={q} className="bg-ink border border-white/[0.07] rounded-xl p-5">
@@ -409,7 +411,7 @@ export default function PricingPage() {
               </a>
             </div>
             <div className="font-mono text-[9px] text-white/20 tracking-wider">
-              Online Pro: cancel anytime · Pro Excel: one-time, no refunds on digital downloads
+              Online Pro: cancel anytime · Pro Excel: secure one-time purchase with instant access
             </div>
           </div>
         </div>
