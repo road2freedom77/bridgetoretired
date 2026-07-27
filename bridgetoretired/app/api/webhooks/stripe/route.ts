@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { clerkClient } from '@clerk/nextjs/server'
 import Stripe from 'stripe'
+import { supabaseAdmin } from '@/lib/supabase'
+
+const XLS_PRICE_ID = 'price_1TxoRzGkDMVwlubm2qzU5XkV'
 
 function getStripe() {
   return new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -97,6 +100,33 @@ export async function POST(req: NextRequest) {
       const customerId = session.customer as string
       const clerkId    = session.metadata?.clerkUserId
 
+      // ── One-time XLS purchase ─────────────────────────────────────────────
+      if (session.mode === 'payment') {
+        // Retrieve line items to check if this is an XLS purchase
+        const sessionWithItems = await stripe.checkout.sessions.retrieve(
+          session.id,
+          { expand: ['line_items'] }
+        )
+        const lineItems = sessionWithItems.line_items?.data ?? []
+        const isXls = lineItems.some(item => item.price?.id === XLS_PRICE_ID)
+
+        if (isXls) {
+          const email = session.customer_details?.email ?? ''
+          await supabaseAdmin
+            .from('xls_purchases')
+            .upsert({
+              stripe_session_id:  session.id,
+              stripe_customer_id: customerId ?? null,
+              email,
+              product_version:    'v3',
+            }, { onConflict: 'stripe_session_id' })
+
+          console.log(`XLS purchase recorded for ${email}`)
+        }
+        break
+      }
+
+      // ── Subscription checkout ─────────────────────────────────────────────
       if (clerkId) {
         await clerk.users.updateUserMetadata(clerkId, {
           publicMetadata: {
