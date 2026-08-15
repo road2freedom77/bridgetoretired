@@ -19,18 +19,15 @@ function formatDollars(n: number) {
 }
 
 function getLifeExpectancy(age: number): number {
+  // IRS Single Life Expectancy Table — Pub 590-B, Table I (effective 2022+)
   const table: Record<number, number> = {
-    40: 43.6, 42: 41.7, 44: 39.8, 46: 37.9, 48: 36.0,
-    50: 34.2, 52: 32.3, 54: 30.5, 56: 28.7, 58: 27.0,
-    60: 25.2, 62: 23.5, 64: 21.8,
+    40: 45.7, 41: 44.7, 42: 43.7, 43: 42.8, 44: 41.8,
+    45: 40.8, 46: 39.8, 47: 38.9, 48: 37.9, 49: 37.0,
+    50: 36.2, 51: 35.3, 52: 34.3, 53: 33.4, 54: 32.5,
+    55: 31.6, 56: 30.6, 57: 29.8, 58: 28.9,
+    59: 28.0, 60: 27.1, 61: 26.2, 62: 25.4, 63: 24.5, 64: 23.7,
   }
-  const lower = Math.floor(age / 2) * 2
-  const upper = lower + 2
-  if (table[lower] && table[upper]) {
-    const t = (age - lower) / 2
-    return table[lower] + t * (table[upper] - table[lower])
-  }
-  return table[lower] ?? table[50]
+  return table[age] ?? table[50]
 }
 
 function calcSEPP(balance: number, age: number, interestRate: number, method: 'amortization' | 'annuitization' | 'rmd') {
