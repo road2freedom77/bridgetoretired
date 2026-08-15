@@ -18,6 +18,7 @@ interface Post {
   published_at: string
   updated_at: string
   content: string
+  og_image_url: string | null
 }
 
 const EMPTY_POST: Omit<Post, 'id' | 'updated_at'> = {
@@ -30,6 +31,7 @@ const EMPTY_POST: Omit<Post, 'id' | 'updated_at'> = {
   published: false,
   published_at: new Date().toISOString().slice(0, 16),
   content: '',
+  og_image_url: null,
 }
 
 const CATEGORIES = [
@@ -80,13 +82,11 @@ const S = {
   }),
 }
 
-// Convert local datetime-local string to UTC ISO string
 function localToUTC(local: string): string {
   if (!local) return new Date().toISOString()
   return new Date(local).toISOString()
 }
 
-// Convert UTC ISO string to local datetime-local string
 function utcToLocal(utc: string): string {
   if (!utc) return new Date().toISOString().slice(0, 16)
   const d = new Date(utc)
@@ -177,6 +177,7 @@ export default function AdminBlogPage() {
       published_at: editing.published_at ? localToUTC(editing.published_at) : new Date().toISOString(),
       updated_at:   new Date().toISOString(),
       content:      editing.content,
+      og_image_url: editing.og_image_url || null,
     }
 
     const payload = editing.id ? { id: editing.id, ...record } : record
@@ -217,7 +218,6 @@ export default function AdminBlogPage() {
       const after = currentContent.slice(end)
       const newContent = before + text + after
       setEditing(e => ({ ...e, content: newContent }))
-      // Restore cursor position after the inserted text
       requestAnimationFrame(() => {
         textarea.selectionStart = textarea.selectionEnd = start + text.length
         textarea.focus()
@@ -507,8 +507,15 @@ Tool with params:
                 {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
               <label style={S.label}>Read Time</label>
-              <input style={S.input} placeholder="e.g. 14 min read" value={editing.read_time ?? ''}
+              <input style={{ ...S.input, marginBottom: 16 }} placeholder="e.g. 14 min read" value={editing.read_time ?? ''}
                 onChange={e => setEditing(p => ({ ...p, read_time: e.target.value }))} />
+              <label style={S.label}>OG / Social Image URL</label>
+              <input style={S.input} placeholder="https://...supabase.co/.../og-image.jpg"
+                value={editing.og_image_url ?? ''}
+                onChange={e => setEditing(p => ({ ...p, og_image_url: e.target.value }))} />
+              <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.2)', marginTop: 4 }}>
+                1200×630 recommended · Used for link previews on social platforms
+              </div>
             </div>
             {editing.slug && (
               <div style={{ ...S.card, padding: '14px 16px' }}>

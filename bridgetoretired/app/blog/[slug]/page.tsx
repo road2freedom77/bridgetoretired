@@ -67,13 +67,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   // Try Supabase first
   const { data: sbPost } = await supabase
     .from('blog_posts')
-    .select('title, description, published_at')
+    .select('title, description, published_at, og_image_url')
     .eq('slug', params.slug)
     .eq('published', true)
     .single()
 
   if (sbPost) {
-    return {
+    const meta: Metadata = {
       title:       sbPost.title,
       description: sbPost.description,
       alternates:  { canonical: url },
@@ -85,6 +85,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         url,
       },
     }
+
+    if (sbPost.og_image_url) {
+      meta.openGraph!.images = [
+        { url: sbPost.og_image_url, width: 1200, height: 630, alt: sbPost.title },
+      ]
+      meta.twitter = {
+        card:        'summary_large_image',
+        title:       sbPost.title,
+        description: sbPost.description,
+        images:      [sbPost.og_image_url],
+      }
+    }
+
+    return meta
   }
 
   // Fallback to contentlayer
@@ -211,6 +225,7 @@ export default async function PostPage({ params }: Props) {
       },
       mainEntityOfPage: { '@type': 'WebPage', '@id': url },
       datePublished: sbPost.published_at,
+      ...(sbPost.og_image_url ? { image: sbPost.og_image_url } : {}),
     }
     const breadcrumbSchema = {
       '@context': 'https://schema.org',
