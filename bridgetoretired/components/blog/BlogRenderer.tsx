@@ -15,8 +15,8 @@ import TaxableBrokerageAnalyzer   from '@/components/TaxableBrokerageAnalyzer'
 import SEPPCalculator             from '@/components/SEPPCalculator'
 import FinanceTable               from '@/components/FinanceTable'
 
-// ── Zero-prop tool embeds ─────────────────────────────────────────────────────
-const EMBED_MAP: Record<string, React.ComponentType> = {
+// ── Tool embeds (accept optional props) ──────────────────────────────────────
+const EMBED_MAP: Record<string, React.ComponentType<any>> = {
   'roth-ladder-builder':  RothLadderBuilder,
   'sepp-calculator':      SEPPCalculator,
   'sequence-of-returns':  SequenceOfReturnsSimulator,
@@ -30,19 +30,31 @@ const EMBED_MAP: Record<string, React.ComponentType> = {
 }
 
 // ── Token regexes ─────────────────────────────────────────────────────────────
-const TOOL_REGEX  = /\[\[tool:([a-z0-9-]+)\]\]/
+// Matches both [[tool:name]] and [[tool:name key="value" key2="value2"]]
+const TOOL_REGEX  = /\[\[tool:([a-z0-9-]+)((?:\s+[a-z]+="[^"]*")*)\s*\]\]/
 const TABLE_REGEX = /\[\[table:(\{[\s\S]*?\})\]\]/
-// [[image:filename.ext]] or [[image:filename.ext|Optional caption]]
 const IMAGE_REGEX = /\[\[image:([^\]|]+)(?:\|([^\]]*))?\]\]/
 
-// Combined splitter
-const TOKEN_REGEX = /(\[\[tool:[a-z0-9-]+\]\]|\[\[table:\{[\s\S]*?\}\]\]|\[\[image:[^\]]+\]\])/g
+// Combined splitter — matches all token types including parameterized tools
+const TOKEN_REGEX = /(\[\[tool:[a-z0-9-]+(?:\s+[a-z]+="[^"]*")*\s*\]\]|\[\[table:\{[\s\S]*?\}\]\]|\[\[image:[^\]]+\]\])/g
+
+// Parse key="value" pairs from a tool token's parameter string
+function parseToolParams(paramStr: string): Record<string, string> {
+  const params: Record<string, string> = {}
+  const re = /([a-z]+)="([^"]*)"/g
+  let m
+  while ((m = re.exec(paramStr)) !== null) {
+    params[m[1]] = m[2]
+  }
+  return params
+}
 
 // ── Segment types ─────────────────────────────────────────────────────────────
 interface Segment {
   type: 'markdown' | 'tool' | 'table' | 'image'
   content: string
   caption?: string
+  props?: Record<string, string>
 }
 
 function parseSegments(content: string): Segment[] {
@@ -61,7 +73,10 @@ function parseSegments(content: string): Segment[] {
     const tableMatch = token.match(TABLE_REGEX)
     const imageMatch = token.match(IMAGE_REGEX)
 
-    if (toolMatch)  segments.push({ type: 'tool',  content: toolMatch[1] })
+    if (toolMatch) {
+      const props = toolMatch[2] ? parseToolParams(toolMatch[2]) : undefined
+      segments.push({ type: 'tool', content: toolMatch[1], props })
+    }
     if (tableMatch) segments.push({ type: 'table', content: tableMatch[1] })
     if (imageMatch) segments.push({
       type: 'image',
@@ -155,14 +170,14 @@ export default function BlogRenderer({ content }: BlogRendererProps) {
     <div className="prose-dark">
       {segments.map((segment, i) => {
 
-        // Zero-prop tool embed
+        // Tool embed — with optional props
         if (segment.type === 'tool') {
           const Component = EMBED_MAP[segment.content]
           if (!Component) {
             console.warn(`BlogRenderer: unknown tool token "${segment.content}"`)
             return null
           }
-          return <Component key={i} />
+          return <Component key={i} {...(segment.props ?? {})} />
         }
 
         // FinanceTable embed — supports two formats:

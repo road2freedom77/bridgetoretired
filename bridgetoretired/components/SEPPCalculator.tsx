@@ -62,15 +62,24 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   )
 }
 
-export default function SEPPCalculator() {
+// Optional props for blog embeds — override defaults when provided
+// Props arrive as strings from the [[tool:...]] token parser
+interface SEPPCalculatorProps {
+  balance?:  string
+  age?:      string
+  rate?:     string
+  spending?: string
+}
+
+export default function SEPPCalculator({ balance, age, rate, spending }: SEPPCalculatorProps) {
   const { user } = useUser()
   const isPro = (user?.publicMetadata as any)?.isPro === true
 
-  const [accountBalance, setAccountBalance] = useState(600_000)
-  const [startAge, setStartAge] = useState(52)
-  const [interestRate, setInterestRate] = useState(4.5)
+  const [accountBalance, setAccountBalance] = useState(balance  ? Number(balance)  : 600_000)
+  const [startAge, setStartAge]             = useState(age      ? Number(age)      : 52)
+  const [interestRate, setInterestRate]     = useState(rate     ? Number(rate)      : 4.5)
   const [portfolioReturn, setPortfolioReturn] = useState(6)
-  const [annualSpend, setAnnualSpend] = useState(55_000)
+  const [annualSpend, setAnnualSpend]       = useState(spending ? Number(spending)  : 55_000)
 
   const track = useCallback(() => trackCalculatorUsed('sepp-calculator'), [])
   function tracked(setter: (v: number) => void) {
