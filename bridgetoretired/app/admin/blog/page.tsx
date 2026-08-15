@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useUser } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
 
@@ -123,6 +123,12 @@ export default function AdminBlogPage() {
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
 
+  // Image upload state
+  const [imageAlt, setImageAlt] = useState('')
+  const [uploading, setUploading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const contentRef = useRef<HTMLTextAreaElement>(null)
+
   useEffect(() => {
     if (isLoaded && user?.id !== ADMIN_USER_ID) router.replace('/')
   }, [isLoaded, user, router])
@@ -201,8 +207,60 @@ export default function AdminBlogPage() {
     else { showToast(`✓ ${!post.published ? 'Published' : 'Unpublished'}`); await loadPosts() }
   }
 
+  function insertAtCursor(text: string) {
+    const textarea = contentRef.current
+    if (textarea) {
+      const start = textarea.selectionStart
+      const end = textarea.selectionEnd
+      const currentContent = editing.content ?? ''
+      const before = currentContent.slice(0, start)
+      const after = currentContent.slice(end)
+      const newContent = before + text + after
+      setEditing(e => ({ ...e, content: newContent }))
+      // Restore cursor position after the inserted text
+      requestAnimationFrame(() => {
+        textarea.selectionStart = textarea.selectionEnd = start + text.length
+        textarea.focus()
+      })
+    } else {
+      setEditing(e => ({ ...e, content: (e.content ?? '') + '\n\n' + text + '\n\n' }))
+    }
+  }
+
   function insertToken(token: string) {
-    setEditing(e => ({ ...e, content: (e.content ?? '') + '\n\n' + token + '\n\n' }))
+    insertAtCursor('\n\n' + token + '\n\n')
+  }
+
+  async function handleImageUpload() {
+    const file = fileInputRef.current?.files?.[0]
+    if (!file) { showToast('⚠ Select an image file', false); return }
+    if (!imageAlt.trim()) { showToast('⚠ Alt text is required for SEO', false); return }
+
+    setUploading(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('alt', imageAlt.trim())
+
+      const res = await fetch('/api/admin/blog/upload-image', {
+        method: 'POST',
+        credentials: 'include',
+        body: formData,
+      })
+      const data = await res.json()
+
+      if (data.error) {
+        showToast(`❌ ${data.error}`, false)
+      } else {
+        insertAtCursor('\n\n' + data.token + '\n\n')
+        showToast('✓ Image uploaded and inserted')
+        setImageAlt('')
+        if (fileInputRef.current) fileInputRef.current.value = ''
+      }
+    } catch (err) {
+      showToast('❌ Upload failed', false)
+    }
+    setUploading(false)
   }
 
   if (!isLoaded || user?.id !== ADMIN_USER_ID) return null
@@ -337,6 +395,8 @@ export default function AdminBlogPage() {
                   {words.toLocaleString()} words · {chars.toLocaleString()} chars
                 </span>
               </div>
+
+              {/* Tool embed buttons */}
               <div style={{ marginBottom: 12 }}>
                 <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.25)', marginBottom: 8, letterSpacing: 1, textTransform: 'uppercase' }}>Insert Tool Embed</div>
                 <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: 6 }}>
@@ -346,19 +406,66 @@ export default function AdminBlogPage() {
                   ))}
                 </div>
               </div>
-              <textarea style={{ ...S.textarea, minHeight: 560 }}
-                placeholder={`Write in Markdown...\n\nEmbeds:\n[[tool:roth-ladder-builder]]\n\nTable:\n[[table:{...}]]`}
+
+              {/* Image upload */}
+              <div style={{
+                marginBottom: 12, padding: '14px 16px', borderRadius: 10,
+                background: 'rgba(45,212,191,0.04)', border: '1px solid rgba(45,212,191,0.12)',
+              }}>
+                <div style={{ fontSize: 9, color: '#2DD4BF', marginBottom: 10, letterSpacing: 1, textTransform: 'uppercase', fontWeight: 600 }}>
+                  Insert Image
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 8 }}>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/gif,image/svg+xml"
+                    style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', fontFamily: 'inherit' }}
+                  />
+                  <input
+                    style={{ ...S.input, fontSize: 11 }}
+                    placeholder="Alt text (required for SEO) — describe the image"
+                    value={imageAlt}
+                    onChange={e => setImageAlt(e.target.value)}
+                  />
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                    <button
+                      style={{ ...S.btnGhost, fontSize: 10, padding: '6px 14px', borderColor: 'rgba(45,212,191,0.25)', color: '#2DD4BF' }}
+                      onClick={handleImageUpload}
+                      disabled={uploading}
+                    >
+                      {uploading ? 'Uploading...' : 'Upload & Insert'}
+                    </button>
+                    <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.2)' }}>
+                      JPEG, PNG, WebP, GIF, SVG · Max 5MB
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <textarea
+                ref={contentRef}
+                style={{ ...S.textarea, minHeight: 560 }}
+                placeholder={`Write in Markdown...\n\nEmbeds:\n[[tool:roth-ladder-builder]]\n[[image:https://...url|Alt text here]]\n\nTable:\n[[table:{...}]]`}
                 value={editing.content ?? ''} onChange={e => setEditing(p => ({ ...p, content: e.target.value }))} />
               <details style={{ marginTop: 10 }}>
                 <summary style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', cursor: 'pointer', userSelect: 'none' as const }}>
-                  Table syntax reference
+                  Embed syntax reference
                 </summary>
                 <pre style={{ marginTop: 8, fontSize: 10, color: 'rgba(255,255,255,0.4)', background: 'rgba(255,255,255,0.03)', borderRadius: 6, padding: '10px 14px', overflowX: 'auto' as const, lineHeight: 1.6 }}>
-{`[[table:{
+{`Image:
+[[image:https://your-bucket.supabase.co/storage/v1/object/public/blog-images/photo.jpg|Descriptive alt text]]
+[[image:local-file.jpg|Alt text for /public/images/ file]]
+
+Table:
+[[table:{
   "columns": [{"key":"col1","header":"Col 1","highlight":true},{"key":"col2","header":"Col 2"}],
   "rows": [{"col1":"Value","col2":"Value"},{"col1":"Highlighted","col2":"Value","_highlight":true}],
   "caption": "Optional caption"
-}]]`}
+}]]
+
+Tool with params:
+[[tool:sepp-calculator balance="900000" age="51" rate="5.23" spending="48000"]]`}
                 </pre>
               </details>
             </div>

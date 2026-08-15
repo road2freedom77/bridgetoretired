@@ -234,7 +234,7 @@ export default async function PostPage({ params }: Props) {
         articleSchema={articleSchema}
         breadcrumbSchema={breadcrumbSchema}
       >
-        <BlogRenderer content={sbPost.content} />
+        <BlogRenderer content={sbPost.content} slug={params.slug} />
       </PostLayout>
     )
   }

@@ -94,6 +94,13 @@ function parseSegments(content: string): Segment[] {
   return segments
 }
 
+// ── Resolve image src ─────────────────────────────────────────────────────────
+// Supports both local filenames (resolves to /images/) and full URLs (Supabase Storage)
+function resolveImageSrc(src: string): string {
+  if (src.startsWith('http://') || src.startsWith('https://')) return src
+  return `/images/${src}`
+}
+
 // ── react-markdown component overrides ───────────────────────────────────────
 const mdComponents = {
   h2: ({ children }: any) => (
@@ -161,9 +168,11 @@ const mdComponents = {
 // ── Main renderer ─────────────────────────────────────────────────────────────
 interface BlogRendererProps {
   content: string
+  /** Post slug — used to build canonical image URLs for structured data */
+  slug?: string
 }
 
-export default function BlogRenderer({ content }: BlogRendererProps) {
+export default function BlogRenderer({ content, slug }: BlogRendererProps) {
   const segments = parseSegments(content)
 
   return (
@@ -225,17 +234,30 @@ export default function BlogRenderer({ content }: BlogRendererProps) {
           }
         }
 
-        // Image embed — resolves from /public/images/
+        // Image embed — SEO-optimized rendering
+        // Supports local filenames (/public/images/) and full URLs (Supabase Storage)
         if (segment.type === 'image') {
+          const src = resolveImageSrc(segment.content)
+          const alt = segment.caption || ''
+
           return (
-            <figure key={i} className="my-8">
+            <figure key={i} className="my-8" itemScope itemType="https://schema.org/ImageObject">
               <img
-                src={`/images/${segment.content}`}
-                alt={segment.caption || ''}
+                src={src}
+                alt={alt}
+                loading="lazy"
+                decoding="async"
                 className="w-full rounded-xl border border-white/10"
+                itemProp="contentUrl"
+                style={{ aspectRatio: 'auto', height: 'auto' }}
               />
+              {alt && <meta itemProp="name" content={alt} />}
+              {slug && <meta itemProp="url" content={`https://bridgetoretired.com/blog/${slug}`} />}
               {segment.caption && (
-                <figcaption className="mt-3 text-center font-mono text-[11px] tracking-wide text-white/35">
+                <figcaption
+                  className="mt-3 text-center font-mono text-[11px] tracking-wide text-white/35"
+                  itemProp="caption"
+                >
                   {segment.caption}
                 </figcaption>
               )}
