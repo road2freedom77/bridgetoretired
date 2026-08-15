@@ -18,8 +18,9 @@ function formatDollars(n: number) {
   return `$${Math.round(n).toLocaleString()}`
 }
 
+// IRS Single Life Expectancy Table — Pub 590-B, Table I (effective 2022+)
+// Used for RMD and Fixed Amortization methods
 function getLifeExpectancy(age: number): number {
-  // IRS Single Life Expectancy Table — Pub 590-B, Table I (effective 2022+)
   const table: Record<number, number> = {
     40: 45.7, 41: 44.7, 42: 43.7, 43: 42.8, 44: 41.8,
     45: 40.8, 46: 39.8, 47: 38.9, 48: 37.9, 49: 37.0,
@@ -28,6 +29,45 @@ function getLifeExpectancy(age: number): number {
     59: 28.0, 60: 27.1, 61: 26.2, 62: 25.4, 63: 24.5, 64: 23.7,
   }
   return table[age] ?? table[50]
+}
+
+// IRS mortality table for annuity-factor calculation
+// 26 CFR §1.401(a)(9)-9(e), Table 4 (effective 2022+, per Notice 2022-6)
+// qx = probability of death within one year at attained age
+const MORTALITY_QX: Record<number, number> = {
+  40: 0.000576, 41: 0.000628, 42: 0.000683, 43: 0.000745, 44: 0.000813,
+  45: 0.000893, 46: 0.000985, 47: 0.001087, 48: 0.001199, 49: 0.001320,
+  50: 0.001452, 51: 0.001594, 52: 0.001754, 53: 0.001935, 54: 0.002139,
+  55: 0.002368, 56: 0.002621, 57: 0.002894, 58: 0.003180, 59: 0.003489,
+  60: 0.003833, 61: 0.004222, 62: 0.004666, 63: 0.005168, 64: 0.005733,
+  65: 0.006369, 66: 0.007085, 67: 0.007880, 68: 0.008762, 69: 0.009741,
+  70: 0.010845, 71: 0.012101, 72: 0.013528, 73: 0.015151, 74: 0.016991,
+  75: 0.019087, 76: 0.021468, 77: 0.024125, 78: 0.027057, 79: 0.030353,
+  80: 0.034087, 81: 0.038328, 82: 0.043148, 83: 0.048631, 84: 0.054880,
+  85: 0.062014, 86: 0.070178, 87: 0.079564, 88: 0.090311, 89: 0.102528,
+  90: 0.116328, 91: 0.131800, 92: 0.148991, 93: 0.167923, 94: 0.188592,
+  95: 0.210954, 96: 0.234926, 97: 0.260382, 98: 0.287146, 99: 0.315009,
+  100: 0.343718, 101: 0.372996, 102: 0.402539, 103: 0.432040, 104: 0.461183,
+  105: 0.489657, 106: 0.517154, 107: 0.543378, 108: 0.568047, 109: 0.590895,
+  110: 0.611679, 111: 0.630175, 112: 0.646189, 113: 0.659545, 114: 0.670093,
+  115: 0.677703, 116: 0.682272, 117: 0.683716, 118: 0.681976, 119: 0.677010,
+  120: 1.000000,
+}
+
+// Compute mortality-weighted annuity factor per IRS Notice 2022-6
+// annuityFactor = Σ (kPx / (1+r)^k) where kPx = cumulative survival probability
+function calcAnnuityFactor(age: number, rate: number): number {
+  const r = rate / 100
+  let survival = 1.0
+  let factor = 0.0
+  for (let k = 1; k <= 120 - age; k++) {
+    const currentAge = age + k - 1
+    const qx = MORTALITY_QX[currentAge] ?? 1.0
+    survival *= (1 - qx)
+    if (survival < 1e-12) break
+    factor += survival / Math.pow(1 + r, k)
+  }
+  return factor
 }
 
 function calcSEPP(balance: number, age: number, interestRate: number, method: 'amortization' | 'annuitization' | 'rmd') {
@@ -39,7 +79,7 @@ function calcSEPP(balance: number, age: number, interestRate: number, method: 'a
     return Math.round(balance * r / (1 - Math.pow(1 + r, -le)))
   }
   if (method === 'annuitization') {
-    const factor = (1 - Math.pow(1 + r, -le)) / r
+    const factor = calcAnnuityFactor(age, interestRate)
     return Math.round(balance / factor)
   }
   return 0
