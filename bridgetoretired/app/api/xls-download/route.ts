@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
 
   // Serve from /private_files/ — NOT /public — so the URL is never guessable
   try {
-    const filePath   = join(process.cwd(), 'private_files', 'bridge-planner-pro-v3.xlsx')
+    const filePath   = join(process.cwd(), 'private_files', 'Bridge-Planner-Pro-v3.1.xlsx')
     const fileBuffer = await readFile(filePath)
 
     return new NextResponse(fileBuffer, {
