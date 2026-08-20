@@ -101,7 +101,7 @@ function XlsDownloadInner() {
                 Receipt sent to <span className="text-white/70">{result.email}</span>
               </p>
               <p className="text-white/30 text-[12px] font-mono mb-10">
-                Download link expires in 1 hour — save the file to your computer.
+                Save the file to your computer for offline use.
               </p>
 
               {/* Download button */}
