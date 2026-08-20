@@ -72,6 +72,7 @@ export async function PUT(
         calculation_version: CALCULATION_VERSION,
         // Mark name as manually set if explicitly provided
         manual_name:         typeof body.name === 'string' && body.name.trim().length > 0,
+updated_at:          new Date().toISOString(),
       })
       .eq('id', params.id)
       .eq('user_id', userId)
