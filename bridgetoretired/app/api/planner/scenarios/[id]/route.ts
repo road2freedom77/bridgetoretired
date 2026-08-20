@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { supabaseAdmin } from '@/lib/supabase'
+import { CALCULATION_VERSION, scenarioInputToDbColumns } from '@/lib/planner/types'
+import { validateScenarioInput, validateScenarioName } from '@/lib/planner/validate'
 
 export async function DELETE(
   req: NextRequest,
@@ -38,33 +40,38 @@ export async function PUT(
     }
 
     const body = await req.json()
-    const { name, inputs, results } = body
+    const { inputs: rawInputs, results } = body
+
+    // Validate name
+    const nameResult = validateScenarioName(body.name)
+
+    // Validate and clean inputs
+    const validation = validateScenarioInput(rawInputs ?? {})
+    if (!validation.valid) {
+      return NextResponse.json(
+        { error: 'Invalid scenario inputs', details: validation.errors },
+        { status: 400 }
+      )
+    }
+
+    const inputs = validation.cleaned
+    const dbColumns = scenarioInputToDbColumns(inputs)
 
     const { data, error } = await supabaseAdmin
       .from('scenarios')
       .update({
-        name,
-        current_age: inputs.currentAge,
-        retire_age: inputs.retireAge,
-        ss_age: inputs.ssAge,
-        life_expectancy: inputs.lifeExpectancy,
-        filing_status: inputs.filingStatus,
-        state: inputs.state,
-        state_tax_rate: inputs.stateTaxRate,
-        taxable: inputs.taxable,
-        k401: inputs.k401,
-        roth: inputs.roth,
-        cash: inputs.cash,
-        spending: inputs.spending,
-        inflation: inputs.inflation,
-        other_income: inputs.otherIncome,
-        ss_benefit: inputs.ssBenefit,
-        return_rate: inputs.returnRate,
-        volatility: inputs.volatility,
-        monte_carlo_success: results?.monteCarlo?.successRate,
-        withdrawal_rate: results?.withdrawalRate,
-        portfolio_at_90: results?.portfolioAt90,
-        risk_flags: results?.riskFlags,
+        name: nameResult.name,
+        ...dbColumns,
+        // Cached calculation outputs
+        monte_carlo_success: results?.monteCarlo?.successRate ?? null,
+        withdrawal_rate:     results?.withdrawalRate ?? null,
+        portfolio_at_90:     results?.portfolioAt90 ?? null,
+        // Keep risk_flags for backward compat, strip metadata
+        risk_flags:          stripSourceMeta(results?.riskFlags),
+        // Update version on every save
+        calculation_version: CALCULATION_VERSION,
+        // Mark name as manually set if explicitly provided
+        manual_name:         typeof body.name === 'string' && body.name.trim().length > 0,
       })
       .eq('id', params.id)
       .eq('user_id', userId)
@@ -78,4 +85,10 @@ export async function PUT(
     console.error('Update scenario error:', err)
     return NextResponse.json({ error: 'Failed to update scenario' }, { status: 500 })
   }
+}
+
+function stripSourceMeta(riskFlags: any): any {
+  if (!riskFlags || typeof riskFlags !== 'object') return riskFlags
+  const { _source, partTimeYears, healthcareCost, partTimeIncome, ...rest } = riskFlags
+  return Object.keys(rest).length > 0 ? rest : null
 }

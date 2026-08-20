@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { supabaseAdmin } from '@/lib/supabase'
+import { CALCULATION_VERSION, scenarioInputToDbColumns } from '@/lib/planner/types'
+import { validateScenarioInput, validateScenarioName, validateSource } from '@/lib/planner/validate'
 
 export async function GET() {
   try {
@@ -32,62 +34,65 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json()
-    const { name, inputs, results } = body
+    const { inputs: rawInputs, results, email } = body
 
-    // Detect source: compare page sets results.riskFlags._source = 'compare'
-    const source = results?.riskFlags?._source ?? 'planner'
+    // Validate name
+    const nameResult = validateScenarioName(body.name)
+
+    // Validate source — from explicit field or legacy risk_flags._source
+    const source = validateSource(body.source ?? results?.riskFlags?._source)
+
+    // Validate and clean inputs
+    const validation = validateScenarioInput(rawInputs ?? {})
+    if (!validation.valid) {
+      return NextResponse.json(
+        { error: 'Invalid scenario inputs', details: validation.errors },
+        { status: 400 }
+      )
+    }
+
+    const inputs = validation.cleaned
 
     // Ensure user exists in our users table
     await supabaseAdmin
       .from('users')
-      .upsert({ id: userId, email: body.email || '' }, { onConflict: 'id' })
+      .upsert({ id: userId, email: email || '' }, { onConflict: 'id' })
 
-    // Count only scenarios from the same source (planner vs compare each get 5 slots)
-    const { data: existing } = await supabaseAdmin
+    // Count scenarios for this source (planner and compare each get 5 slots)
+    const { count, error: countError } = await supabaseAdmin
       .from('scenarios')
-      .select('id, risk_flags')
+      .select('id', { count: 'exact', head: true })
       .eq('user_id', userId)
+      .eq('source', source)
 
-    const sourceCount = (existing ?? []).filter((s: any) => {
-      const src = s.risk_flags?._source ?? 'planner'
-      return src === source
-    }).length
+    if (countError) throw countError
 
-    if (sourceCount >= 5) {
+    if ((count ?? 0) >= 5) {
       return NextResponse.json(
         { error: 'Maximum 5 scenarios allowed. Delete one to save a new scenario.' },
         { status: 400 }
       )
     }
 
+    // Build row
+    const dbColumns = scenarioInputToDbColumns(inputs)
+
     const { data, error } = await supabaseAdmin
       .from('scenarios')
       .insert({
         user_id: userId,
-        name: name || 'My Plan',
-        // INPUTS
-        current_age: inputs.currentAge,
-        retire_age: inputs.retireAge,
-        ss_age: inputs.ssAge,
-        life_expectancy: inputs.lifeExpectancy,
-        filing_status: inputs.filingStatus,
-        state: inputs.state,
-        state_tax_rate: inputs.stateTaxRate,
-        taxable: inputs.taxable,
-        k401: inputs.k401,
-        roth: inputs.roth,
-        cash: inputs.cash,
-        spending: inputs.spending,
-        inflation: inputs.inflation,
-        other_income: inputs.otherIncome,
-        ss_benefit: inputs.ssBenefit,
-        return_rate: inputs.returnRate,
-        volatility: inputs.volatility,
-        // Cached outputs
-        monte_carlo_success: results?.monteCarlo?.successRate,
-        withdrawal_rate: results?.withdrawalRate,
-        portfolio_at_90: results?.portfolioAt90,
-        risk_flags: results?.riskFlags ?? null,
+        name: nameResult.name,
+        ...dbColumns,
+        // Cached calculation outputs
+        monte_carlo_success: results?.monteCarlo?.successRate ?? null,
+        withdrawal_rate:     results?.withdrawalRate ?? null,
+        portfolio_at_90:     results?.portfolioAt90 ?? null,
+        // Keep risk_flags for backward compat, but strip _source metadata
+        risk_flags:          stripSourceMeta(results?.riskFlags),
+        // New metadata columns
+        source,
+        calculation_version: CALCULATION_VERSION,
+        manual_name:         true,
       })
       .select()
       .single()
@@ -99,4 +104,13 @@ export async function POST(req: NextRequest) {
     console.error('Save scenario error:', err)
     return NextResponse.json({ error: 'Failed to save scenario' }, { status: 500 })
   }
+}
+
+// Remove _source, partTimeYears, healthcareCost from risk_flags
+// since they now have their own columns.
+function stripSourceMeta(riskFlags: any): any {
+  if (!riskFlags || typeof riskFlags !== 'object') return riskFlags
+  const { _source, partTimeYears, healthcareCost, partTimeIncome, ...rest } = riskFlags
+  // Return null if nothing meaningful remains
+  return Object.keys(rest).length > 0 ? rest : null
 }
