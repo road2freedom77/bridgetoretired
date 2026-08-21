@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useCallback } from "react";
 import { useUser } from "@clerk/nextjs";
-import { trackCalculatorUsed, trackProCtaClick } from "@/lib/analytics";
+import { trackCalculatorUsed, trackToolComplete, trackProCtaClick } from '@/lib/analytics'
 import {
   calcRothLadder,
   formatCurrency,
