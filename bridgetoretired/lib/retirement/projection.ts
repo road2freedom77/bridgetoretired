@@ -39,7 +39,7 @@ export function extractMetrics(
     totalAt90,
     depleted,
     funded: depleted === null,
-    monteCarloSuccess: results.monteCarlo?.successRate ?? null,
+    monteCarloSuccess: results.monteCarlo?.successRate != null ? Math.round(results.monteCarlo.successRate * 100) : null,
   }
 }
 
