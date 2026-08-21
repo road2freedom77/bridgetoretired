@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useCallback } from 'react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, ReferenceLine } from 'recharts'
-import { trackCalculatorUsed, trackProCtaClick } from '@/lib/analytics'
+import { trackCalculatorUsed, trackToolComplete, trackProCtaClick } from '@/lib/analytics'
 
 const COLORS = {
   gold: '#E8B84B',
@@ -86,7 +86,7 @@ export default function TaxBracketVisualizer() {
   const [capitalGains, setCapitalGains] = useState(45_000)
   const [otherIncome, setOtherIncome] = useState(0)
 
-  const track = useCallback(() => trackCalculatorUsed('tax-bracket-visualizer'), [])
+  const track = useCallback(() => { trackCalculatorUsed('tax-bracket-visualizer'); trackToolComplete('tax-bracket-visualizer') }, [])
   function tracked(setter: (v: number) => void) {
     return (v: number) => { track(); setter(v) }
   }

@@ -8,6 +8,7 @@ import ResultsDashboard from '@/components/planner/ResultsDashboard'
 import ScenarioSidebar from '@/components/planner/ScenarioSidebar'
 import ActiveScenarioBar from '@/components/ActiveScenarioBar'
 import Link from 'next/link'
+import { trackScenarioSave } from '@/lib/analytics'
 
 const DEFAULT_INPUTS: PlannerInputs = {
   currentAge: 50,
@@ -93,6 +94,7 @@ export default function PlannerPage() {
         setActiveScenarioId(data.scenario.id)
         setSaveMsg('✓ Saved')
         setSaveMsgType('success')
+        trackScenarioSave('planner', !activeScenarioId)
       } else {
         setSaveMsg(data.error || 'Failed to save')
         setSaveMsgType('error')

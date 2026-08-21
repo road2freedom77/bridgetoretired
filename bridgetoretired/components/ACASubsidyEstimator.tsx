@@ -4,7 +4,7 @@ import { useState, useMemo, useCallback } from 'react'
 import Link from 'next/link'
 import { useUser } from '@clerk/nextjs'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, ReferenceLine } from 'recharts'
-import { trackCalculatorUsed, trackProCtaClick } from '@/lib/analytics'
+import { trackCalculatorUsed, trackToolComplete, trackProCtaClick } from '@/lib/analytics'
 
 const COLORS = {
   gold: '#E8B84B', teal: '#2DD4BF', purple: '#A78BFA',
@@ -76,7 +76,7 @@ export default function ACASubsidyEstimator() {
   const [age, setAge] = useState(52)
   const [householdSize, setHouseholdSize] = useState(2)
 
-  const track = useCallback(() => trackCalculatorUsed('aca-subsidy'), [])
+  const track = useCallback(() => { trackCalculatorUsed('aca-subsidy'); trackToolComplete('aca-subsidy') }, [])
   function tracked(setter: (v: number) => void) {
     return (v: number) => { track(); setter(v) }
   }

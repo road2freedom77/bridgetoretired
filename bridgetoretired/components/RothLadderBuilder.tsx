@@ -4,7 +4,7 @@ import { useState, useMemo, useCallback } from 'react'
 import Link from 'next/link'
 import { useUser } from '@clerk/nextjs'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine, Cell } from 'recharts'
-import { trackCalculatorUsed, trackProCtaClick } from '@/lib/analytics'
+import { trackCalculatorUsed, trackToolComplete, trackProCtaClick } from '@/lib/analytics'
 
 const COLORS = {
   gold: '#E8B84B', teal: '#2DD4BF', purple: '#A78BFA',
@@ -76,7 +76,7 @@ export default function RothLadderBuilder() {
   const [taxableIncome, setTaxableIncome] = useState(5_000)
   const [ladderYears, setLadderYears] = useState(10)
 
-  const track = useCallback(() => trackCalculatorUsed('roth-ladder'), [])
+  const track = useCallback(() => { trackCalculatorUsed('roth-ladder'); trackToolComplete('roth-ladder') }, [])
   function tracked(setter: (v: number) => void) {
     return (v: number) => { track(); setter(v) }
   }

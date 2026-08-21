@@ -4,7 +4,7 @@ import { useState, useMemo, useCallback } from 'react'
 import Link from 'next/link'
 import { useUser } from '@clerk/nextjs'
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts'
-import { trackCalculatorUsed, trackProCtaClick } from '@/lib/analytics'
+import { trackCalculatorUsed, trackToolComplete, trackProCtaClick } from '@/lib/analytics'
 
 const COLORS = {
   gold: '#E8B84B', teal: '#2DD4BF', purple: '#A78BFA',
@@ -41,7 +41,7 @@ export default function TaxableBrokerageAnalyzer() {
   const [annualSpend, setAnnualSpend] = useState(55_000)
   const [returnRate, setReturnRate] = useState(6)
 
-  const track = useCallback(() => trackCalculatorUsed('taxable-bridge-analyzer'), [])
+  const track = useCallback(() => { trackCalculatorUsed('taxable-bridge-analyzer'); trackToolComplete('taxable-bridge-analyzer') }, [])
   function tracked(setter: (v: number) => void) {
     return (v: number) => { track(); setter(v) }
   }

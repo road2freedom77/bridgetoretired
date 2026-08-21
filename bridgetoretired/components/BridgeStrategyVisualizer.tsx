@@ -3,7 +3,7 @@
 import { useState, useMemo, useCallback } from 'react'
 import Link from 'next/link'
 import { useUser } from '@clerk/nextjs'
-import { trackCalculatorUsed, trackProCtaClick } from '@/lib/analytics'
+import { trackCalculatorUsed, trackToolComplete, trackProCtaClick } from '@/lib/analytics'
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts'
 
 const COLORS = {
@@ -67,7 +67,7 @@ export default function BridgeStrategyVisualizer({
   const [annualSpend, setAnnualSpend] = useState(defaultSpend)
   const [returnRate, setReturnRate] = useState(6)
 
-  const track = useCallback(() => trackCalculatorUsed('bridge-strategy'), [])
+  const track = useCallback(() => { trackCalculatorUsed('bridge-strategy'); trackToolComplete('bridge-strategy') }, [])
 
   const bridgeEnd = 59.5
   const ssAge = 67

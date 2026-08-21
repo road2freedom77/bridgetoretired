@@ -90,7 +90,7 @@ export function RothLadderCalculator() {
   const [form, setForm] = useState<FormState>(DEFAULT_FORM);
   const [calculated, setCalculated] = useState(false);
 
-  const track = useCallback(() => trackCalculatorUsed("roth-ladder-calculator"), []);
+  const track = useCallback(() => { trackCalculatorUsed('roth-ladder-calculator'); trackToolComplete('roth-ladder-calculator') }, []);
 
   function set(field: keyof FormState, value: string) {
     setForm((f) => ({ ...f, [field]: value }));

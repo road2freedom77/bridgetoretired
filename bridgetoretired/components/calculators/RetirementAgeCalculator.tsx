@@ -3,7 +3,7 @@
 import { useState, useMemo, useCallback } from 'react'
 import Link from 'next/link'
 import { useUser } from '@clerk/nextjs'
-import { trackCalculatorUsed, trackProCtaClick } from '@/lib/analytics'
+import { trackCalculatorUsed, trackToolComplete, trackProCtaClick } from '@/lib/analytics'
 
 const COLORS = {
   gold: '#E8B84B', teal: '#2DD4BF', sage: '#4ADE80',
@@ -73,7 +73,7 @@ export default function RetirementAgeCalculator() {
   const [growthRate, setGrowthRate] = useState(7)
   const [annualSpend, setAnnualSpend] = useState(65_000)
 
-  const track = useCallback(() => trackCalculatorUsed('retirement-age'), [])
+  const track = useCallback(() => { trackCalculatorUsed('retirement-age'); trackToolComplete('retirement-age') }, [])
 
   const result = useMemo(() =>
     calcRetirementAge(currentAge, portfolio, annualContrib, growthRate, annualSpend),

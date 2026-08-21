@@ -3,7 +3,7 @@
 import { useState, useMemo, useCallback } from 'react'
 import Link from 'next/link'
 import { useUser } from '@clerk/nextjs'
-import { trackCalculatorUsed, trackProCtaClick } from '@/lib/analytics'
+import { trackCalculatorUsed, trackToolComplete, trackProCtaClick } from '@/lib/analytics'
 
 const COLORS = {
   gold: '#E8B84B', teal: '#2DD4BF', sage: '#4ADE80',
@@ -236,7 +236,7 @@ export default function RetirementReadinessScore() {
   const [ssClaimAge, setSsClaimAge] = useState(67)
   const [healthcareAnnual, setHealthcareAnnual] = useState(14_400)
 
-  const track = useCallback(() => trackCalculatorUsed('retirement-readiness'), [])
+  const track = useCallback(() => { trackCalculatorUsed('retirement-readiness'); trackToolComplete('retirement-readiness') }, [])
 
   const result = useMemo(() => calcReadiness({
     currentAge, retireAge, annualSpend, totalPortfolio,

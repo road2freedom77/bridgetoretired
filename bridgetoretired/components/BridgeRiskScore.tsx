@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { useUser } from '@clerk/nextjs'
-import { trackCalculatorUsed, trackProCtaClick } from '@/lib/analytics'
+import { trackCalculatorUsed, trackToolComplete, trackProCtaClick } from '@/lib/analytics'
 
 const COLORS = {
   gold: '#E8B84B',
@@ -47,7 +47,7 @@ export default function BridgeRiskScore() {
   const [taxable,    setTaxable]    = useState(350_000)
   const [loadedFrom, setLoadedFrom] = useState<string | null>(null)
 
-  const track = useCallback(() => trackCalculatorUsed('bridge-risk-score'), [])
+  const track = useCallback(() => { trackCalculatorUsed('bridge-risk-score'); trackToolComplete('bridge-risk-score') }, [])
 
   // ── Pre-load from active scenario ─────────────────────────────────────────
   useEffect(() => {

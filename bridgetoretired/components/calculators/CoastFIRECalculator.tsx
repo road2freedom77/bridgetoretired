@@ -4,7 +4,7 @@ import { useState, useMemo, useCallback } from 'react'
 import Link from 'next/link'
 import { useUser } from '@clerk/nextjs'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, Legend } from 'recharts'
-import { trackCalculatorUsed, trackProCtaClick } from '@/lib/analytics'
+import { trackCalculatorUsed, trackToolComplete, trackProCtaClick } from '@/lib/analytics'
 
 const COLORS = {
   gold: '#E8B84B', teal: '#2DD4BF', sage: '#4ADE80',
@@ -136,7 +136,7 @@ export default function CoastFIRECalculator() {
   const [annualContrib, setAnnualContrib] = useState(25_000)
   const [growthRate, setGrowthRate] = useState(7)
 
-  const track = useCallback(() => trackCalculatorUsed('coast-fire'), [])
+  const track = useCallback(() => { trackCalculatorUsed('coast-fire'); trackToolComplete('coast-fire') }, [])
 
   const result = useMemo(() =>
     calcCoast(currentAge, retireAge, annualSpend, currentPortfolio, annualContrib, growthRate),

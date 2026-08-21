@@ -1,6 +1,6 @@
 'use client'
 import { useState, useMemo, useCallback } from 'react'
-import { trackCalculatorUsed } from '@/lib/analytics'
+import { trackCalculatorUsed, trackToolComplete } from '@/lib/analytics'
 
 interface YearRow {
   year: number
@@ -85,7 +85,7 @@ export function Calculator() {
     inflationAdj: true,
   })
 
-  const track = useCallback(() => trackCalculatorUsed('bridge-calculator'), [])
+  const track = useCallback(() => { trackCalculatorUsed('bridge-calculator'); trackToolComplete('bridge-calculator') }, [])
 
   const set = (k: keyof typeof inputs, v: number | boolean) => {
     track()

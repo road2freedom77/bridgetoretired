@@ -4,7 +4,7 @@ import { useState, useMemo, useCallback } from 'react'
 import Link from 'next/link'
 import { useUser } from '@clerk/nextjs'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, LineChart, Line, ReferenceLine } from 'recharts'
-import { trackCalculatorUsed, trackProCtaClick } from '@/lib/analytics'
+import { trackCalculatorUsed, trackToolComplete, trackProCtaClick } from '@/lib/analytics'
 
 const COLORS = {
   gold: '#E8B84B', teal: '#2DD4BF', purple: '#A78BFA',
@@ -118,7 +118,7 @@ export default function SEPPCalculator({ balance, age, rate, spending }: SEPPCal
   const [portfolioReturn, setPortfolioReturn] = useState(6)
   const [annualSpend, setAnnualSpend]       = useState(spending ? Number(spending)  : 55_000)
 
-  const track = useCallback(() => trackCalculatorUsed('sepp-calculator'), [])
+  const track = useCallback(() => { trackCalculatorUsed('sepp-calculator'); trackToolComplete('sepp-calculator') }, [])
   function tracked(setter: (v: number) => void) {
     return (v: number) => { track(); setter(v) }
   }

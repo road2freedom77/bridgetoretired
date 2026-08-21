@@ -3,7 +3,7 @@
 import { useState, useMemo, useCallback } from 'react'
 import { useUser } from '@clerk/nextjs'
 import Link from 'next/link'
-import { trackCalculatorUsed, trackProCtaClick } from '@/lib/analytics'
+import { trackCalculatorUsed, trackToolComplete, trackProCtaClick } from '@/lib/analytics'
 import {
   calcSEPPComparison,
   calcMaxAllowedRate,
@@ -323,7 +323,7 @@ export default function VsComparisonTool() {
 
   const [activeTab, setActiveTab] = useState<'summary' | 'sepp' | 'ladder'>('summary')
 
-  const track = useCallback(() => trackCalculatorUsed('72t-vs-roth'), [])
+  const track = useCallback(() => { trackCalculatorUsed('72t-vs-roth'); trackToolComplete('72t-vs-roth') }, [])
 
   const maxRate = calcMaxAllowedRate(seppExtra.midTermAFR)
 

@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useCallback } from 'react'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts'
-import { trackCalculatorUsed, trackProCtaClick } from '@/lib/analytics'
+import { trackCalculatorUsed, trackToolComplete, trackProCtaClick } from '@/lib/analytics'
 
 const COLORS = {
   gold: '#E8B84B',
@@ -47,7 +47,7 @@ export default function SocialSecurityCalculator() {
   const [annualSpend, setAnnualSpend] = useState(70_000)
   const [portfolioReturn, setPortfolioReturn] = useState(6)
 
-  const track = useCallback(() => trackCalculatorUsed('social-security-calculator'), [])
+  const track = useCallback(() => { trackCalculatorUsed('social-security-calculator'); trackToolComplete('social-security-calculator') }, [])
   function tracked(setter: (v: number) => void) {
     return (v: number) => { track(); setter(v) }
   }

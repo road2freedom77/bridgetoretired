@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useCallback } from 'react'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts'
-import { trackCalculatorUsed, trackProCtaClick } from '@/lib/analytics'
+import { trackCalculatorUsed, trackToolComplete, trackProCtaClick } from '@/lib/analytics'
 
 const COLORS = {
   gold: '#E8B84B',
@@ -74,7 +74,7 @@ export default function SequenceOfReturnsSimulator() {
   const [crashMagnitude, setCrashMagnitude] = useState(30)
   const [years, setYears] = useState(30)
 
-  const track = useCallback(() => trackCalculatorUsed('sequence-of-returns'), [])
+  const track = useCallback(() => { trackCalculatorUsed('sequence-of-returns'); trackToolComplete('sequence-of-returns') }, [])
   function tracked(setter: (v: number) => void) {
     return (v: number) => { track(); setter(v) }
   }

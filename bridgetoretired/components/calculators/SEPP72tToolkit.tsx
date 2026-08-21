@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useUser } from '@clerk/nextjs'
 import Link from 'next/link'
-import { trackCalculatorUsed, trackProCtaClick } from '@/lib/analytics'
+import { trackCalculatorUsed, trackToolComplete, trackProCtaClick } from '@/lib/analytics'
 import {
   calcSEPPComparison,
   calcAccountSplit,
@@ -171,7 +171,7 @@ export default function SEPP72tToolkit() {
   const [targetIncome, setTargetIncome] = useState(40000)
   const [showSplit, setShowSplit] = useState(false)
 
-  const track = useCallback(() => trackCalculatorUsed('sepp-72t'), [])
+  const track = useCallback(() => { trackCalculatorUsed('sepp-72t'); trackToolComplete('sepp-72t') }, [])
 
   const calculate = useCallback(() => {
     const r = calcSEPPComparison(inputs)

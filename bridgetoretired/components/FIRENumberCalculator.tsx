@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { useUser } from '@clerk/nextjs'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts'
-import { trackCalculatorUsed, trackProCtaClick } from '@/lib/analytics'
+import { trackCalculatorUsed, trackToolComplete, trackProCtaClick } from '@/lib/analytics'
 
 const COLORS = {
   gold: '#E8B84B', teal: '#2DD4BF', purple: '#A78BFA',
@@ -55,7 +55,7 @@ export default function FIRENumberCalculator() {
   const [currentSaved, setCurrentSaved] = useState(800_000)
 
   // Track first interaction
-  const track = useCallback(() => trackCalculatorUsed('fire-number'), [])
+  const track = useCallback(() => { trackCalculatorUsed('fire-number'); trackToolComplete('fire-number') }, [])
 
   const lifeExpectancy = 90
   const retirementYears = lifeExpectancy - retireAge
