@@ -100,7 +100,31 @@ export function buildInsights(
   const workYearsDelta = winner.retireAge - earliestOther
   if (workYearsDelta !== 0) {
     const moreWork = workYearsDelta > 0
-    const at90Advantage = winner.totalAt90 - (allMetrics.find(m => m.retireAge === earliestOther)?.totalAt90 ?? 0)
+    const comparePeer = allMetrics.find(m => m.retireAge === earliestOther)
+    const at90Advantage = winner.totalAt90 - (comparePeer?.totalAt90 ?? 0)
+
+    // When both deplete, compare depletion ages instead of $0 vs $0
+    const bothDeplete = !winner.funded && comparePeer && !comparePeer.funded
+    const depletionGain = bothDeplete
+      ? (winner.depleted ?? 90) - (comparePeer.depleted ?? 90)
+      : 0
+
+    let copyKey: string
+    let severity: InsightSeverity
+    if (!moreWork) {
+      copyKey = `Retires ${Math.abs(workYearsDelta)} year${Math.abs(workYearsDelta) > 1 ? 's' : ''} earlier than next-earliest scenario`
+      severity = 'positive'
+    } else if (bothDeplete && depletionGain > 0) {
+      copyKey = `${Math.abs(workYearsDelta)} extra work year${Math.abs(workYearsDelta) > 1 ? 's' : ''} extends portfolio by ${depletionGain} years (depletes at ${winner.depleted} vs ${comparePeer!.depleted})`
+      severity = 'positive'
+    } else if (at90Advantage > 0) {
+      copyKey = `${Math.abs(workYearsDelta)} extra work year${Math.abs(workYearsDelta) > 1 ? 's' : ''} adds ${fmtDollars(at90Advantage)} at age 90`
+      severity = 'positive'
+    } else {
+      copyKey = `${Math.abs(workYearsDelta)} extra work year${Math.abs(workYearsDelta) > 1 ? 's' : ''} vs earliest scenario — tradeoff for stability`
+      severity = 'neutral'
+    }
+
     insights.push({
       metric: 'work_years_tradeoff',
       label: 'Work-Years Trade-off',
@@ -108,10 +132,8 @@ export function buildInsights(
       baseline: earliestOther,
       winnerValue: winner.retireAge,
       unit: 'age',
-      severity: moreWork && at90Advantage > 0 ? 'positive' : moreWork ? 'neutral' : 'positive',
-      copyKey: moreWork
-        ? `${Math.abs(workYearsDelta)} extra work year${Math.abs(workYearsDelta) > 1 ? 's' : ''} adds ${fmtDollars(at90Advantage)} at age 90`
-        : `Retires ${Math.abs(workYearsDelta)} year${Math.abs(workYearsDelta) > 1 ? 's' : ''} earlier than next-earliest scenario`,
+      severity,
+      copyKey,
     })
   }
 
