@@ -16,6 +16,7 @@ import {
   type ScoredScenario,
 } from '@/lib/retirement/scoring'
 import { buildInsights, type Insight } from '@/lib/retirement/insights'
+import { trackScenarioSave, trackScenarioCompare } from '@/lib/analytics'
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 
@@ -263,6 +264,13 @@ export default function ScenarioComparePage() {
   const [toast,       setToast]       = useState<{ msg: string; type: 'success' | 'error' } | null>(null)
   const [goal,        setGoal]        = useState<GoalMode>('overall')
 
+  // Fire compare event once per session when ≥2 scenarios are loaded
+  useEffect(() => {
+    if (scenarios.length >= 2) {
+      trackScenarioCompare(scenarios.length, goal)
+    }
+  }, [scenarios.length >= 2])
+
   const showToast = (msg: string, type: 'success' | 'error' = 'success') => {
     setToast({ msg, type })
     setTimeout(() => setToast(null), 3000)
@@ -360,6 +368,7 @@ export default function ScenarioComparePage() {
         showToast(data.error, 'error')
       } else {
         showToast('Scenario saved')
+        trackScenarioSave('compare', true)
         setShowNew(false)
         setNewName('')
         setDraft(DEFAULT_FORM)

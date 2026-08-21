@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { notFound } from 'next/navigation'
 import { FLAGS } from '@/lib/feature-flags'
-import { trackProCtaClick } from '@/lib/analytics'
+import { trackPricingView, trackProCtaClick, trackCheckoutStart } from '@/lib/analytics'
 
 const FREE_FEATURES = [
   'All 10 interactive retirement calculators',
@@ -67,6 +67,7 @@ export default function PricingPage() {
   const [onlineLink, setOnlineLink] = useState(ONLINE_PRO_LINK)
 
   useEffect(() => {
+    trackPricingView()
     const params   = new URLSearchParams(window.location.search)
     const campaign = params.get('utm_campaign')
     if (campaign) {
@@ -147,7 +148,7 @@ export default function PricingPage() {
               <div className="text-white/25 text-[11px] font-mono mb-6">Best for offline planning without recurring billing.</div>
               <a
                 href={xlsLink}
-                onClick={() => trackProCtaClick('pricing-xls-card')}
+                onClick={() => { trackProCtaClick('pricing-xls-card'); trackCheckoutStart('pro-excel-v3', 39) }}
                 className="block text-center font-syne font-semibold text-[13px] tracking-wide py-3.5 rounded-lg hover:opacity-90 transition-opacity mb-7"
                 style={{ background: '#2DD4BF', color: '#0D1420' }}
               >
@@ -188,7 +189,7 @@ export default function PricingPage() {
               <div className="text-white/25 text-[11px] font-mono mb-6">Best for plans you expect to revisit, update, and stress-test over time.</div>
               <a
                 href={onlineLink}
-                onClick={() => trackProCtaClick('pricing-online-pro-card')}
+                onClick={() => { trackProCtaClick('pricing-online-pro-card'); trackCheckoutStart('online-pro-monthly', 15) }}
                 className="block text-center bg-gold text-black font-syne font-semibold text-[13px] tracking-wide py-3.5 rounded-lg hover:opacity-90 transition-opacity mb-7"
               >
                 Start Online Pro →

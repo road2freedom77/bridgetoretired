@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useUser } from '@clerk/nextjs'
 import { useEffect, useState } from 'react'
 import { ProNav } from '@/components/ProNav'
+import { trackCheckoutComplete, trackOnlineProStart } from '@/lib/analytics'
 
 const GOLD = '#E8B84B'
 const SAGE = '#4ADE80'
@@ -62,6 +63,16 @@ export default function ProWelcomePage() {
     }
     fetchActive()
   }, [isLoaded])
+
+  // Fire checkout/activation events on post-payment redirect
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const sessionId = params.get('session_id')
+    if (sessionId) {
+      trackCheckoutComplete('online-pro-monthly', sessionId, 15)
+      trackOnlineProStart(sessionId, 'monthly', 15)
+    }
+  }, [])
 
   const hasActive = !loading && active !== null
   const wr        = active?.withdrawal_rate
