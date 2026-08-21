@@ -4,6 +4,20 @@ import { useState, useEffect, useCallback } from 'react'
 import { useUser } from '@clerk/nextjs'
 import Link from 'next/link'
 import { ProNav } from '@/components/ProNav'
+import { scenarioInputFromDbRow, scenarioInputToDbColumns } from '@/lib/planner/types'
+import type { ScenarioInput } from '@/lib/planner/types'
+import { getCompareMetrics } from '@/lib/retirement/projection'
+import {
+  scoreScenarios,
+  getWinnerId,
+  GOAL_LABELS,
+  type GoalMode,
+  type CompareMetrics,
+  type ScoredScenario,
+} from '@/lib/retirement/scoring'
+import { buildInsights, type Insight } from '@/lib/retirement/insights'
+
+// ─── Design tokens ────────────────────────────────────────────────────────────
 
 const GOLD   = '#E8B84B'
 const SAGE   = '#4ADE80'
@@ -14,50 +28,39 @@ const PURPLE = '#A78BFA'
 
 const SCENARIO_COLORS = [GOLD, TEAL, SAGE, BLUE, PURPLE]
 const MAX_SCENARIOS = 5
+const MEDALS = ['🥇', '🥈', '🥉']
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+// ─── Compare-form fields ──────────────────────────────────────────────────────
+// The compare form exposes a simplified subset of ScenarioInput.
+// All omitted fields use sensible defaults when mapping to ScenarioInput.
 
-interface ScenarioInputs {
-  retireAge:       number
-  portfolio:       number
-  taxable:         number
-  annualSpending:  number
-  inflationRate:   number
-  returnRate:      number
-  ssAge:           number
-  ssIncome:        number
-  partTimeIncome:  number
-  partTimeYears:   number
-  healthcareCost:  number
+interface CompareFormInputs {
+  retireAge:      number
+  portfolio:      number
+  taxable:        number
+  annualSpending: number
+  inflationRate:  number  // display as %, e.g. 2.5
+  returnRate:     number  // display as %, e.g. 6.5
+  ssAge:          number
+  ssIncome:       number
+  partTimeIncome: number
+  partTimeYears:  number
+  healthcareCost: number
 }
 
 interface Scenario {
   id:        string
   name:      string
   color:     string
-  inputs:    ScenarioInputs
+  inputs:    CompareFormInputs
+  rawInput:  ScenarioInput  // canonical typed input for engine
   createdAt: string
   isActive:  boolean
 }
 
-interface ProjectionResult {
-  totalAt80:      number
-  totalAt90:      number
-  depleted:       number | null
-  bridgeYears:    number
-  withdrawalRate: number
-  funded:         boolean
-}
-
-interface ScoredScenario {
-  id:    string
-  score: number
-  rank:  number
-}
-
 // ─── Defaults ─────────────────────────────────────────────────────────────────
 
-const DEFAULT_INPUTS: ScenarioInputs = {
+const DEFAULT_FORM: CompareFormInputs = {
   retireAge:      55,
   portfolio:      1_150_000,
   taxable:        350_000,
@@ -79,163 +82,53 @@ const PRESET_NAMES = [
   'Lean FIRE',
 ]
 
-// ─── DB mapping helpers ───────────────────────────────────────────────────────
+// ─── Mappers ──────────────────────────────────────────────────────────────────
 
-function toPlannerInputs(inputs: ScenarioInputs) {
+function formToScenarioInput(form: CompareFormInputs): ScenarioInput {
   return {
     currentAge:     45,
-    retireAge:      inputs.retireAge,
-    ssAge:          inputs.ssAge,
+    retireAge:      form.retireAge,
+    ssAge:          form.ssAge,
     lifeExpectancy: 90,
     filingStatus:   'MFJ',
     state:          'TX',
     stateTaxRate:   0,
-    taxable:        inputs.taxable,
-    k401:           inputs.portfolio - inputs.taxable,
+    taxable:        form.taxable,
+    k401:           Math.max(0, form.portfolio - form.taxable),
     roth:           0,
     cash:           0,
-    spending:       inputs.annualSpending + inputs.healthcareCost,
-    inflation:      inputs.inflationRate / 100,
-    otherIncome:    inputs.partTimeIncome,
-    ssBenefit:      inputs.ssIncome,
-    returnRate:     inputs.returnRate / 100,
+    spending:       form.annualSpending + form.healthcareCost,
+    inflation:      form.inflationRate / 100,
+    otherIncome:    form.partTimeIncome,
+    ssBenefit:      form.ssIncome,
+    returnRate:     form.returnRate / 100,
     volatility:     0.12,
+    partTimeIncome: form.partTimeIncome,
+    partTimeYears:  form.partTimeYears,
+    healthcareCost: form.healthcareCost,
   }
 }
 
-function fromDbRow(row: any): ScenarioInputs {
-  const extra = row.risk_flags ?? {}
-  const healthcareCost = extra.healthcareCost ?? 8_400
+function dbRowToFormInputs(row: Record<string, any>): CompareFormInputs {
+  const si = scenarioInputFromDbRow(row)
+  const healthcareCost = si.healthcareCost ?? 8_400
   return {
-    retireAge:      row.retire_age,
-    portfolio:      (row.taxable ?? 0) + (row.k401 ?? 0),
-    taxable:        row.taxable ?? 0,
-    annualSpending: Math.max(0, (row.spending ?? 0) - healthcareCost),
-    inflationRate:  (row.inflation ?? 0.025) * 100,
-    returnRate:     (row.return_rate ?? 0.065) * 100,
-    ssAge:          row.ss_age,
-    ssIncome:       row.ss_benefit ?? 0,
-    partTimeIncome: row.other_income ?? 0,
-    partTimeYears:  extra.partTimeYears ?? 0,
+    retireAge:      si.retireAge,
+    portfolio:      si.taxable + si.k401 + si.roth + (si.cash ?? 0),
+    taxable:        si.taxable,
+    annualSpending: Math.max(0, si.spending - healthcareCost),
+    inflationRate:  si.inflation * 100,
+    returnRate:     si.returnRate * 100,
+    ssAge:          si.ssAge,
+    ssIncome:       si.ssBenefit,
+    partTimeIncome: si.partTimeIncome ?? si.otherIncome ?? 0,
+    partTimeYears:  si.partTimeYears ?? 0,
     healthcareCost,
   }
 }
 
 function colorForIndex(idx: number) {
   return SCENARIO_COLORS[idx % SCENARIO_COLORS.length]
-}
-
-// ─── Projection ───────────────────────────────────────────────────────────────
-
-function runProjection(inputs: ScenarioInputs): ProjectionResult {
-  const bridgeYears    = Math.max(0, 59.5 - inputs.retireAge)
-  const withdrawalRate = inputs.annualSpending / inputs.portfolio * 100
-  let taxable  = inputs.taxable
-  let other    = inputs.portfolio - inputs.taxable
-  let depleted: number | null = null
-  let totalAt80 = 0
-  let totalAt90 = 0
-
-  for (let i = 0; i < 90 - inputs.retireAge; i++) {
-    const age        = inputs.retireAge + i
-    const isBridge   = age < 59.5
-    const spending   = inputs.annualSpending * Math.pow(1 + inputs.inflationRate / 100, i)
-    const healthcare = inputs.healthcareCost * Math.pow(1 + inputs.inflationRate / 100, i)
-    let income = 0
-    if (i < inputs.partTimeYears) income += inputs.partTimeIncome
-    if (age >= inputs.ssAge) income += inputs.ssIncome * Math.pow(1 + inputs.inflationRate / 100, age - inputs.ssAge)
-    const needed      = Math.max(0, spending + healthcare - income)
-    const fromTaxable = Math.min(needed, taxable)
-    taxable           = Math.max(0, taxable - fromTaxable)
-    const fromOther   = needed - fromTaxable
-    if (!isBridge) other = Math.max(0, other - fromOther)
-    taxable = Math.max(0, taxable * (1 + inputs.returnRate / 100))
-    other   = Math.max(0, other   * (1 + inputs.returnRate / 100))
-    const total = taxable + other
-    if (total <= 0 && depleted === null) depleted = Math.floor(age)
-    if (Math.floor(age) === 80) totalAt80 = Math.round(total)
-    if (Math.floor(age) === 89) totalAt90 = Math.round(total)
-  }
-
-  return { totalAt80, totalAt90, depleted, bridgeYears, withdrawalRate, funded: depleted === null }
-}
-
-// ─── Scoring & Recommendation ─────────────────────────────────────────────────
-
-function scoreScenarios(
-  scenarios: Scenario[],
-  results: (ProjectionResult & { id: string })[]
-): ScoredScenario[] {
-  if (scenarios.length < 2) return scenarios.map((s, i) => ({ id: s.id, score: 100, rank: i + 1 }))
-
-  const get = (id: string) => results.find(r => r.id === id)!
-  const vals = (fn: (s: Scenario) => number) => scenarios.map(fn)
-  const norm = (v: number, min: number, max: number, invert = false) => {
-    if (max === min) return 50
-    const pct = (v - min) / (max - min) * 100
-    return invert ? 100 - pct : pct
-  }
-
-  const at90s      = vals(s => get(s.id).totalAt90)
-  const wrs        = vals(s => get(s.id).withdrawalRate)
-  const bridges    = vals(s => get(s.id).bridgeYears)
-  const retireAges = vals(s => s.inputs.retireAge)
-
-  const scored = scenarios.map((s, i) => {
-    const r = get(s.id)
-    const fundedScore  = r.funded ? 100 : Math.max(0, ((r.depleted ?? 90) - s.inputs.retireAge) / (90 - s.inputs.retireAge) * 100)
-    const at90Score    = norm(at90s[i],     Math.min(...at90s),     Math.max(...at90s))
-    const wrScore      = norm(wrs[i],        Math.min(...wrs),        Math.max(...wrs),   true)
-    const bridgeScore  = norm(bridges[i],    Math.min(...bridges),    Math.max(...bridges), true)
-    const retireScore  = norm(retireAges[i], Math.min(...retireAges), Math.max(...retireAges), true)
-    const total = fundedScore * 0.30 + at90Score * 0.25 + wrScore * 0.20 + bridgeScore * 0.15 + retireScore * 0.10
-    return { id: s.id, score: Math.round(total) }
-  })
-
-  const sorted = [...scored].sort((a, b) => b.score - a.score)
-  return scored.map(s => ({ ...s, rank: sorted.findIndex(x => x.id === s.id) + 1 }))
-}
-
-function buildWhyReasons(
-  winner: Scenario,
-  others: Scenario[],
-  winnerResult: ProjectionResult & { id: string },
-  otherResults: (ProjectionResult & { id: string })[]
-): string[] {
-  const reasons: string[] = []
-
-  if (winnerResult.funded) {
-    const unfundedCount = otherResults.filter(r => !r.funded).length
-    if (unfundedCount > 0)
-      reasons.push(`Fully funded to age 90 — ${unfundedCount} other scenario${unfundedCount > 1 ? 's' : ''} deplete${unfundedCount === 1 ? 's' : ''} early`)
-  }
-
-  const bestOtherAt90 = Math.max(...otherResults.map(r => r.totalAt90))
-  const at90Diff = winnerResult.totalAt90 - bestOtherAt90
-  if (at90Diff > 10_000)
-    reasons.push(`$${Math.round(at90Diff / 1000)}k more remaining at age 90 vs. next best scenario`)
-
-  const bestOtherWR = Math.min(...otherResults.map(r => r.withdrawalRate))
-  const wrDiff = bestOtherWR - winnerResult.withdrawalRate
-  if (wrDiff > 0.2)
-    reasons.push(`Lower withdrawal rate (${winnerResult.withdrawalRate.toFixed(1)}% vs ${bestOtherWR.toFixed(1)}%) — less portfolio stress`)
-
-  const avgOtherBridge = otherResults.reduce((a, r) => a + r.bridgeYears, 0) / otherResults.length
-  const bridgeDiff = avgOtherBridge - winnerResult.bridgeYears
-  if (bridgeDiff > 0.5)
-    reasons.push(`Shorter bridge period (${winnerResult.bridgeYears.toFixed(1)} yrs) — less reliance on taxable accounts`)
-
-  const earliestOtherRetire = Math.min(...others.map(s => s.inputs.retireAge))
-  const latestOtherRetire   = Math.max(...others.map(s => s.inputs.retireAge))
-  if (winner.inputs.retireAge > earliestOtherRetire && winner.inputs.retireAge <= latestOtherRetire) {
-    const diff = winner.inputs.retireAge - earliestOtherRetire
-    reasons.push(`Only ${diff} additional year${diff > 1 ? 's' : ''} of work vs. earliest scenario — strong longevity payoff`)
-  }
-
-  if (reasons.length === 0)
-    reasons.push('Best overall balance of portfolio longevity, withdrawal rate, and bridge risk')
-
-  return reasons.slice(0, 4)
 }
 
 // ─── Formatters ───────────────────────────────────────────────────────────────
@@ -246,13 +139,29 @@ function fmt(n: number) {
   return `$${Math.round(n)}`
 }
 
-const MEDALS = ['🥇', '🥈', '🥉']
+// ─── Severity color ───────────────────────────────────────────────────────────
+
+function severityColor(severity: string): string {
+  switch (severity) {
+    case 'positive': return SAGE
+    case 'caution':  return RED
+    default:         return GOLD
+  }
+}
+
+function severityIcon(severity: string): string {
+  switch (severity) {
+    case 'positive': return '✓'
+    case 'caution':  return '⚠'
+    default:         return '→'
+  }
+}
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
 function InputRow({ label, field, min, max, step, isCurrency = false, inputs, onChange }: {
-  label: string; field: keyof ScenarioInputs; min: number; max: number; step: number
-  isCurrency?: boolean; inputs: ScenarioInputs; onChange: (k: keyof ScenarioInputs) => (e: any) => void
+  label: string; field: keyof CompareFormInputs; min: number; max: number; step: number
+  isCurrency?: boolean; inputs: CompareFormInputs; onChange: (k: keyof CompareFormInputs) => (e: any) => void
 }) {
   return (
     <div className="flex items-center justify-between py-1.5 border-b border-white/[0.04]">
@@ -271,7 +180,7 @@ function InputRow({ label, field, min, max, step, isCurrency = false, inputs, on
 }
 
 function ScenarioForm({ inputs, onChange }: {
-  inputs: ScenarioInputs; onChange: (k: keyof ScenarioInputs) => (e: any) => void
+  inputs: CompareFormInputs; onChange: (k: keyof CompareFormInputs) => (e: any) => void
 }) {
   return (
     <div className="space-y-1">
@@ -294,6 +203,49 @@ function ScenarioForm({ inputs, onChange }: {
   )
 }
 
+// ─── Goal Selector ────────────────────────────────────────────────────────────
+
+function GoalSelector({ goal, onChange }: { goal: GoalMode; onChange: (g: GoalMode) => void }) {
+  const goals = Object.entries(GOAL_LABELS) as [GoalMode, string][]
+  return (
+    <div className="flex flex-wrap gap-2">
+      {goals.map(([key, label]) => (
+        <button
+          key={key}
+          onClick={() => onChange(key)}
+          className="font-mono text-[9px] tracking-widest uppercase px-3 py-2 rounded-lg border transition-all"
+          style={goal === key
+            ? { borderColor: GOLD, color: GOLD, background: `${GOLD}15` }
+            : { borderColor: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.35)' }
+          }
+        >
+          {label}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+// ─── Insights Panel ───────────────────────────────────────────────────────────
+
+function InsightsPanel({ insights }: { insights: Insight[] }) {
+  if (insights.length === 0) return null
+  return (
+    <div className="space-y-2">
+      {insights.map((insight, i) => (
+        <div key={i} className="flex items-start gap-2.5">
+          <span className="text-[11px] mt-0.5 shrink-0" style={{ color: severityColor(insight.severity) }}>
+            {severityIcon(insight.severity)}
+          </span>
+          <div className="flex-1">
+            <span className="text-white/65 text-[13px] leading-snug">{insight.copyKey}</span>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 // ─── Main page ────────────────────────────────────────────────────────────────
 
 export default function ScenarioComparePage() {
@@ -306,9 +258,10 @@ export default function ScenarioComparePage() {
   const [saving,      setSaving]      = useState(false)
   const [activating,  setActivating]  = useState<string | null>(null)
   const [newName,     setNewName]     = useState('')
-  const [draft,       setDraft]       = useState<ScenarioInputs>(DEFAULT_INPUTS)
+  const [draft,       setDraft]       = useState<CompareFormInputs>(DEFAULT_FORM)
   const [showNew,     setShowNew]     = useState(false)
   const [toast,       setToast]       = useState<{ msg: string; type: 'success' | 'error' } | null>(null)
+  const [goal,        setGoal]        = useState<GoalMode>('overall')
 
   const showToast = (msg: string, type: 'success' | 'error' = 'success') => {
     setToast({ msg, type })
@@ -321,16 +274,20 @@ export default function ScenarioComparePage() {
       const data = await res.json()
       if (data.scenarios) {
         const compareScenarios = data.scenarios.filter(
-          (s: any) => s.risk_flags?._source === 'compare'
+          (s: any) => (s.source === 'compare') || (s.risk_flags?._source === 'compare')
         )
-        const mapped: Scenario[] = compareScenarios.map((s: any, idx: number) => ({
-          id:        s.id,
-          name:      s.name,
-          color:     colorForIndex(idx),
-          inputs:    fromDbRow(s),
-          createdAt: new Date(s.created_at).toLocaleDateString(),
-          isActive:  s.is_active === true,
-        }))
+        const mapped: Scenario[] = compareScenarios.map((s: any, idx: number) => {
+          const formInputs = dbRowToFormInputs(s)
+          return {
+            id:        s.id,
+            name:      s.name,
+            color:     colorForIndex(idx),
+            inputs:    formInputs,
+            rawInput:  formToScenarioInput(formInputs),
+            createdAt: new Date(s.created_at).toLocaleDateString(),
+            isActive:  s.is_active === true,
+          }
+        })
         setScenarios(mapped)
       }
     } catch (err) {
@@ -345,25 +302,56 @@ export default function ScenarioComparePage() {
     else if (isLoaded) setLoading(false)
   }, [isLoaded, isPro, fetchScenarios])
 
+  // ── Derived state (shared engine) ──────────────────────────────────────────
+
+  const metrics: CompareMetrics[] = scenarios.map(s =>
+    getCompareMetrics(s.id, s.rawInput)
+  )
+
+  const scores: ScoredScenario[] = scenarios.length >= 2
+    ? scoreScenarios(metrics, goal)
+    : scenarios.length === 1
+      ? [{ id: scenarios[0].id, score: 100, rank: 1 }]
+      : []
+
+  const winnerId = getWinnerId(scores)
+  const winner   = scenarios.find(s => s.id === winnerId) ?? null
+  const winnerMetrics = metrics.find(m => m.id === winnerId) ?? null
+
+  const insights: Insight[] = winner
+    ? buildInsights(winnerId!, winner.name, metrics, goal)
+    : []
+
+  const rankOf   = (id: string) => scores.find(s => s.id === id)?.rank ?? 99
+  const scoreOf  = (id: string) => scores.find(s => s.id === id)?.score ?? 0
+  const metricOf = (id: string) => metrics.find(m => m.id === id)
+
+  // ── Preview metrics for new scenario form ─────────────────────────────────
+
+  const draftRawInput = formToScenarioInput(draft)
+  const draftMetrics  = getCompareMetrics('draft', draftRawInput)
+
+  // ── Actions ────────────────────────────────────────────────────────────────
+
   const saveScenario = async () => {
     if (!newName.trim() || !user) return
     setSaving(true)
     try {
+      const rawInput = formToScenarioInput(draft)
+      const m = getCompareMetrics('new', rawInput)
       const res = await fetch('/api/planner/scenarios', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify({
           name:   newName.trim(),
           email:  user.primaryEmailAddress?.emailAddress,
-          inputs: toPlannerInputs(draft),
+          source: 'compare',
+          inputs: rawInput,
           results: {
-            withdrawalRate: runProjection(draft).withdrawalRate,
-            portfolioAt90:  runProjection(draft).totalAt90,
-            riskFlags: {
-              _source:        'compare',
-              partTimeYears:  draft.partTimeYears,
-              healthcareCost: draft.healthcareCost,
-            },
+            withdrawalRate: m.withdrawalRate / 100,
+            portfolioAt90:  m.totalAt90,
+            monteCarlo:     { successRate: m.monteCarloSuccess },
+            riskFlags:      null,
           },
         }),
       })
@@ -374,7 +362,7 @@ export default function ScenarioComparePage() {
         showToast('Scenario saved')
         setShowNew(false)
         setNewName('')
-        setDraft(DEFAULT_INPUTS)
+        setDraft(DEFAULT_FORM)
         await fetchScenarios()
       }
     } catch {
@@ -395,23 +383,25 @@ export default function ScenarioComparePage() {
     }
   }
 
-  const updateScenario = async (id: string, inputs: ScenarioInputs, name: string) => {
-    setScenarios(prev => prev.map(s => s.id === id ? { ...s, inputs } : s))
+  const updateScenario = async (id: string, formInputs: CompareFormInputs, name: string) => {
+    const rawInput = formToScenarioInput(formInputs)
+    setScenarios(prev => prev.map(s =>
+      s.id === id ? { ...s, inputs: formInputs, rawInput } : s
+    ))
     try {
+      const m = getCompareMetrics(id, rawInput)
       await fetch(`/api/planner/scenarios/${id}`, {
         method:  'PUT',
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify({
           name,
-          inputs: toPlannerInputs(inputs),
+          source: 'compare',
+          inputs: rawInput,
           results: {
-            withdrawalRate: runProjection(inputs).withdrawalRate,
-            portfolioAt90:  runProjection(inputs).totalAt90,
-            riskFlags: {
-              _source:        'compare',
-              partTimeYears:  inputs.partTimeYears,
-              healthcareCost: inputs.healthcareCost,
-            },
+            withdrawalRate: m.withdrawalRate / 100,
+            portfolioAt90:  m.totalAt90,
+            monteCarlo:     { successRate: m.monteCarloSuccess },
+            riskFlags:      null,
           },
         }),
       })
@@ -429,7 +419,6 @@ export default function ScenarioComparePage() {
       if (data.error) {
         showToast(data.error, 'error')
       } else {
-        // Optimistic update — mark active locally
         setScenarios(prev => prev.map(s => ({ ...s, isActive: s.id === id })))
         showToast('✓ Active scenario set')
       }
@@ -440,21 +429,9 @@ export default function ScenarioComparePage() {
     }
   }
 
-  const setDraftField = (key: keyof ScenarioInputs) => (e: React.ChangeEvent<HTMLInputElement>) => {
+  const setDraftField = (key: keyof CompareFormInputs) => (e: React.ChangeEvent<HTMLInputElement>) => {
     setDraft(prev => ({ ...prev, [key]: parseFloat(e.target.value) || 0 }))
   }
-
-  const results = scenarios.map(s => ({ id: s.id, ...runProjection(s.inputs) }))
-
-  const scores: ScoredScenario[] = scenarios.length >= 2
-    ? scoreScenarios(scenarios, results)
-    : []
-
-  const rankOf   = (id: string) => scores.find(s => s.id === id)?.rank ?? 99
-  const scoreOf  = (id: string) => scores.find(s => s.id === id)?.score ?? 0
-  const winnerId = scores.find(s => s.rank === 1)?.id ?? null
-  const winner   = scenarios.find(s => s.id === winnerId) ?? null
-  const winnerRes = results.find(r => r.id === winnerId) ?? null
 
   // ── Gates ──────────────────────────────────────────────────────────────────
 
@@ -572,31 +549,33 @@ export default function ScenarioComparePage() {
                 <ScenarioForm inputs={draft} onChange={setDraftField} />
                 <div>
                   <div className="font-mono text-[9px] tracking-widest uppercase text-white/25 mb-3">Live Preview</div>
-                  {(() => {
-                    const r = runProjection(draft)
-                    return (
-                      <div className="space-y-3">
-                        <div className="bg-black/30 rounded-xl p-4 grid grid-cols-2 gap-3">
-                          {[
-                            { label: 'Bridge Years',    value: r.bridgeYears.toFixed(1),         color: r.bridgeYears > 10 ? RED : GOLD },
-                            { label: 'Withdrawal Rate', value: r.withdrawalRate.toFixed(1) + '%', color: r.withdrawalRate > 4 ? RED : SAGE },
-                            { label: 'At Age 80',       value: fmt(r.totalAt80),                  color: r.totalAt80 > 0 ? TEAL : RED },
-                            { label: 'At Age 90',       value: fmt(r.totalAt90),                  color: r.totalAt90 > 0 ? SAGE : RED },
-                          ].map(m => (
-                            <div key={m.label} className="text-center">
-                              <div className="font-mono font-bold text-[15px] mb-0.5" style={{ color: m.color }}>{m.value}</div>
-                              <div className="font-mono text-[8px] tracking-widest uppercase text-white/25">{m.label}</div>
-                            </div>
-                          ))}
+                  <div className="space-y-3">
+                    <div className="bg-black/30 rounded-xl p-4 grid grid-cols-2 gap-3">
+                      {[
+                        { label: 'Bridge Years',    value: draftMetrics.bridgeYears.toFixed(1),             color: draftMetrics.bridgeYears > 10 ? RED : GOLD },
+                        { label: 'Withdrawal Rate', value: draftMetrics.withdrawalRate.toFixed(1) + '%',   color: draftMetrics.withdrawalRate > 4 ? RED : SAGE },
+                        { label: 'At Age 80',       value: fmt(draftMetrics.totalAt80),                     color: draftMetrics.totalAt80 > 0 ? TEAL : RED },
+                        { label: 'At Age 90',       value: fmt(draftMetrics.totalAt90),                     color: draftMetrics.totalAt90 > 0 ? SAGE : RED },
+                      ].map(m => (
+                        <div key={m.label} className="text-center">
+                          <div className="font-mono font-bold text-[15px] mb-0.5" style={{ color: m.color }}>{m.value}</div>
+                          <div className="font-mono text-[8px] tracking-widest uppercase text-white/25">{m.label}</div>
                         </div>
-                        <div className={`rounded-xl p-3 text-center ${r.funded ? 'bg-green-500/10 border border-green-500/20' : 'bg-red-500/10 border border-red-500/20'}`}>
-                          <span className="font-mono text-[10px] tracking-widest uppercase" style={{ color: r.funded ? SAGE : RED }}>
-                            {r.funded ? '✓ Funded to age 90' : `⚠ Depletes at age ${r.depleted}`}
-                          </span>
-                        </div>
+                      ))}
+                    </div>
+                    <div className={`rounded-xl p-3 text-center ${draftMetrics.funded ? 'bg-green-500/10 border border-green-500/20' : 'bg-red-500/10 border border-red-500/20'}`}>
+                      <span className="font-mono text-[10px] tracking-widest uppercase" style={{ color: draftMetrics.funded ? SAGE : RED }}>
+                        {draftMetrics.funded ? '✓ Funded to age 90' : `⚠ Depletes at age ${draftMetrics.depleted}`}
+                      </span>
+                    </div>
+                    {draftMetrics.monteCarloSuccess !== null && (
+                      <div className="bg-black/20 rounded-xl p-3 text-center">
+                        <span className="font-mono text-[10px] tracking-widest uppercase text-white/40">
+                          Monte Carlo: <span style={{ color: draftMetrics.monteCarloSuccess >= 80 ? SAGE : draftMetrics.monteCarloSuccess >= 60 ? GOLD : RED }}>{draftMetrics.monteCarloSuccess}%</span> success
+                        </span>
                       </div>
-                    )
-                  })()}
+                    )}
+                  </div>
                 </div>
               </div>
               <div className="flex gap-3 mt-6">
@@ -638,51 +617,60 @@ export default function ScenarioComparePage() {
         {/* Comparison table + recommendation + cards */}
         {scenarios.length > 0 && (
           <>
+            {/* Goal selector */}
+            {scenarios.length >= 2 && (
+              <div className="bg-[#0D1420] border border-white/[0.07] rounded-2xl px-6 py-5">
+                <div className="font-mono text-[9px] tracking-widest uppercase text-white/30 mb-3">Optimize For</div>
+                <GoalSelector goal={goal} onChange={setGoal} />
+              </div>
+            )}
+
             {/* Recommendation block */}
-            {winner && winnerRes && scenarios.length >= 2 && (() => {
-              const others   = scenarios.filter(s => s.id !== winner.id)
-              const otherRes = results.filter(r => r.id !== winner.id)
-              const reasons  = buildWhyReasons(winner, others, winnerRes, otherRes)
-              return (
-                <div className="bg-[#0D1420] border border-[#E8B84B]/25 rounded-2xl overflow-hidden">
-                  <div className="bg-[#E8B84B]/8 px-6 py-4 flex items-center gap-3 border-b border-[#E8B84B]/15">
-                    <span className="text-xl">⭐</span>
-                    <div>
-                      <div className="font-mono text-[9px] tracking-widest uppercase text-[#E8B84B]">Recommended Scenario</div>
-                      <div className="font-syne font-bold text-white text-[18px] mt-0.5">{winner.name}</div>
+            {winner && winnerMetrics && scenarios.length >= 2 && (
+              <div className="bg-[#0D1420] border border-[#E8B84B]/25 rounded-2xl overflow-hidden">
+                <div className="bg-[#E8B84B]/8 px-6 py-4 flex items-center gap-3 border-b border-[#E8B84B]/15">
+                  <span className="text-xl">⭐</span>
+                  <div>
+                    <div className="font-mono text-[9px] tracking-widest uppercase text-[#E8B84B]">
+                      Best Fit for {GOAL_LABELS[goal]}
                     </div>
-                    <div className="ml-auto flex items-center gap-4">
-                      <div className="text-right">
-                        <div className="font-mono text-[9px] tracking-widest uppercase text-white/30 mb-0.5">Overall Score</div>
-                        <div className="font-mono font-bold text-[22px]" style={{ color: winner.color }}>{scoreOf(winner.id)}</div>
-                      </div>
-                      <button
-                        onClick={() => activateScenario(winner.id)}
-                        disabled={activating === winner.id || winner.isActive}
-                        className="font-mono text-[9px] tracking-widest uppercase px-3 py-2 rounded-lg border transition-all disabled:opacity-50"
-                        style={winner.isActive
-                          ? { borderColor: SAGE, color: SAGE, background: `${SAGE}10` }
-                          : { borderColor: `${GOLD}60`, color: GOLD, background: `${GOLD}10` }
-                        }
-                      >
-                        {winner.isActive ? '✓ Active' : activating === winner.id ? 'Setting...' : 'Set Active'}
-                      </button>
-                    </div>
+                    <div className="font-syne font-bold text-white text-[18px] mt-0.5">{winner.name}</div>
                   </div>
-                  <div className="px-6 py-4">
-                    <div className="font-mono text-[9px] tracking-widest uppercase text-white/30 mb-3">Why this scenario wins</div>
-                    <div className="space-y-2">
-                      {reasons.map((reason, i) => (
-                        <div key={i} className="flex items-start gap-2.5">
-                          <span className="text-[#4ADE80] text-[11px] mt-0.5 shrink-0">✓</span>
-                          <span className="text-white/65 text-[13px] leading-snug">{reason}</span>
-                        </div>
-                      ))}
+                  <div className="ml-auto flex items-center gap-4">
+                    <div className="text-right">
+                      <div className="font-mono text-[9px] tracking-widest uppercase text-white/30 mb-0.5">Score</div>
+                      <div className="font-mono font-bold text-[22px]" style={{ color: winner.color }}>{scoreOf(winner.id)}</div>
                     </div>
+                    <button
+                      onClick={() => activateScenario(winner.id)}
+                      disabled={activating === winner.id || winner.isActive}
+                      className="font-mono text-[9px] tracking-widest uppercase px-3 py-2 rounded-lg border transition-all disabled:opacity-50"
+                      style={winner.isActive
+                        ? { borderColor: SAGE, color: SAGE, background: `${SAGE}10` }
+                        : { borderColor: `${GOLD}60`, color: GOLD, background: `${GOLD}10` }
+                      }
+                    >
+                      {winner.isActive ? '✓ Active' : activating === winner.id ? 'Setting...' : 'Set Active'}
+                    </button>
                   </div>
                 </div>
-              )
-            })()}
+                <div className="px-6 py-4">
+                  <div className="font-mono text-[9px] tracking-widest uppercase text-white/30 mb-3">
+                    Why this scenario wins for {GOAL_LABELS[goal].toLowerCase()}
+                  </div>
+                  <InsightsPanel insights={insights} />
+                </div>
+              </div>
+            )}
+
+            {/* Single-scenario insights */}
+            {scenarios.length === 1 && insights.length > 0 && (
+              <div className="bg-[#0D1420] border border-white/[0.07] rounded-2xl px-6 py-5">
+                <div className="font-mono text-[9px] tracking-widest uppercase text-white/30 mb-3">Scenario Assessment</div>
+                <InsightsPanel insights={insights} />
+                <p className="text-white/25 text-[11px] mt-4">Add a second scenario to unlock full comparison and recommendations.</p>
+              </div>
+            )}
 
             {/* Comparison table */}
             <div className="bg-[#141C28] border border-white/[0.07] rounded-2xl overflow-hidden">
@@ -728,15 +716,16 @@ export default function ScenarioComparePage() {
                   </thead>
                   <tbody>
                     {[
-                      { label: 'Retire Age',      getValue: (s: Scenario) => s.inputs.retireAge,                                 format: (v: any) => `${v}`,               isGoodHigh: false },
-                      { label: 'Bridge Years',    getValue: (s: Scenario) => results.find(r=>r.id===s.id)?.bridgeYears ?? 0,    format: (v: any) => v.toFixed(1) + ' yrs', isGoodHigh: false },
-                      { label: 'Portfolio',       getValue: (s: Scenario) => s.inputs.portfolio,                                 format: fmt,                              isGoodHigh: true  },
-                      { label: 'Annual Spending', getValue: (s: Scenario) => s.inputs.annualSpending,                            format: fmt,                              isGoodHigh: false },
-                      { label: 'Withdrawal Rate', getValue: (s: Scenario) => results.find(r=>r.id===s.id)?.withdrawalRate ?? 0, format: (v: any) => v.toFixed(1) + '%',   isGoodHigh: false },
-                      { label: 'SS Age',          getValue: (s: Scenario) => s.inputs.ssAge,                                    format: (v: any) => `${v}`,               isGoodHigh: true  },
-                      { label: 'Portfolio at 80', getValue: (s: Scenario) => results.find(r=>r.id===s.id)?.totalAt80 ?? 0,      format: fmt,                              isGoodHigh: true  },
-                      { label: 'Portfolio at 90', getValue: (s: Scenario) => results.find(r=>r.id===s.id)?.totalAt90 ?? 0,      format: fmt,                              isGoodHigh: true  },
-                      { label: 'Funded to 90?',   getValue: (s: Scenario) => results.find(r=>r.id===s.id)?.funded ?? false,     format: (v: any) => v ? '✓ Yes' : '✗ No', isGoodHigh: true  },
+                      { label: 'Retire Age',      getValue: (s: Scenario) => s.inputs.retireAge,                        format: (v: any) => `${v}`,               isGoodHigh: false },
+                      { label: 'Bridge Years',    getValue: (s: Scenario) => metricOf(s.id)?.bridgeYears ?? 0,         format: (v: any) => v.toFixed(1) + ' yrs', isGoodHigh: false },
+                      { label: 'Portfolio',       getValue: (s: Scenario) => s.inputs.portfolio,                        format: fmt,                              isGoodHigh: true  },
+                      { label: 'Annual Spending', getValue: (s: Scenario) => s.inputs.annualSpending,                   format: fmt,                              isGoodHigh: false },
+                      { label: 'Withdrawal Rate', getValue: (s: Scenario) => metricOf(s.id)?.withdrawalRate ?? 0,      format: (v: any) => v.toFixed(1) + '%',   isGoodHigh: false },
+                      { label: 'MC Success',      getValue: (s: Scenario) => metricOf(s.id)?.monteCarloSuccess ?? 0,   format: (v: any) => v + '%',              isGoodHigh: true  },
+                      { label: 'SS Age',          getValue: (s: Scenario) => s.inputs.ssAge,                            format: (v: any) => `${v}`,               isGoodHigh: true  },
+                      { label: 'Portfolio at 80', getValue: (s: Scenario) => metricOf(s.id)?.totalAt80 ?? 0,           format: fmt,                              isGoodHigh: true  },
+                      { label: 'Portfolio at 90', getValue: (s: Scenario) => metricOf(s.id)?.totalAt90 ?? 0,           format: fmt,                              isGoodHigh: true  },
+                      { label: 'Funded to 90?',   getValue: (s: Scenario) => metricOf(s.id)?.funded ?? false,          format: (v: any) => v ? '✓ Yes' : '✗ No', isGoodHigh: true  },
                     ].map((row, ri) => {
                       const values = scenarios.map(s => row.getValue(s))
                       const best   = row.isGoodHigh ? Math.max(...values.map(Number)) : Math.min(...values.map(Number))
@@ -773,11 +762,12 @@ export default function ScenarioComparePage() {
             {/* Scenario cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
               {scenarios.map(s => {
-                const r         = results.find(res => res.id === s.id)!
+                const m         = metricOf(s.id)
                 const isEditing = editing === s.id
                 const rank      = rankOf(s.id)
                 const medal     = rank <= 3 && scenarios.length >= 2 ? MEDALS[rank - 1] : null
                 const isWinner  = rank === 1 && scenarios.length >= 2
+                if (!m) return null
                 return (
                   <div
                     key={s.id}
@@ -801,13 +791,12 @@ export default function ScenarioComparePage() {
                           )}
                           {isWinner && !s.isActive && (
                             <div className="font-mono text-[8px] tracking-widest uppercase text-[#E8B84B]/60 mt-0.5">
-                              Recommended
+                              Best Fit
                             </div>
                           )}
                         </div>
                       </div>
                       <div className="flex gap-2">
-                        {/* Set Active button */}
                         <button
                           onClick={() => activateScenario(s.id)}
                           disabled={activating === s.id || s.isActive}
@@ -840,23 +829,31 @@ export default function ScenarioComparePage() {
 
                     <div className="px-5 pb-4 grid grid-cols-2 gap-2">
                       {[
-                        { label: 'Retire', value: `Age ${s.inputs.retireAge}`,       color: 'white' },
-                        { label: 'W/R',    value: r.withdrawalRate.toFixed(1) + '%', color: r.withdrawalRate > 4 ? RED : SAGE },
-                        { label: 'At 80',  value: fmt(r.totalAt80),                  color: r.totalAt80 > 0 ? TEAL : RED },
-                        { label: 'At 90',  value: fmt(r.totalAt90),                  color: r.totalAt90 > 0 ? SAGE : RED },
-                      ].map(m => (
-                        <div key={m.label} className="bg-black/30 rounded-lg p-2.5 text-center">
-                          <div className="font-mono font-bold text-[13px] mb-0.5" style={{ color: m.color }}>{m.value}</div>
-                          <div className="font-mono text-[7px] tracking-widest uppercase text-white/25">{m.label}</div>
+                        { label: 'Retire',  value: `Age ${s.inputs.retireAge}`,        color: 'white' },
+                        { label: 'W/R',     value: m.withdrawalRate.toFixed(1) + '%',  color: m.withdrawalRate > 4 ? RED : SAGE },
+                        { label: 'At 80',   value: fmt(m.totalAt80),                    color: m.totalAt80 > 0 ? TEAL : RED },
+                        { label: 'At 90',   value: fmt(m.totalAt90),                    color: m.totalAt90 > 0 ? SAGE : RED },
+                      ].map(met => (
+                        <div key={met.label} className="bg-black/30 rounded-lg p-2.5 text-center">
+                          <div className="font-mono font-bold text-[13px] mb-0.5" style={{ color: met.color }}>{met.value}</div>
+                          <div className="font-mono text-[7px] tracking-widest uppercase text-white/25">{met.label}</div>
                         </div>
                       ))}
                     </div>
 
-                    <div className={`mx-5 mb-4 rounded-lg px-3 py-2 text-center ${r.funded ? 'bg-green-500/10 border border-green-500/20' : 'bg-red-500/10 border border-red-500/20'}`}>
-                      <span className="font-mono text-[9px] tracking-widest uppercase" style={{ color: r.funded ? SAGE : RED }}>
-                        {r.funded ? '✓ Funded to age 90' : `⚠ Depletes at age ${r.depleted}`}
+                    <div className={`mx-5 mb-4 rounded-lg px-3 py-2 text-center ${m.funded ? 'bg-green-500/10 border border-green-500/20' : 'bg-red-500/10 border border-red-500/20'}`}>
+                      <span className="font-mono text-[9px] tracking-widest uppercase" style={{ color: m.funded ? SAGE : RED }}>
+                        {m.funded ? '✓ Funded to age 90' : `⚠ Depletes at age ${m.depleted}`}
                       </span>
                     </div>
+
+                    {m.monteCarloSuccess !== null && (
+                      <div className="mx-5 mb-4 bg-black/20 rounded-lg px-3 py-2 text-center">
+                        <span className="font-mono text-[9px] tracking-widest uppercase text-white/30">
+                          MC: <span style={{ color: m.monteCarloSuccess >= 80 ? SAGE : m.monteCarloSuccess >= 60 ? GOLD : RED }}>{m.monteCarloSuccess}%</span>
+                        </span>
+                      </div>
+                    )}
 
                     <div className="px-5 pb-1 text-right">
                       <span className="font-mono text-[8px] text-white/15">Saved {s.createdAt}</span>
