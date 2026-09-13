@@ -72,18 +72,24 @@ export default function FIRENumberCalculator() {
   const totalFireNumber = bridgeNeeded + healthcareNeeded + k401kNeeded + sequenceBuffer
   const gap = Math.max(0, totalFireNumber - currentSaved)
   const simpleFireNumber = Math.round(annualSpend / withdrawalRate)
-  const differenceFromSimple = totalFireNumber - simpleFireNumber
+  // FIX 1: difference is now against the actual 25x value shown in the UI,
+  // not against the withdrawal-rate-adjusted simpleFireNumber
+  const simple25x = Math.round(annualSpend * 25)
+  const differenceFromSimple = totalFireNumber - simple25x
   const progressPct = Math.min(100, Math.round((currentSaved / totalFireNumber) * 100))
 
   const breakdown = [
     { name: 'Bridge Account\n(Taxable/Roth)', value: bridgeNeeded, color: COLORS.teal, description: `${bridgeYears.toFixed(1)} years × $${(annualSpend / 1000).toFixed(0)}k + buffer` },
-    { name: '401k at Retire', value: k401kNeeded, color: COLORS.gold, description: `Funds $${(postSSSpend / 1000).toFixed(0)}k/yr after SS at ${withdrawalRatePct}%` },
+    // FIX 2: label changed from "401k at Retire" → "401k at 59½" because
+    // postSSSpend/withdrawalRate is the balance needed when penalty-free access
+    // begins, not a PV discounted back to retirement age
+    { name: '401k at 59½', value: k401kNeeded, color: COLORS.gold, description: `Balance at 59½ to fund $${(postSSSpend / 1000).toFixed(0)}k/yr after SS at ${withdrawalRatePct}%` },
     { name: 'Healthcare\nBuffer', value: healthcareNeeded, color: COLORS.purple, description: `${65 - retireAge} yrs × $${(healthcareBudget / 1000).toFixed(0)}k/yr` },
     { name: 'Sequence Risk\nBuffer', value: sequenceBuffer, color: COLORS.orange, description: '1.5 years spending cushion' },
   ]
 
   const comparisonData = [
-    { name: 'Simple 25x Rule', value: Math.round(annualSpend * 25), fill: COLORS.red },
+    { name: 'Simple 25x Rule', value: simple25x, fill: COLORS.red },
     { name: `${Math.round(1 / withdrawalRate)}x Rule (${retirementYears}yr)`, value: simpleFireNumber, fill: COLORS.orange },
     { name: 'Real Number\n(Bridge + Healthcare)', value: totalFireNumber, fill: COLORS.sage },
   ]
@@ -172,7 +178,7 @@ export default function FIRENumberCalculator() {
           </div>
           <div style={{ fontSize: 42, fontWeight: 700, color: COLORS.gold, fontFamily: 'Georgia, serif', lineHeight: 1 }}>{formatDollars(totalFireNumber)}</div>
           <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', marginTop: 8 }}>
-            vs. simple 25x rule: {formatDollars(Math.round(annualSpend * 25))} — difference: <span style={{ color: differenceFromSimple > 0 ? COLORS.red : COLORS.sage }}>{differenceFromSimple > 0 ? '+' : ''}{formatDollars(differenceFromSimple)}</span>
+            vs. simple 25x rule: {formatDollars(simple25x)} — difference: <span style={{ color: differenceFromSimple > 0 ? COLORS.red : COLORS.sage }}>{differenceFromSimple > 0 ? '+' : ''}{formatDollars(differenceFromSimple)}</span>
           </div>
           {hasSpouse && spouseSSMonthly > 0 && (
             <div style={{ fontSize: 10, color: COLORS.teal, marginTop: 6 }}>
