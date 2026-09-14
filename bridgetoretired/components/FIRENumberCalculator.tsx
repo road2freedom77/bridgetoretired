@@ -34,6 +34,10 @@ const WITHDRAWAL_RATES: Record<number, number> = {
   30: 0.040, 35: 0.037, 40: 0.033, 45: 0.031, 50: 0.030,
 }
 
+// Growth assumption used to discount the 401k requirement from age 59½
+// back to retirement age (PV calculation)
+const REAL_RETURN = 0.06
+
 const PRO_FEATURES = [
   { icon: '🛡️', label: 'Bridge Risk Score™', sub: 'Grade your plan in 60 seconds' },
   { icon: '📉', label: 'Sequence-of-Returns Stress Tester', sub: '2000, 2008, worst-case crashes' },
@@ -67,23 +71,22 @@ export default function FIRENumberCalculator() {
   const bridgeNeeded = Math.round(annualSpend * bridgeYears * 1.15)
   const healthcareNeeded = Math.round(healthcareBudget * (65 - retireAge))
   const postSSSpend = Math.max(0, annualSpend - ssAnnual)
-  const k401kNeeded = postSSSpend > 0 ? Math.round(postSSSpend / withdrawalRate) : 0
+  // 401k: balance required at age 59½ to fund post-SS withdrawals
+  const k401kAtAccess = postSSSpend > 0 ? Math.round(postSSSpend / withdrawalRate) : 0
+  // PV at retirement: discount the 59½ requirement back to retire age at assumed return
+  const k401kNeeded = Math.round(k401kAtAccess / Math.pow(1 + REAL_RETURN, bridgeYears))
   const sequenceBuffer = Math.round(annualSpend * 1.5)
+  // All four components are now in age-50 (retirement) dollars
   const totalFireNumber = bridgeNeeded + healthcareNeeded + k401kNeeded + sequenceBuffer
   const gap = Math.max(0, totalFireNumber - currentSaved)
   const simpleFireNumber = Math.round(annualSpend / withdrawalRate)
-  // FIX 1: difference is now against the actual 25x value shown in the UI,
-  // not against the withdrawal-rate-adjusted simpleFireNumber
   const simple25x = Math.round(annualSpend * 25)
   const differenceFromSimple = totalFireNumber - simple25x
   const progressPct = Math.min(100, Math.round((currentSaved / totalFireNumber) * 100))
 
   const breakdown = [
     { name: 'Bridge Account\n(Taxable/Roth)', value: bridgeNeeded, color: COLORS.teal, description: `${bridgeYears.toFixed(1)} years × $${(annualSpend / 1000).toFixed(0)}k + buffer` },
-    // FIX 2: label changed from "401k at Retire" → "401k at 59½" because
-    // postSSSpend/withdrawalRate is the balance needed when penalty-free access
-    // begins, not a PV discounted back to retirement age
-    { name: '401k at 59½', value: k401kNeeded, color: COLORS.gold, description: `Balance at 59½ to fund $${(postSSSpend / 1000).toFixed(0)}k/yr after SS at ${withdrawalRatePct}%` },
+    { name: '401k Need\n(at Retire)', value: k401kNeeded, color: COLORS.gold, description: `Grows to ${formatDollars(k401kAtAccess)} by 59½ at ${(REAL_RETURN * 100).toFixed(0)}% return` },
     { name: 'Healthcare\nBuffer', value: healthcareNeeded, color: COLORS.purple, description: `${65 - retireAge} yrs × $${(healthcareBudget / 1000).toFixed(0)}k/yr` },
     { name: 'Sequence Risk\nBuffer', value: sequenceBuffer, color: COLORS.orange, description: '1.5 years spending cushion' },
   ]
@@ -182,7 +185,7 @@ export default function FIRENumberCalculator() {
           </div>
           {hasSpouse && spouseSSMonthly > 0 && (
             <div style={{ fontSize: 10, color: COLORS.teal, marginTop: 6 }}>
-              Spouse SS reduces portfolio need by {formatDollars(Math.round(spouseSSMonthly * 12 / withdrawalRate))}
+              Spouse SS reduces portfolio need by {formatDollars(Math.round(spouseSSMonthly * 12 / withdrawalRate / Math.pow(1 + REAL_RETURN, bridgeYears)))}
             </div>
           )}
           <div style={{ marginTop: 16 }}>
