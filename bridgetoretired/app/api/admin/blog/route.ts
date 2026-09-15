@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
 
   const { data, error } = await supabaseAdmin
     .from('blog_posts')
-    .select('id, slug, title, category, published, published_at, featured, read_time, description, updated_at, content')
+    .select('id, slug, title, category, published, published_at, featured, read_time, description, updated_at, content, og_image_url')
     .order('published_at', { ascending: false })
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })

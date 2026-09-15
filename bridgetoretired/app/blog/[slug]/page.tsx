@@ -20,6 +20,8 @@ import SEPPCalculator             from '@/components/SEPPCalculator'
 import FinanceTable               from '@/components/FinanceTable'
 
 export const revalidate = 3600
+
+const DEFAULT_OG_IMAGE = 'https://bridgetoretired.com/images/og-default.png'
 export const dynamicParams = true
 
 const supabase = createClient(
@@ -86,16 +88,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       },
     }
 
-    if (sbPost.og_image_url) {
-      meta.openGraph!.images = [
-        { url: sbPost.og_image_url, width: 1200, height: 630, alt: sbPost.title },
-      ]
-      meta.twitter = {
-        card:        'summary_large_image',
-        title:       sbPost.title,
-        description: sbPost.description,
-        images:      [sbPost.og_image_url],
-      }
+    const ogImage = sbPost.og_image_url || DEFAULT_OG_IMAGE
+    meta.openGraph!.images = [
+      { url: ogImage, width: 1200, height: 630, alt: sbPost.title },
+    ]
+    meta.twitter = {
+      card:        'summary_large_image',
+      title:       sbPost.title,
+      description: sbPost.description,
+      images:      [ogImage],
     }
 
     return meta
@@ -115,6 +116,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       type:          'article',
       publishedTime: clPost.date,
       url,
+      images: [{ url: DEFAULT_OG_IMAGE, width: 1200, height: 630, alt: clPost.title }],
+    },
+    twitter: {
+      card:        'summary_large_image',
+      title:       clPost.title,
+      description: clPost.description,
+      images:      [DEFAULT_OG_IMAGE],
     },
   }
 }
