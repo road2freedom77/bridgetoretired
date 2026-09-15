@@ -334,6 +334,10 @@ export default function AdminBlogPage() {
             </div>
             <div style={{ display: 'flex', gap: 8, flexShrink: 0, flexWrap: 'wrap' as const }}>
               <button style={S.btnGhost} onClick={() => handleEdit(post)}>Edit</button>
+              <a href={`/admin/blog/preview/${post.slug}`} target="_blank" rel="noreferrer"
+                style={{ ...S.btnGhost, textDecoration: 'none', display: 'inline-block' }}>
+                Preview
+              </a>
               <button style={S.btnGhost} onClick={() => togglePublished(post)}>
                 {post.published ? 'Unpublish' : 'Publish'}
               </button>
