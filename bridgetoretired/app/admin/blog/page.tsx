@@ -378,13 +378,23 @@ export default function AdminBlogPage() {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 20 }}>
           <div>
             <div style={S.card}>
-              <label style={S.label}>Title</label>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                <label style={S.label}>Title</label>
+                <span style={{ fontSize: 9, color: (editing.title ?? '').length > 60 ? '#F87171' : 'rgba(255,255,255,0.25)' }}>
+                  {(editing.title ?? '').length}/60
+                </span>
+              </div>
               <input style={{ ...S.input, fontSize: 16, marginBottom: 16 }} placeholder="Post title..."
                 value={editing.title ?? ''} onChange={e => setEditing(p => ({ ...p, title: e.target.value }))} />
               <label style={S.label}>Slug</label>
               <input style={{ ...S.input, marginBottom: 16 }} placeholder="post-slug-here"
                 value={editing.slug ?? ''} onChange={e => setEditing(p => ({ ...p, slug: e.target.value }))} />
-              <label style={S.label}>Description (SEO meta)</label>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                <label style={S.label}>Description (SEO meta)</label>
+                <span style={{ fontSize: 9, color: (editing.description ?? '').length > 155 ? '#F87171' : 'rgba(255,255,255,0.25)' }}>
+                  {(editing.description ?? '').length}/155
+                </span>
+              </div>
               <textarea style={{ ...S.textarea, minHeight: 80, marginBottom: 0 }} placeholder="SEO description..."
                 value={editing.description ?? ''} onChange={e => setEditing(p => ({ ...p, description: e.target.value }))} />
             </div>
@@ -506,7 +516,14 @@ Tool with params:
                 <option value="">— Select category —</option>
                 {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
-              <label style={S.label}>Read Time</label>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                <label style={S.label}>Read Time</label>
+                <button
+                  onClick={() => setEditing(p => ({ ...p, read_time: `${Math.max(1, Math.ceil(wordCount(p.content ?? '') / 200))} min read` }))}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 9, color: '#2DD4BF', fontFamily: 'inherit', padding: 0 }}>
+                  auto: {Math.max(1, Math.ceil(words / 200))} min ↵
+                </button>
+              </div>
               <input style={{ ...S.input, marginBottom: 16 }} placeholder="e.g. 14 min read" value={editing.read_time ?? ''}
                 onChange={e => setEditing(p => ({ ...p, read_time: e.target.value }))} />
               <label style={S.label}>OG / Social Image URL</label>
