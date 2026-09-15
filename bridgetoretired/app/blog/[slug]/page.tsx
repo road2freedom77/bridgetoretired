@@ -19,6 +19,8 @@ import TaxableBrokerageAnalyzer   from '@/components/TaxableBrokerageAnalyzer'
 import SEPPCalculator             from '@/components/SEPPCalculator'
 import FinanceTable               from '@/components/FinanceTable'
 import { resolveFaq, buildFaqSchema } from '@/lib/blog-faq'
+import { getRelatedPosts } from '@/lib/related-posts'
+import RelatedPosts from '@/components/blog/RelatedPosts'
 
 export const revalidate = 3600
 
@@ -141,7 +143,7 @@ function MDXContent({ code }: { code: string }) {
 // ── Shared article body layout ────────────────────────────────────────────────
 function PostLayout({
   slug, title, description, category, date, readTime, children, url,
-  articleSchema, breadcrumbSchema, faqSchema,
+  articleSchema, breadcrumbSchema, faqSchema, relatedPosts,
 }: {
   slug: string
   title: string
@@ -154,6 +156,7 @@ function PostLayout({
   articleSchema: object
   breadcrumbSchema: object
   faqSchema?: object | null
+  relatedPosts?: import('@/lib/related-posts').RelatedPost[]
 }) {
   return (
     <div className="min-h-screen bg-black">
@@ -211,6 +214,10 @@ function PostLayout({
             Download Free Planner →
           </Link>
         </div>
+
+        {relatedPosts && relatedPosts.length > 0 && (
+          <RelatedPosts posts={relatedPosts} category={category} />
+        )}
       </div>
     </div>
   )
@@ -257,6 +264,7 @@ export default async function PostPage({ params }: Props) {
     }
 
     const faqSchema = buildFaqSchema(resolveFaq(null, sbPost.content ?? ''))
+    const relatedPosts = await getRelatedPosts(params.slug, sbPost.category ?? null)
 
     return (
       <PostLayout
@@ -270,6 +278,7 @@ export default async function PostPage({ params }: Props) {
         articleSchema={articleSchema}
         breadcrumbSchema={breadcrumbSchema}
         faqSchema={faqSchema}
+        relatedPosts={relatedPosts}
       >
         <BlogRenderer content={sbPost.content} slug={params.slug} />
       </PostLayout>
@@ -307,6 +316,7 @@ export default async function PostPage({ params }: Props) {
   const faqSchema = buildFaqSchema(
     resolveFaq((clPost as any).faq, clPost.body.raw ?? '')
   )
+  const relatedPosts = await getRelatedPosts(params.slug, clPost.category ?? null)
 
   return (
     <PostLayout
@@ -320,6 +330,7 @@ export default async function PostPage({ params }: Props) {
       articleSchema={articleSchema}
       breadcrumbSchema={breadcrumbSchema}
       faqSchema={faqSchema}
+      relatedPosts={relatedPosts}
     >
       <MDXContent code={clPost.body.code} />
     </PostLayout>
