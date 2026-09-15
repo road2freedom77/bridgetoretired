@@ -17,6 +17,11 @@ const nextConfig = {
         destination: 'https://bridgetoretired.com/:path*',
         permanent: true,
       },
+      {
+        source: '/blog/what-is-a-retirement-bridge-account',
+        destination: '/blog/what-is-retirement-bridge-strategy',
+        permanent: true,
+      },
     ]
   },
 }
