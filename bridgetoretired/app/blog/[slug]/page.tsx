@@ -70,7 +70,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   // Try Supabase first
   const { data: sbPost } = await supabase
     .from('blog_posts')
-    .select('title, description, published_at, og_image_url')
+    .select('title, description, published_at, updated_at, og_image_url')
     .eq('slug', params.slug)
     .eq('published', true)
     .single()
@@ -85,6 +85,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         description:   sbPost.description,
         type:          'article',
         publishedTime: sbPost.published_at,
+        modifiedTime:  sbPost.updated_at ?? sbPost.published_at,
         url,
       },
     }
@@ -240,6 +241,7 @@ export default async function PostPage({ params }: Props) {
       },
       mainEntityOfPage: { '@type': 'WebPage', '@id': url },
       datePublished: sbPost.published_at,
+      dateModified: sbPost.updated_at ?? sbPost.published_at,
       ...(sbPost.og_image_url ? { image: sbPost.og_image_url } : {}),
     }
     const breadcrumbSchema = {
