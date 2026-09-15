@@ -87,6 +87,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         publishedTime: sbPost.published_at,
         modifiedTime:  sbPost.updated_at ?? sbPost.published_at,
         url,
+        siteName:      'BridgeToRetired',
       },
     }
 
@@ -118,6 +119,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       type:          'article',
       publishedTime: clPost.date,
       url,
+      siteName:      'BridgeToRetired',
       images: [{ url: DEFAULT_OG_IMAGE, width: 1200, height: 630, alt: clPost.title }],
     },
     twitter: {

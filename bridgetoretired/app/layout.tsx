@@ -123,6 +123,11 @@ export const metadata: Metadata = {
     url: 'https://bridgetoretired.com',
     siteName: 'BridgeToRetired',
   },
+  alternates: {
+    types: {
+      'application/rss+xml': 'https://bridgetoretired.com/feed.xml',
+    },
+  },
   twitter: {
     card: 'summary_large_image',
   },
