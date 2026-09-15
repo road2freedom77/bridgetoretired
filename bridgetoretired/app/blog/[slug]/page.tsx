@@ -18,6 +18,7 @@ import TaxBracketVisualizer       from '@/components/TaxBracketVisualizer'
 import TaxableBrokerageAnalyzer   from '@/components/TaxableBrokerageAnalyzer'
 import SEPPCalculator             from '@/components/SEPPCalculator'
 import FinanceTable               from '@/components/FinanceTable'
+import { resolveFaq, buildFaqSchema } from '@/lib/blog-faq'
 
 export const revalidate = 3600
 
@@ -137,7 +138,7 @@ function MDXContent({ code }: { code: string }) {
 // ── Shared article body layout ────────────────────────────────────────────────
 function PostLayout({
   slug, title, description, category, date, readTime, children, url,
-  articleSchema, breadcrumbSchema,
+  articleSchema, breadcrumbSchema, faqSchema,
 }: {
   slug: string
   title: string
@@ -149,6 +150,7 @@ function PostLayout({
   url: string
   articleSchema: object
   breadcrumbSchema: object
+  faqSchema?: object | null
 }) {
   return (
     <div className="min-h-screen bg-black">
@@ -158,6 +160,11 @@ function PostLayout({
       <Script id="schema-breadcrumb" type="application/ld+json" strategy="beforeInteractive"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
+      {faqSchema && (
+        <Script id="schema-faq" type="application/ld+json" strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+        />
+      )}
 
       <div className="bg-navy border-b border-white/[0.06]">
         <div className="max-w-3xl mx-auto px-5 pt-14 pb-12">
@@ -245,6 +252,8 @@ export default async function PostPage({ params }: Props) {
       ],
     }
 
+    const faqSchema = buildFaqSchema(resolveFaq(null, sbPost.content ?? ''))
+
     return (
       <PostLayout
         slug={params.slug}
@@ -256,6 +265,7 @@ export default async function PostPage({ params }: Props) {
         url={url}
         articleSchema={articleSchema}
         breadcrumbSchema={breadcrumbSchema}
+        faqSchema={faqSchema}
       >
         <BlogRenderer content={sbPost.content} slug={params.slug} />
       </PostLayout>
@@ -290,6 +300,10 @@ export default async function PostPage({ params }: Props) {
     ],
   }
 
+  const faqSchema = buildFaqSchema(
+    resolveFaq((clPost as any).faq, clPost.body.raw ?? '')
+  )
+
   return (
     <PostLayout
       slug={params.slug}
@@ -301,6 +315,7 @@ export default async function PostPage({ params }: Props) {
       url={url}
       articleSchema={articleSchema}
       breadcrumbSchema={breadcrumbSchema}
+      faqSchema={faqSchema}
     >
       <MDXContent code={clPost.body.code} />
     </PostLayout>
